@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Deenice Finds — Plugged By the Best</title>
+<link rel="icon" href="assets/logo-100.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg">
+<header class="site-header">
+  <div class="header-inner">
+    <button id="hambtn" class="hamburger" aria-label="menu">☰</button>
+    <a class="brand" href="/"><img src="assets/logo-100.png" alt="logo" class="logo">Deenice Finds</a>
+    <nav class="main-nav" id="mainNav">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li class="has-dropdown"><a href="#">Products ▾</a>
+          <ul class="dropdown">
+            <li><a href="products.html?cat=phones">Phones</a></li>
+            <li><a href="products.html?cat=earbuds">Earbuds</a></li>
+            <li><a href="products.html?cat=accessories">Accessories</a></li>
+          </ul>
+        </li>
+        <li class="has-dropdown"><a href="#">Services ▾</a>
+          <ul class="dropdown">
+            <li><a href="buy-for-me.html">Buy for me (US Phone)</a></li>
+            <li><a href="collaborate.html">Collaborate</a></li>
+          </ul>
+        </li>
+        <li><a href="blogs.html" target="_blank">Blogs</a></li>
+        <li><a href="reviews.html" target="_blank">Reviews</a></li>
+        <li><a href="contact.html" target="_blank">Contact</a></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <button id="searchBtn" class="search-btn" aria-label="search">🔍</button>
+      <div id="searchBox" class="search-box hidden">
+        <input id="searchInput" placeholder="Search products...">
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+      <a id="cartBtn" class="cart" href="cart.html">🛒 <span id="cartCount">0</span></a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Offers slideshow -->
+  <section class="offers">
+    <div class="slider" id="offerSlider">
+      <div class="slide"><img src="assets/offer-desktop-1.png" alt="Offer 1"></div>
+      <div class="slide"><img src="assets/offer-desktop-2.png" alt="Offer 2"></div>
+      <div class="slide"><img src="assets/offer-desktop-3.png" alt="Offer 3"></div>
+    </div>
+    <div class="slider-controls">
+      <button id="prevOffer">‹</button>
+      <div id="dots" class="dots"></div>
+      <button id="nextOffer">›</button>
+    </div>
+  </section>
+
+  <section class="hero-copy">
+    <h2>Best-reviewed & tested items you can buy in Kenya</h2>
+    <p class="subline">Carefully selected, professionally tested — premium tech and accessories delivered as information to your WhatsApp.</p>
+  </section>
+
+  <section class="products-grid" id="productsGrid">
+    <!-- product cards inserted by JS -->
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <h4>About</h4>
+      <a href="about.html">About Us</a><br/>
+      <a href="impact.html">Our Impact</a>
+    </div>
+    <div>
+      <h4>Help</h4>
+      <a href="#" id="helpCenter">Help Center</a><br/>
+      <a href="mailto:deenicevida@gmail.com">Contact Us</a>
+    </div>
+    <div>
+      <h4>Services</h4>
+      <a href="buy-for-me.html">Buy For Me (US Phone)</a><br/>
+      <a href="collaborate.html">Collaborate</a>
+    </div>
+    <div>
+      <h4>Follow</h4>
+      <a href="https://www.instagram.com/deenice.vida/" target="_blank">Instagram</a><br/>
+      <a href="https://www.tiktok.com/@deenice.vida" target="_blank">TikTok</a>
+    </div>
+  </div>
+  <p class="copyright">© Deenice Finds</p>
+</footer>
+
+<!-- Tidio -->
+<script src="//code.tidio.co/kqlf54zch9h9olbcjin6kqpag9u5q1lr.js" async></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cart — Deenice Finds</title><link rel="icon" href="assets/logo-100.png" /><link rel="stylesheet" href="styles.css"></head><body class="bg"><header class="site-header"><div class="header-inner"><a class="brand" href="/"><img src="assets/logo-100.png" class="logo">Deenice Finds</a></div></header><main style="max-width:900px;margin:18px auto;padding:0 12px"><h2>Your Cart</h2><div id="cartArea"></div><button id="checkout">Checkout via WhatsApp</button></main><script>
+const cart = JSON.parse(localStorage.getItem('df_cart')||'[]');const area=document.getElementById('cartArea');
+if(cart.length===0) area.innerHTML='<p>Cart is empty</p>';
+cart.forEach(c=>{const div=document.createElement('div');div.innerHTML=`${'${c.qty}'} x ${'${c.title}'} (${'${c.color}'}) — KES ${'${c.price}'}`;area.appendChild(div);});
+document.getElementById('checkout').addEventListener('click', ()=>{ const lines = cart.map(c=>`${'${c.qty}'} x ${'${c.title}'} (${'${c.color || 'N/A'}'}) - KES ${'${c.price}'}`); const msg = `Hello, I'm interested in the following items from Deenice Finds:%0A${lines.join('%0A')}`; window.open('https://wa.me/254106590617?text='+encodeURIComponent(msg));});
+</script></body></html>

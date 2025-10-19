@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Buy For Me — Deenice Finds</title><link rel="icon" href="assets/logo-100.png" /><link rel="stylesheet" href="styles.css"></head><body class="bg"><header class="site-header"><div class="header-inner"><a class="brand" href="/"><img src="assets/logo-100.png" class="logo">Deenice Finds</a></div></header><main style="max-width:900px;margin:18px auto;padding:0 12px"><h2>Buy For Me (US Phone)</h2><p>Paste the product link and price (USD). Conversion rate: 135 KES per 1 USD (modifiable in code).</p><div style="display:grid;gap:8px"><input id="prodLink" placeholder="Original product link"/><input id="usdPrice" placeholder="Price in USD" type="number"/><select id="condition"><option value="new">New</option><option value="used">Used</option></select><div id="quoteArea"></div><button id="calc">Get Quote</button><button id="order">Place Order via WhatsApp</button></div></main><script>
+const rate = 135; // KES per USD - edit in code if needed
+function compute(){
+  const usd = parseFloat(document.getElementById('usdPrice').value||0);
+  const baseKes = usd*rate;
+  // shipping is $20 + 3.5% of price (USD) -> convert to KES
+  const shippingKes = (20 + 0.035*usd) * rate;
+  let serviceKes;
+  if(usd <= 750) serviceKes = 30 * rate; else serviceKes = 0.045 * usd * rate;
+  const totalKes = Math.round(baseKes + shippingKes + serviceKes);
+  return {baseKes, shippingKes, serviceKes, totalKes};
+}
+document.getElementById('calc').addEventListener('click', ()=>{
+  const r = compute();
+  document.getElementById('quoteArea').innerHTML = `<p>Base: KES ${r.baseKes.toLocaleString()}</p><p>Shipping: KES ${Math.round(r.shippingKes).toLocaleString()}</p><p>Service: KES ${Math.round(r.serviceKes).toLocaleString()}</p><h3>Total: KES ${r.totalKes.toLocaleString()}</h3>`;
+});
+document.getElementById('order').addEventListener('click', ()=>{
+  const link = document.getElementById('prodLink').value || '';
+  const r = compute();
+  const msg = `BuyForMe request:\nLink: ${link}\nQuoted total: KES ${r.totalKes}`;
+  window.open('https://wa.me/254106590617?text='+encodeURIComponent(msg));
+});
+</script></body></html>
