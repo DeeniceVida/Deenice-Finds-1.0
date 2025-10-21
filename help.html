@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Center - Deenice Finds | Support & FAQs</title>
+    <meta name="description" content="Get help with your orders, products, and services. Find answers to frequently asked questions and contact our support team.">
+    <link rel="icon" type="image/x-icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <script src="//code.tidio.co/kqlf54zch9h9olbcjin6kqpag9u5q1lr.js" async></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo-section">
+                <a href="index.html">
+                    <img src="https://i.postimg.cc/fWrSZtm0/logo-2-copy-2x.png" alt="Deenice Finds" class="logo">
+                </a>
+                <div>
+                    <div class="brand-name">Deenice Finds</div>
+                    <div class="tagline">Plugged By the Best</div>
+                </div>
+            </div>
+            
+            <nav class="nav-desktop">
+                <div class="nav-item">
+                    <a href="index.html">Home</a>
+                </div>
+                <div class="nav-item">
+                    <a href="products.html">Products</a>
+                    <div class="dropdown">
+                        <a href="products.html?category=phones" class="dropdown-item">Phones</a>
+                        <a href="products.html?category=earbuds" class="dropdown-item">Earbuds</a>
+                        <a href="products.html?category=power-banks" class="dropdown-item">Power Banks</a>
+                        <a href="products.html?category=phone-cases" class="dropdown-item">Phone Cases</a>
+                        <a href="products.html?category=accessories" class="dropdown-item">Accessories</a>
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <a href="services.html">Services</a>
+                    <div class="dropdown">
+                        <a href="services.html#buy-for-me" class="dropdown-item">Buy For Me (US Phone)</a>
+                        <a href="services.html#collaborate" class="dropdown-item">Collaborate</a>
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <a href="blogs.html">Blogs</a>
+                </div>
+                <div class="nav-item">
+                    <a href="reviews.html">Reviews</a>
+                </div>
+                <div class="nav-item">
+                    <a href="contact.html">Contact</a>
+                </div>
+            </nav>
+            
+            <div class="header-actions">
+                <div class="search-container">
+                    <button class="search-icon">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search products...">
+                        <div class="search-suggestions">
+                            <div class="suggestion-item" data-search="phone cases">
+                                <img src="https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg" alt="Phone Case" class="suggestion-thumb">
+                                <span>Phone Cases</span>
+                            </div>
+                            <div class="suggestion-item" data-search="sunglasses">
+                                <img src="https://i.postimg.cc/D03nz6zL/Screenshot-2025-10-15-201118.png" alt="Sunglasses" class="suggestion-thumb">
+                                <span>Sunglasses</span>
+                            </div>
+                            <div class="suggestion-item" data-search="beanies">
+                                <img src="https://i.postimg.cc/RZpmt4Fx/image.png" alt="Beanies" class="suggestion-thumb">
+                                <span>Beanies</span>
+                            </div>
+                            <div class="suggestion-item" data-search="newera caps">
+                                <img src="https://i.postimg.cc/kgHr4s1R/image.png" alt="NewEra Caps" class="suggestion-thumb">
+                                <span>NewEra Caps</span>
+                            </div>
+                            <div class="suggestion-item" data-search="powerbanks">
+                                <img src="https://i.postimg.cc/V6LXV9wM/image.png" alt="Powerbanks" class="suggestion-thumb">
+                                <span>Powerbanks</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="cart-icon" id="cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">0</span>
+                </button>
+                
+                <button class="mobile-menu-btn" id="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" id="mobile-nav">
+        <div class="mobile-nav-header">
+            <a href="index.html">
+                <img src="https://i.postimg.cc/fWrSZtm0/logo-2-copy-2x.png" alt="Deenice Finds" class="logo">
+            </a>
+            <button class="mobile-nav-close" id="mobile-nav-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mobile-nav-items">
+            <a href="index.html" class="mobile-nav-item">Home</a>
+            <div class="mobile-nav-item" id="mobile-products-btn">
+                Products <i class="fas fa-chevron-down"></i>
+                <div class="mobile-dropdown" id="mobile-products-dropdown">
+                    <a href="products.html?category=phones" class="mobile-dropdown-item">Phones</a>
+                    <a href="products.html?category=earbuds" class="mobile-dropdown-item">Earbuds</a>
+                    <a href="products.html?category=power-banks" class="mobile-dropdown-item">Power Banks</a>
+                    <a href="products.html?category=phone-cases" class="mobile-dropdown-item">Phone Cases</a>
+                    <a href="products.html?category=accessories" class="mobile-dropdown-item">Accessories</a>
+                </div>
+            </div>
+            <div class="mobile-nav-item" id="mobile-services-btn">
+                Services <i class="fas fa-chevron-down"></i>
+                <div class="mobile-dropdown" id="mobile-services-dropdown">
+                    <a href="services.html#buy-for-me" class="mobile-dropdown-item">Buy For Me (US Phone)</a>
+                    <a href="services.html#collaborate" class="mobile-dropdown-item">Collaborate</a>
+                </div>
+            </div>
+            <a href="blogs.html" class="mobile-nav-item">Blogs</a>
+            <a href="reviews.html" class="mobile-nav-item">Reviews</a>
+            <a href="contact.html" class="mobile-nav-item">Contact</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">Help Center</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Help Center</h1>
+            <p>Find answers to common questions and get the support you need</p>
+        </div>
+
+        <!-- Help Categories -->
+        <div class="help-categories">
+            <div class="help-category">
+                <div class="category-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h3>Ordering & Payment</h3>
+                <p>Questions about placing orders and payment methods</p>
+                <a href="#ordering" class="category-link">View Questions</a>
+            </div>
+            
+            <div class="help-category">
+                <div class="category-icon">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <h3>Shipping & Delivery</h3>
+                <p>Information about delivery times and tracking</p>
+                <a href="#shipping" class="category-link">View Questions</a>
+            </div>
+            
+            <div class="help-category">
+                <div class="category-icon">
+                    <i class="fas fa-undo-alt"></i>
+                </div>
+                <h3>Returns & Warranty</h3>
+                <p>Policies for returns, exchanges, and warranties</p>
+                <a href="#returns" class="category-link">View Questions</a>
+            </div>
+            
+            <div class="help-category">
+                <div class="category-icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <h3>Products & Services</h3>
+                <p>Questions about our products and special services</p>
+                <a href="#products" class="category-link">View Questions</a>
+            </div>
+        </div>
+
+        <!-- FAQ Sections -->
+        <div class="faq-sections">
+            <!-- Ordering & Payment -->
+            <section class="faq-section" id="ordering">
+                <h2>Ordering & Payment</h2>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>How do I place an order?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>You can place an order through our website by adding products to your cart and proceeding to checkout, or via WhatsApp by sending us the products you're interested in. For Buy For Me services, use the calculator on our services page and contact us via WhatsApp with the product details.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>What payment methods do you accept?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>We accept M-Pesa, bank transfers, and cash on delivery (for select areas in Nairobi). For larger orders or Buy For Me services, we may require a deposit with the balance payable before delivery.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Can I modify or cancel my order?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>You can modify or cancel your order within 2 hours of placement by contacting us via WhatsApp or email. After this period, orders may already be in processing and cannot be changed.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Do you offer installment payments?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Currently, we don't offer formal installment plans. However, for returning customers or larger orders, we may arrange flexible payment options on a case-by-case basis. Contact us to discuss your needs.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Shipping & Delivery -->
+            <section class="faq-section" id="shipping">
+                <h2>Shipping & Delivery</h2>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>How long does delivery take?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Delivery times vary by location:
+                                <br>- Nairobi: 2-3 business days
+                                <br>- Other major towns: 3-5 business days
+                                <br>- Remote areas: 5-7 business days
+                                <br>- Buy For Me service: Approximately 3 weeks from order confirmation
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Do you deliver outside Nairobi?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, we deliver nationwide across Kenya. Delivery costs and times may vary depending on your location. Contact us for specific delivery information to your area.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Can I track my order?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, we provide tracking information for all orders. Once your order is shipped, you'll receive a tracking number via SMS or WhatsApp that you can use to monitor your delivery status.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>What are your delivery charges?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Delivery charges vary based on your location and order size:
+                                <br>- Nairobi: KES 200-500
+                                <br>- Other areas: KES 300-800
+                                <br>- Free delivery for orders over KES 5,000 within Nairobi
+                                <br>Contact us for exact delivery costs to your location.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Returns & Warranty -->
+            <section class="faq-section" id="returns">
+                <h2>Returns & Warranty</h2>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>What is your return policy?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>We accept returns within 7 days of delivery for defective or damaged products. The product must be in its original condition with all packaging and accessories. Custom orders and Buy For Me items may have different return policies.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Do your products come with warranty?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, most products come with warranties ranging from 3 months to 1 year depending on the product type. Check individual product pages for specific warranty information. Warranty covers manufacturing defects but not damage from misuse.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>How do I make a warranty claim?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Contact us via WhatsApp or email with your order details, product issue, and photos/videos of the problem. We'll guide you through the warranty claim process, which may include repair, replacement, or refund depending on the situation.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>What is not covered by warranty?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Warranty does not cover:
+                                <br>- Damage from accidents, drops, or liquid exposure
+                                <br>- Normal wear and tear
+                                <br>- Unauthorized repairs or modifications
+                                <br>- Use with incompatible accessories
+                                <br>- Cosmetic damage from normal use
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Products & Services -->
+            <section class="faq-section" id="products">
+                <h2>Products & Services</h2>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>How does the Buy For Me service work?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Our Buy For Me service allows you to purchase products from US websites and have them delivered to Kenya. Simply:
+                                <br>1. Find the product you want on any US website
+                                <br>2. Use our calculator to get the total cost in KES
+                                <br>3. Contact us via WhatsApp with the product link
+                                <br>4. Make payment and we handle everything else
+                                <br>Delivery takes approximately 3 weeks.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Are your products authentic?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, all our products are 100% authentic. We source directly from authorized distributors and reputable suppliers. We stand behind the quality and authenticity of every product we sell.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Do you offer bulk/wholesale pricing?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, we offer special pricing for bulk orders and wholesale customers. Contact us with your requirements and quantity needs, and we'll provide you with competitive wholesale pricing.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <h3>Can I request a product that's not on your website?</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Absolutely! If you're looking for a specific product that's not listed on our website, contact us with the details. We can source most tech products and accessories through our network of suppliers.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Contact Support -->
+        <section class="support-cta">
+            <div class="cta-content">
+                <h2>Still Need Help?</h2>
+                <p>Our support team is ready to assist you with any questions or concerns</p>
+                <div class="support-options">
+                    <a href="https://wa.me/254106590617" class="support-option" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>Chat on WhatsApp</span>
+                    </a>
+                    <a href="mailto:deenicevida@gmail.com" class="support-option">
+                        <i class="fas fa-envelope"></i>
+                        <span>Send Email</span>
+                    </a>
+                    <a href="contact.html" class="support-option">
+                        <i class="fas fa-headset"></i>
+                        <span>Contact Form</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>About</h3>
+                    <div class="footer-links">
+                        <a href="about.html" class="footer-link">About Us</a>
+                        <a href="about.html#impact" class="footer-link">Our Impact</a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Help</h3>
+                    <div class="footer-links">
+                        <a href="contact.html" class="footer-link">Contact Us</a>
+                        <a href="help.html" class="footer-link">Help Center</a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <div class="footer-links">
+                        <a href="services.html#buy-for-me" class="footer-link">Buy For Me (US Phone)</a>
+                        <a href="services.html#collaborate" class="footer-link">Collaborate</a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="https://www.tiktok.com/@deenice.vida" class="social-icon" target="_blank">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3046/3046126.png" alt="TikTok">
+                        </a>
+                        <a href="https://www.instagram.com/deenice.vida/" class="social-icon" target="_blank">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
+                        </a>
+                    </div>
+                    <p style="margin-top: 15px; font-size: 14px; color: var(--text-secondary);">Email: deenicevida@gmail.com</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2023 Deenice Finds. All rights reserved. | Plugged By the Best</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h3 class="cart-title">Your Cart</h3>
+            <button class="cart-close" id="cart-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- Cart items will be dynamically generated here -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cart-total-price">KES 0.00</span>
+            </div>
+            <button class="checkout-btn" id="checkout-btn">Checkout via WhatsApp</button>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- JavaScript Files -->
+    <script src="js/cart.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

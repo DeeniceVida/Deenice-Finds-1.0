@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Deenice Finds | Premium Tech Products in Kenya</title>
+    <meta name="description" content="Browse our premium collection of tech products including phones, earbuds, power banks, and accessories. Best prices in Kenya.">
+    <link rel="icon" type="image/x-icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <script src="//code.tidio.co/kqlf54zch9h9olbcjin6kqpag9u5q1lr.js" async></script>
+</head>
+<body>
+    <!-- Header (Same as index.html) -->
+    <header>
+        <div class="header-container">
+            <div class="logo-section">
+                <a href="index.html">
+                    <img src="https://i.postimg.cc/fWrSZtm0/logo-2-copy-2x.png" alt="Deenice Finds" class="logo">
+                </a>
+                <div>
+                    <div class="brand-name">Deenice Finds</div>
+                    <div class="tagline">Plugged By the Best</div>
+                </div>
+            </div>
+            
+            <nav class="nav-desktop">
+                <div class="nav-item">
+                    <a href="index.html">Home</a>
+                </div>
+                <div class="nav-item">
+                    <a href="products.html" class="active">Products</a>
+                    <div class="dropdown">
+                        <a href="products.html?category=phones" class="dropdown-item">Phones</a>
+                        <a href="products.html?category=earbuds" class="dropdown-item">Earbuds</a>
+                        <a href="products.html?category=power-banks" class="dropdown-item">Power Banks</a>
+                        <a href="products.html?category=phone-cases" class="dropdown-item">Phone Cases</a>
+                        <a href="products.html?category=accessories" class="dropdown-item">Accessories</a>
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <a href="services.html">Services</a>
+                    <div class="dropdown">
+                        <a href="services.html#buy-for-me" class="dropdown-item">Buy For Me (US Phone)</a>
+                        <a href="services.html#collaborate" class="dropdown-item">Collaborate</a>
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <a href="blogs.html">Blogs</a>
+                </div>
+                <div class="nav-item">
+                    <a href="reviews.html">Reviews</a>
+                </div>
+                <div class="nav-item">
+                    <a href="contact.html">Contact</a>
+                </div>
+            </nav>
+            
+            <div class="header-actions">
+                <div class="search-container">
+                    <button class="search-icon">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div class="search-bar">
+                        <input type="text" class="search-input" placeholder="Search products...">
+                        <div class="search-suggestions">
+                            <!-- Search suggestions same as index.html -->
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="cart-icon" id="cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-count">0</span>
+                </button>
+                
+                <button class="mobile-menu-btn" id="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation (Same as index.html) -->
+    <div class="mobile-nav" id="mobile-nav">
+        <!-- Same mobile nav as index.html -->
+    </div>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">Products</span>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Our Products</h1>
+            <p>Discover our curated collection of premium tech products</p>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="category-filters">
+            <button class="category-filter active" data-category="all">All Products</button>
+            <button class="category-filter" data-category="phones">Phones</button>
+            <button class="category-filter" data-category="earbuds">Earbuds</button>
+            <button class="category-filter" data-category="power-banks">Power Banks</button>
+            <button class="category-filter" data-category="phone-cases">Phone Cases</button>
+            <button class="category-filter" data-category="accessories">Accessories</button>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid" id="products-grid">
+            <!-- Products will be loaded here -->
+        </div>
+
+        <!-- Load More Button -->
+        <div class="load-more-container">
+            <button class="load-more-btn" id="load-more">Load More Products</button>
+        </div>
+    </main>
+
+    <!-- Footer (Same as index.html) -->
+    <footer>
+        <!-- Same footer as index.html -->
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cart-sidebar">
+        <!-- Same cart as index.html -->
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- JavaScript Files -->
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
