@@ -1,0 +1,334 @@
+[
+  {
+    "id": "p1",
+    "title": "Magsafe Battery pack 10,000mAh",
+    "price": 3900,
+    "currency": "KES",
+    "description": "Portable Magnetic Wireless Power Bank (10000 mAh).\\nThis Powerseed PS-A156 portable power bank is engineered for the modern traveler...",
+    "images": [
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg",
+      "https://i.postimg.cc/D03nz6zL/Screenshot-2025-10-15-201118.png",
+      "https://i.postimg.cc/RZpmt4Fx/image.png",
+      "https://i.postimg.cc/kgHr4s1R/image.png",
+      "https://i.postimg.cc/V6LXV9wM/image.png"
+    ],
+    "colors": [
+      {
+        "name": "White",
+        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      },
+      {
+        "name": "Black",
+        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+      },
+      {
+        "name": "Green",
+        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+      },
+      {
+        "name": "Pink",
+        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+      }
+    ],
+    "sku": "PS-A156",
+    "stock": 25,
+    "category": "accessories"
+  },
+  {
+    "id": "p2",
+    "title": "Demo Product 2",
+    "price": 2300,
+    "currency": "KES",
+    "description": "Demo product 2 \u2014 short premium description in italic. Replace with real content.",
+    "images": [
+      "https://i.postimg.cc/xT35t3WK/image.png",
+      "https://i.postimg.cc/k4tGgwxc/image.png",
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+      },
+      {
+        "name": "White",
+        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      },
+      {
+        "name": "Blue",
+        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+      },
+      {
+        "name": "Red",
+        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+      }
+    ],
+    "sku": "DEMO-2",
+    "stock": 12,
+    "category": "phones"
+  },
+  {
+    "id": "p3",
+    "title": "Demo Product 3",
+    "price": 2450,
+    "currency": "KES",
+    "description": "Demo product 3 \u2014 short premium description in italic. Replace with real content.",
+    "images": [
+      "https://i.postimg.cc/xT35t3WK/image.png",
+      "https://i.postimg.cc/k4tGgwxc/image.png",
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+      },
+      {
+        "name": "White",
+        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      },
+      {
+        "name": "Blue",
+        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+      },
+      {
+        "name": "Red",
+        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+      }
+    ],
+    "sku": "DEMO-3",
+    "stock": 13,
+    "category": "phones"
+  },
+  {
+    "id": "p4",
+    "title": "Demo Product 4",
+    "price": 2600,
+    "currency": "KES",
+    "description": "Demo product 4 \u2014 short premium description in italic. Replace with real content.",
+    "images": [
+      "https://i.postimg.cc/xT35t3WK/image.png",
+      "https://i.postimg.cc/k4tGgwxc/image.png",
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+      },
+      {
+        "name": "White",
+        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      },
+      {
+        "name": "Blue",
+        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+      },
+      {
+        "name": "Red",
+        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+      }
+    ],
+    "sku": "DEMO-4",
+    "stock": 14,
+    "category": "phones"
+  },
+  {
+    "id": "p5",
+    "title": "Demo Product 5",
+    "price": 2750,
+    "currency": "KES",
+    "description": "Demo product 5 \u2014 short premium description in italic. Replace with real content.",
+    "images": [
+      "https://i.postimg.cc/xT35t3WK/image.png",
+      "https://i.postimg.cc/k4tGgwxc/image.png",
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+      },
+      {
+        "name": "White",
+        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      },
+      {
+        "name": "Blue",
+        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+      },
+      {
+        "name": "Red",
+        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+      }
+    ],
+    "sku": "DEMO-5",
+    "stock": 15,
+    "category": "phones"
+  },
+  {
+    "id": "p6",
+    "title": "Demo Product 6",
+    "price": 2900,
+    "currency": "KES",
+    "description": "Demo product 6 \u2014 short premium description in italic. Replace with real content.",
+    "images": [
+      "https://i.postimg.cc/xT35t3WK/image.png",
+      "https://i.postimg.cc/k4tGgwxc/image.png",
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+      },
+      {
+        "name": "White",
+        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      },
+      {
+        "name": "Blue",
+        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+      },
+      {
+        "name": "Red",
+        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+      }
+    ],
+    "sku": "DEMO-6",
+    "stock": 16,
+    "category": "phones"
+  },
+  {
+    "id": "p7",
+    "title": "Demo Product 7",
+    "price": 3050,
+    "currency": "KES",
+    "description": "Demo product 7 \u2014 short premium description in italic. Replace with real content.",
+    "images": [
+      "https://i.postimg.cc/xT35t3WK/image.png",
+      "https://i.postimg.cc/k4tGgwxc/image.png",
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+      },
+      {
+        "name": "White",
+        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      },
+      {
+        "name": "Blue",
+        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+      },
+      {
+        "name": "Red",
+        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+      }
+    ],
+    "sku": "DEMO-7",
+    "stock": 17,
+    "category": "phones"
+  },
+  {
+    "id": "p8",
+    "title": "Demo Product 8",
+    "price": 3200,
+    "currency": "KES",
+    "description": "Demo product 8 \u2014 short premium description in italic. Replace with real content.",
+    "images": [
+      "https://i.postimg.cc/xT35t3WK/image.png",
+      "https://i.postimg.cc/k4tGgwxc/image.png",
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+      },
+      {
+        "name": "White",
+        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      },
+      {
+        "name": "Blue",
+        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+      },
+      {
+        "name": "Red",
+        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+      }
+    ],
+    "sku": "DEMO-8",
+    "stock": 18,
+    "category": "phones"
+  },
+  {
+    "id": "p9",
+    "title": "Demo Product 9",
+    "price": 3350,
+    "currency": "KES",
+    "description": "Demo product 9 \u2014 short premium description in italic. Replace with real content.",
+    "images": [
+      "https://i.postimg.cc/xT35t3WK/image.png",
+      "https://i.postimg.cc/k4tGgwxc/image.png",
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+      },
+      {
+        "name": "White",
+        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      },
+      {
+        "name": "Blue",
+        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+      },
+      {
+        "name": "Red",
+        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+      }
+    ],
+    "sku": "DEMO-9",
+    "stock": 19,
+    "category": "phones"
+  },
+  {
+    "id": "p10",
+    "title": "Demo Product 10",
+    "price": 3500,
+    "currency": "KES",
+    "description": "Demo product 10 \u2014 short premium description in italic. Replace with real content.",
+    "images": [
+      "https://i.postimg.cc/xT35t3WK/image.png",
+      "https://i.postimg.cc/k4tGgwxc/image.png",
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+      },
+      {
+        "name": "White",
+        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      },
+      {
+        "name": "Blue",
+        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+      },
+      {
+        "name": "Red",
+        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+      }
+    ],
+    "sku": "DEMO-10",
+    "stock": 20,
+    "category": "phones"
+  }
+]

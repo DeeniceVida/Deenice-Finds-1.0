@@ -1,0 +1,5 @@
+WHERE TO EDIT (quick guide)
+- data/products.json : change product titles, images, prices, colors, SKUs.
+- css/styles.css : colors, radii, spacing.
+- js/config.js : whatsappNumber, currency, usdToKesRate, shipping rules.
+- For product images, replace the URLs with your hosted images (or place them in assets/ and update paths).
