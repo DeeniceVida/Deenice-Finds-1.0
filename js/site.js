@@ -108,8 +108,6 @@ function setupOffers(){
   document.getElementById('offers-next').addEventListener('click', ()=> { showSlide((idx+1)%slides.length); });
 }
 
-document.querySelector('.hamburger').addEventListener('click', function() {
-    document.querySelector('.main-nav').classList.toggle('open');
 });
 
 document.addEventListener('DOMContentLoaded', async ()=>{
