@@ -73,16 +73,14 @@ a{color:inherit;text-decoration:none}
 }
 
 .brand {
-  /*position: absolute;*/
-  /*left: 50%;*/
-  /*transform: translateX(-50%);*/
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.header-spacer {
-  flex-grow: 1; /* This pushes the brand towards the center by taking up available space */
 }
 
 .header-right {
