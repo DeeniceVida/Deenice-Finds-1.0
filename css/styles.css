@@ -41,12 +41,134 @@ a{color:inherit;text-decoration:none}
 .cart-btn{position:relative}
 #cart-count{position:absolute;right:-6px;top:-6px;background:#ff4d4f;color:white;padding:2px 6px;border-radius:999px;font-size:12px}
 
+/* --- UPDATED HEADER LAYOUT --- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.7);
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(15, 20, 30, 0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.hamburger {
+  font-size: 28px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.cart-btn {
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* --- MOBILE NAVIGATION --- */
+@media (max-width: 900px) {
+  .main-nav {
+    display: none;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    position: absolute;
+    top: 60px;
+    left: 10px;
+    right: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 14px;
+  }
+
+  .main-nav.open {
+    display: flex;
+    animation: dropdownFade 0.3s ease forwards;
+  }
+
+  .main-nav ul {
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .main-nav li {
+    padding: 8px 0;
+    border-radius: 8px;
+  }
+
+  @keyframes dropdownFade {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
 /* search */
 .search-box{position:relative}
 .search-box.hidden{display:none}
 .search-box input{padding:8px 12px;border-radius:10px;border:1px solid rgba(15,20,30,0.08);min-width:200px;outline:none}
 .search-box input:focus{box-shadow:0 6px 20px rgba(20,40,90,0.06);border-color:var(--accent);background:var(--focus)}
 .suggestions{position:absolute;left:0;right:0;background:var(--card);box-shadow:var(--card-shadow);border-radius:10px;max-height:320px;overflow:auto;z-index:10001}
+
+/* --- GLASSY SEARCH BAR UNDER HEADER --- */
+.search-container {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  text-align: center;
+  position: sticky;
+  top: 68px;
+  z-index: 9998;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.search-container input {
+  width: 90%;
+  max-width: 600px;
+  padding: 10px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 16px; /* prevents iOS zoom */
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.search-container input:focus {
+  border-color: #B3C8EF;
+  outline: none;
+  box-shadow: 0 0 8px rgba(179, 200, 239, 0.5);
+}
 
 /* offers slider */
 .offers{max-width:1200px;margin:18px auto;padding:0 16px;position:relative;z-index:1}
