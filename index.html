@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Deenice Finds — Plugged By the Best</title>
+<link rel="icon" href="assets/logo-32.png" />
+<link rel="stylesheet" href="styles.css" />
+<meta name="description" content="Deenice Finds — Best reviewed & tested items you can buy in Kenya." />
+</head>
+<body class="bg">
+<header class="site-header" id="siteHeader">
+  <div class="header-inner">
+    <button id="hambtn" class="hamburger" aria-label="open menu">≡</button>
+    <a class="brand" href="/index.html"><img src="assets/logo-top.png" alt="Deenice Finds" class="logo">Deenice Finds</a>
+    <nav class="nav" id="mainNav">
+      <ul>
+        <li><a href="/index.html">Home</a></li>
+        <li class="has-dd">Products
+          <ul class="dd">
+            <li><a href="products.html?cat=phones">Phones</a></li>
+            <li><a href="products.html?cat=earbuds">Earbuds</a></li>
+            <li><a href="products.html?cat=accessories">Accessories</a></li>
+          </ul>
+        </li>
+        <li><a href="blog.html">Blogs</a></li>
+        <li class="has-dd">Services
+          <ul class="dd">
+            <li><a href="buyforme.html">Buy for me (US phone)</a></li>
+            <li><a href="collaborate.html">Collaborate</a></li>
+          </ul>
+        </li>
+        <li><a href="reviews.html">Reviews</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <button id="searchBtn" class="icon">🔍</button>
+      <div id="searchBox" class="search-box hidden">
+        <input id="searchInput" placeholder="Search products..." autocomplete="off"/>
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+      <a href="#" id="cartBtn" class="icon">🛒<span id="cartCount">0</span></a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- Offers slideshow -->
+  <section class="offers" aria-label="Offers & updates">
+    <div class="slideshow" id="offerSlides">
+      <div class="slide"><img src="assets/ad-desktop.png" alt="Ad 1"></div>
+      <div class="slide"><img src="assets/ad-desktop-2.png" alt="Ad 2"></div>
+      <div class="slide"><img src="assets/ad-desktop-3.png" alt="Ad 3"></div>
+    </div>
+    <div class="controls">
+      <button id="prevOffer">‹</button>
+      <div id="dots" class="dots"></div>
+      <button id="nextOffer">›</button>
+    </div>
+  </section>
+
+  <section class="hero">
+    <h1>Best-reviewed, tested items you can buy in Kenya</h1>
+    <p class="sub">Curated gadgets, accessories and more — inspected and recommended.</p>
+  </section>
+
+  <section class="products-grid" id="productsGrid" aria-label="Products">
+    <!-- Product cards will be injected here -->
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="col">
+      <h4>About</h4>
+      <ul><li><a href="about.html">About us</a></li><li><a href="impact.html">Our impact</a></li></ul>
+    </div>
+    <div class="col">
+      <h4>Help</h4>
+      <ul><li><a href="contact.html">Contact us</a></li><li><a href="#" id="openTidio">Help centre</a></li></ul>
+    </div>
+    <div class="col">
+      <h4>Services</h4>
+      <ul><li><a href="buyforme.html">Buy for me (US phone)</a></li><li><a href="collaborate.html">Collaborate</a></li></ul>
+    </div>
+    <div class="col socials">
+      <h4>Follow</h4>
+      <a href="https://www.instagram.com/deenice.vida/" target="_blank" class="social">Instagram</a>
+      <a href="https://www.tiktok.com/@deenice.vida" target="_blank" class="social">TikTok</a>
+    </div>
+  </div>
+  <div class="bottom">© Deenice Finds — Plugged By the Best</div>
+</footer>
+
+<script src="products.js"></script>
+<script src="site.js"></script>
+<!-- Tidio embed -->
+<script src="//code.tidio.co/kqlf54zch9h9olbcjin6kqpag9u5q1lr.js" async></script>
+</body>
+</html>
