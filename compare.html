@@ -26,6 +26,46 @@
 
   <title>Compare Phones — Deenice Finds</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <style>
+.compare-container {
+  max-width: 900px;
+  margin: 40px auto;
+  text-align: center;
+}
+.compare-container input {
+  width: 90%;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+button {
+  padding: 10px 20px;
+  background: #3246ff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.compare-results {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.compare-card {
+  background: #ecf0fe;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  padding: 15px;
+  width: 280px;
+  text-align: left;
+}
+.compare-card img {
+  display: block;
+  margin: 0 auto 10px;
+}
+</style>
 </head>
 <body>
   <section id="compare" class="p-6 bg-[#F8F9FC]">
@@ -33,6 +73,19 @@
   <p class="text-center text-gray-600 mb-6">
     Paste GSM Arena links to compare 2–3 phones side by side 📱
   </p>
+
+<div class="compare-container">
+  <h2>Compare Phones</h2>
+  <p>Paste up to 3 GSMArena phone URLs:</p>
+
+  <input id="phone1" type="text" placeholder="https://www.gsmarena.com/apple_iphone_14-11861.php">
+  <input id="phone2" type="text" placeholder="https://www.gsmarena.com/samsung_galaxy_s24_ultra-12718.php">
+  <input id="phone3" type="text" placeholder="(optional third phone)">
+  
+  <button onclick="comparePhones()">Compare</button>
+
+  <div id="compare-results" class="compare-results"></div>
+</div>
 
   <div class="flex flex-col md:flex-row gap-3 justify-center mb-4">
     <input type="text" id="url1" placeholder="https://www.gsmarena.com/apple_iphone_14-11861.php"
@@ -113,5 +166,51 @@
   </div>
   <div id="compare-table" style="margin-top:12px"></div>
   <script src="js/compare.js"></script>
+  <script>
+const API_BASE = 'https://deenicefinds-server.onrender.com/api/parse'; // ✅ replace with your Render URL
+
+async function getPhoneSpecs(url) {
+  try {
+    const res = await fetch(`${API_BASE}?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    return data.data;
+  } catch (err) {
+    console.error('Error fetching specs:', err);
+    return null;
+  }
+}
+
+async function comparePhones() {
+  const urls = [
+    document.getElementById('phone1').value,
+    document.getElementById('phone2').value,
+    document.getElementById('phone3').value
+  ].filter(Boolean);
+
+  if (urls.length < 2) {
+    alert('Please enter at least two phone URLs from GSMArena!');
+    return;
+  }
+
+  const results = await Promise.all(urls.map(getPhoneSpecs));
+
+  const container = document.getElementById('compare-results');
+  container.innerHTML = '';
+
+  results.forEach((data, i) => {
+    if (!data) return;
+    const card = document.createElement('div');
+    card.className = 'compare-card';
+    card.innerHTML = `
+      <h3>${data.title}</h3>
+      <img src="${data.image}" alt="${data.title}" width="120">
+      <ul>
+        ${Object.entries(data.specs).slice(0, 10).map(([k,v]) => `<li><strong>${k}:</strong> ${v}</li>`).join('')}
+      </ul>
+    `;
+    container.appendChild(card);
+  });
+}
+</script>
 </body>
 </html>
