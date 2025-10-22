@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
+  <!-- Google Analytics 4 placeholder - replace G-XXXXXXXX with your measurement ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXX');
+  </script>
+  <!-- Facebook Pixel placeholder - replace PIXEL_ID with your pixel ID -->
+  <script>
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', 'PIXEL_ID');
+  fbq('track', 'PageView');
+  </script>
+
+  <title>Compare Phones — Deenice Finds</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <section id="compare" class="p-6 bg-[#F8F9FC]">
+  <h2 class="text-2xl font-semibold mb-4 text-center">Compare Phones</h2>
+  <p class="text-center text-gray-600 mb-6">
+    Paste GSM Arena links to compare 2–3 phones side by side 📱
+  </p>
+
+  <div class="flex flex-col md:flex-row gap-3 justify-center mb-4">
+    <input type="text" id="url1" placeholder="https://www.gsmarena.com/apple_iphone_14-11861.php"
+      class="border border-gray-300 p-2 rounded-md w-full md:w-1/3" />
+    <input type="text" id="url2" placeholder="https://www.gsmarena.com/samsung_galaxy_s23-12082.php"
+      class="border border-gray-300 p-2 rounded-md w-full md:w-1/3" />
+    <input type="text" id="url3" placeholder="(optional)"
+      class="border border-gray-300 p-2 rounded-md w-full md:w-1/3" />
+  </div>
+
+  <div class="flex justify-center">
+    <button onclick="comparePhones()"
+      class="bg-black text-white px-6 py-2 rounded-xl hover:opacity-80 transition">Compare</button>
+  </div>
+
+  <div id="compare-results" class="mt-8 overflow-x-auto"></div>
+</section>
+
+<script>
+  async function fetchPhoneData(url) {
+    if (!url) return null;
+    const api = `http://localhost:3000/api/parse?url=${encodeURIComponent(url)}`;
+    const res = await fetch(api);
+    const json = await res.json();
+    return json.data;
+  }
+
+  async function comparePhones() {
+    const urls = [url1.value, url2.value, url3.value].filter(u => u.trim() !== '');
+    const resultsDiv = document.getElementById('compare-results');
+    resultsDiv.innerHTML = "<p class='text-center text-gray-500'>Fetching data...</p>";
+
+    const phones = await Promise.all(urls.map(fetchPhoneData));
+    const validPhones = phones.filter(p => p);
+
+    if (validPhones.length === 0) {
+      resultsDiv.innerHTML = "<p class='text-center text-red-500'>No valid phones found.</p>";
+      return;
+    }
+
+    // Collect all unique spec keys
+    const allSpecs = new Set();
+    validPhones.forEach(phone => Object.keys(phone.specs).forEach(k => allSpecs.add(k)));
+
+    // Build table
+    let html = `
+      <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-200 text-sm text-left bg-white rounded-xl shadow-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-3 font-semibold text-gray-700">Spec</th>
+            ${validPhones.map(p => `<th class="p-3 font-semibold text-gray-700">${p.title}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    allSpecs.forEach(spec => {
+      html += `
+        <tr class="border-t border-gray-100 hover:bg-gray-50 transition">
+          <td class="p-2 font-medium text-gray-800">${spec}</td>
+          ${validPhones.map(p => `<td class="p-2 text-gray-600">${p.specs[spec] || '-'}</td>`).join('')}
+        </tr>`;
+    });
+
+    html += "</tbody></table></div>";
+    resultsDiv.innerHTML = html;
+  }
+</script>
+  <a href="index.html">Home</a>
+  <h1>Compare Phones</h1>
+  <p>This compare tool uses local data (data/compare.json). GSM Arena is blocked from automated scraping in many environments; if you want automatic import, you need a server-side proxy that fetches and parses GSM Arena pages. See README in the package for instructions.</p>
+  <div style="display:flex;gap:8px;align-items:center">
+    <select id="c1"></select>
+    <select id="c2"></select>
+    <select id="c3"></select>
+    <button id="do-compare">Compare</button>
+  </div>
+  <div id="compare-table" style="margin-top:12px"></div>
+  <script src="js/compare.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "cmp1",
+    "title": "Apple iPhone 14",
+    "image": "https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-14.jpg",
+    "specs": {
+      "Display": "6.1 inches, 2532 x 1170",
+      "OS": "iOS 16",
+      "Chipset": "Apple A15 Bionic",
+      "RAM": "6 GB",
+      "Storage": "128/256/512 GB",
+      "Main camera": "12 MP dual",
+      "Battery": "3279 mAh",
+      "Price": "Approx KES 120,000"
+    }
+  },
+  {
+    "id": "cmp2",
+    "title": "Samsung Galaxy S23",
+    "image": "https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-s23.jpg",
+    "specs": {
+      "Display": "6.1 inches, 2340 x 1080",
+      "OS": "Android 13",
+      "Chipset": "Snapdragon 8 Gen 2",
+      "RAM": "8 GB",
+      "Storage": "128/256 GB",
+      "Main camera": "50 MP + 12 MP + 10 MP",
+      "Battery": "3900 mAh",
+      "Price": "Approx KES 115,000"
+    }
+  },
+  {
+    "id": "cmp3",
+    "title": "Google Pixel 7",
+    "image": "https://fdn2.gsmarena.com/vv/bigpic/google-pixel-7.jpg",
+    "specs": {
+      "Display": "6.3 inches, 2400 x 1080",
+      "OS": "Android 13",
+      "Chipset": "Google Tensor G2",
+      "RAM": "8 GB",
+      "Storage": "128/256 GB",
+      "Main camera": "50 MP + 12 MP",
+      "Battery": "4355 mAh",
+      "Price": "Approx KES 80,000"
+    }
+  }
+]

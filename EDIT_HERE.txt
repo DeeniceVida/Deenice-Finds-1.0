@@ -1,0 +1,6 @@
+WHERE TO EDIT (quick guide)
+- data/products.json : change product titles, images, prices, colors, SKUs.
+- data/compare.json : add or update phone specs for comparison. Automated GSM Arena scraping is blocked by robots.txt; to auto-fetch you'd need a server-side scraper/proxy.
+- css/styles.css : colors, radii, spacing.
+- js/config.js : whatsappNumber, currency, usdToKesRate, shipping rules.
+- For product images, replace the URLs with your hosted images (or place them in assets/ and update paths).
