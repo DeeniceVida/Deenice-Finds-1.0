@@ -1043,3 +1043,32 @@ body.about-page {
   -ms-user-select: none;     /* IE/Edge */
   user-select: none;         /* Standard */
 }
+
+.price-section {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.current-price {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 1rem;
+}
+
+.discount-tag {
+  background-color: #b7f5b7;
+  color: #067a06;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
