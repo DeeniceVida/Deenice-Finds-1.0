@@ -6,6 +6,11 @@
   const p = data.find(x => x.id === id) || data[0];
   const container = document.getElementById('product-page');
 
+  // Calculate discount if applicable
+  const hasDiscount = p.originalPrice && p.originalPrice > p.price;
+  const discountAmount = hasDiscount ? p.originalPrice - p.price : 0;
+  const saveText = hasDiscount ? `Save ${p.currency} ${discountAmount.toLocaleString()}` : "";
+
   // Build the product page structure
   container.innerHTML = `
     <div class="product-page-card">
@@ -21,10 +26,17 @@
       </div>
 
       <h2>${p.title}</h2>
-      <div class="price">${p.price.toLocaleString()} ${p.currency}</div>
+
+      <!-- 💰 Price Section -->
+      <div class="price-section">
+        <span class="current-price">${p.currency} ${p.price.toLocaleString()}</span>
+        ${hasDiscount ? `<span class="old-price">${p.currency} ${p.originalPrice.toLocaleString()}</span>` : ""}
+        ${hasDiscount ? `<span class="discount-tag">${saveText}</span>` : ""}
+      </div>
+
       <p><em>${p.description}</em></p>
 
-      <!-- Updated Color Options -->
+      <!-- 🎨 Color Options -->
       <div class="color-options">
         ${p.colors.map((c, idx) => `
           <div class="color-item">
