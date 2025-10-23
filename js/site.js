@@ -44,42 +44,50 @@ function setupMobileNav() {
     hamburger.classList.toggle('open');
   });
 
-  // Handle submenu toggling properly
+  // Handle parent submenu toggling (for mobile)
   document.querySelectorAll('.main-nav .has-sub > a').forEach(link => {
     link.addEventListener('click', e => {
       const parent = link.parentElement;
-      if (window.innerWidth <= 900) {
-        e.preventDefault();
-        e.stopPropagation();
 
-        const isOpen = parent.classList.contains('open');
-        document.querySelectorAll('.main-nav .has-sub').forEach(i => i.classList.remove('open'));
-        if (!isOpen) parent.classList.add('open');
-      } else {
-        // Allow normal navigation on desktop
-        window.location.href = link.getAttribute('href');
+      // Mobile only
+      if (window.innerWidth <= 900) {
+        const subMenu = parent.querySelector('.sub');
+
+        // If submenu is not open yet, just open it (don’t navigate)
+        if (!parent.classList.contains('open')) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          document.querySelectorAll('.main-nav .has-sub').forEach(i => i.classList.remove('open'));
+          parent.classList.add('open');
+        } 
+        // If already open and user taps again, go to link
+        else {
+          window.location.href = link.getAttribute('href');
+        }
       }
     });
   });
 
-  // Ensure submenu links can be clicked
+  // Allow submenu items to navigate normally
   document.querySelectorAll('.main-nav .has-sub .sub a').forEach(subLink => {
     subLink.addEventListener('click', e => {
-      e.stopPropagation();
+      e.stopPropagation(); // keep nav stable
       nav.classList.remove('open');
       hamburger.classList.remove('open');
     });
   });
 
-  // Close if clicking outside
+  // Close everything when tapping outside
   document.addEventListener('click', e => {
     if (!e.target.closest('.main-nav') && !e.target.closest('.hamburger')) {
       nav.classList.remove('open');
       hamburger.classList.remove('open');
-      document.querySelectorAll('.main-nav .has-sub').forEach(i => i.classList.remove('open'));
+      hasSubs.forEach(i => i.classList.remove('open'));
     }
   });
 }
+
 
 /* -------------------------------------------------------------------------- */
 /* SEARCH LOGIC                                                               */
