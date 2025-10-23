@@ -249,48 +249,50 @@ a, button {
   cursor: pointer;
 }
 
-/* 🌅 OFFERS (Poster / Hero Slider) */
+/* 🌅 OFFERS (Hero Poster / Slider) */
 .offers {
   position: relative;
   width: 100%;
-  height: 800px; /* desktop height */
+  max-width: 2400px;
+  margin: 0 auto 2.5rem auto; /* adds space before "Best-reviewed & tested…" */
   overflow: hidden;
   border-radius: 0; /* no rounded corners */
-  margin: 1.5rem auto 3rem; /* adds space below before next section */
-  max-width: 2400px;
-  background-color: #fff; /* prevents gray background gaps */
+  background: #f5f5f5;
 }
 
+/* Wrapper ensures correct proportions */
 .offers-slider {
   position: relative;
   width: 100%;
-  height: 100%;
+  overflow: hidden;
 }
 
+/* Each slide */
 .offers-slider .slide {
-  position: absolute;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 3 / 1; /* desktop ratio */
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.7s ease;
+  transition: opacity 0.6s ease;
 }
 
+/* Active slide visible */
 .offers-slider .slide.active {
   opacity: 1;
+  position: relative;
+  z-index: 1;
 }
 
-/* 🔘 Slider controls */
+/* Controls (arrows + dots) */
 .offers-controls {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
-  z-index: 10;
+  gap: 12px;
+  margin-top: 12px;
 }
 
 /* Arrows */
@@ -299,11 +301,11 @@ a, button {
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   cursor: pointer;
-  font-size: 20px;
-  transition: background 0.3s;
+  font-size: 18px;
+  transition: background 0.3s ease;
 }
 
 .offers-controls button:hover {
@@ -313,18 +315,18 @@ a, button {
 /* Dots */
 .offers-controls .dots {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .offers-controls .dots button {
-  background: #fff;
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   border: none;
-  opacity: 0.45;
+  background: #000;
+  opacity: 0.3;
   cursor: pointer;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s ease;
 }
 
 .offers-controls .dots button.active,
@@ -332,32 +334,48 @@ a, button {
   opacity: 1;
 }
 
-/* 📱 Mobile layout */
+/* 📱 MOBILE: simpler, no arrows */
 @media (max-width: 900px) {
-  .offers {
-    height: 800px; /* mobile height */
-    max-width: 800px;
-    border-radius: 0;
-  }
-
   .offers-slider .slide {
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-color: #fff;
+    aspect-ratio: 1 / 1; /* square for mobile */
   }
 
-  /* Hide nav buttons on mobile */
   .offers-controls button {
-    display: none;
+    display: none; /* hide nav arrows on mobile */
+  }
+
+  .offers-controls {
+    margin-top: 6px;
   }
 }
 
-/* 💻 Dropdown hover fix for desktop */
+/* 💻 SERVICES HOVER FIX */
+.services-item {
+  position: relative;
+}
+
+.services-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 240px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 50;
+}
+
+/* show dropdown on hover (desktop only) */
 @media (min-width: 900px) {
   .services-item:hover .services-dropdown {
-    display: block;
     opacity: 1;
-    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
   }
 }
 
