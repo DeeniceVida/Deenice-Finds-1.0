@@ -76,26 +76,52 @@ body {
 .main-nav li{position:relative;padding:8px 6px;border-radius:8px}
 .main-nav li:hover{background:var(--glass-bg)}
 .main-nav .sub{position:absolute;left:0;top:44px;background:var(--card);box-shadow:var(--card-shadow);padding:8px;border-radius:12px;display:none;min-width:160px;z-index:10005}
-/* Desktop hover fix for dropdowns */
+/* ------------------------------
+   DESKTOP & MOBILE DROPDOWN FIX
+------------------------------ */
+
+/* Desktop hover dropdown behavior */
 @media (min-width: 901px) {
   .main-nav li.has-sub {
     position: relative;
   }
 
-  /* Desktop hover dropdown behavior */
-@media (min-width: 901px) {
-  .main-nav li.has-sub:hover > .sub {
+  .main-nav li.has-sub > .sub {
     display: block;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(5px);
+    pointer-events: none;
+    transition: all 0.2s ease;
+  }
+
+  .main-nav li.has-sub:hover > .sub {
     visibility: visible;
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
-    transition-delay: 0s;
-  }
-  .main-nav li.has-sub > .sub {
-    transition-delay: 0.15s;
   }
 }
+
+/* Mobile dropdown toggle behavior (controlled by JS) */
+@media (max-width: 900px) {
+  .main-nav .sub {
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: all 0.25s ease;
+  }
+
+  .main-nav li.open > .sub {
+    display: flex;
+    flex-direction: column;
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Mobile dropdown controlled by JS toggle */
 @media (max-width: 900px) {
   .main-nav .sub {
