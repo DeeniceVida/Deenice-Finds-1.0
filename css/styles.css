@@ -82,18 +82,28 @@ body {
     position: relative;
   }
 
+  /* Desktop hover dropdown behavior */
+@media (min-width: 901px) {
   .main-nav li.has-sub:hover > .sub {
     display: block;
     visibility: visible;
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
+    transition-delay: 0s;
   }
-  .main-nav li.has-sub:hover > .sub {
-  transition-delay: 0s;
+  .main-nav li.has-sub > .sub {
+    transition-delay: 0.15s;
+  }
 }
-.main-nav li.has-sub > .sub {
-  transition-delay: 0.15s;
+/* Mobile dropdown controlled by JS toggle */
+@media (max-width: 900px) {
+  .main-nav .sub {
+    display: none;
+  }
+  .main-nav li.open > .sub {
+    display: block;
+  }
 }
   .main-nav .sub {
     position: absolute;
