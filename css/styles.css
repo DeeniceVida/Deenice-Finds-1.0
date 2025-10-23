@@ -138,6 +138,20 @@ body {
     pointer-events: auto;
   }
 }
+/* ✅ Desktop hover fix for dropdown */
+@media (min-width: 901px) {
+  .main-nav li.has-sub:hover > .sub {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .main-nav .sub {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+}
 
 /* ---------- MOBILE ---------- */
 @media (max-width: 900px) {
