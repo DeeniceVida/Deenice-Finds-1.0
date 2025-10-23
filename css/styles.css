@@ -89,7 +89,12 @@ body {
     transform: translateY(0);
     pointer-events: auto;
   }
-
+  .main-nav li.has-sub:hover > .sub {
+  transition-delay: 0s;
+}
+.main-nav li.has-sub > .sub {
+  transition-delay: 0.15s;
+}
   .main-nav .sub {
     position: absolute;
     left: 0;
