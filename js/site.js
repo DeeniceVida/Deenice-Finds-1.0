@@ -124,3 +124,21 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   setupOffers();
   setupMobileNav();
 });
+// Add this to site.js near the bottom
+function revealOnScroll() {
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  reveals.forEach(r => observer.observe(r));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  revealOnScroll();
+});
