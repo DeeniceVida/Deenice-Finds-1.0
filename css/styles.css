@@ -95,6 +95,83 @@ a{color:inherit;text-decoration:none}
   cursor: pointer;
 }
 
+/* 🌅 OFFERS (Poster / Hero Slider) */
+.offers {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  overflow: hidden;
+  border-radius: 16px;
+  margin: 1.5rem auto;
+  max-width: 1200px;
+}
+
+.offers-slider {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.offers-slider .slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+.offers-slider .slide.active {
+  opacity: 1;
+}
+
+.offers-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.offers-controls button {
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.3s;
+}
+
+.offers-controls button:hover {
+  background: rgba(0,0,0,0.7);
+}
+
+.offers-controls .dots {
+  display: flex;
+  gap: 6px;
+}
+
+.offers-controls .dots button {
+  background: #fff;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  opacity: 0.45;
+  cursor: pointer;
+}
+
+.offers-controls .dots button.active,
+.offers-controls .dots button:hover {
+  opacity: 1;
+}
+
 /* --- MOBILE NAVIGATION --- */
 @media (max-width: 900px) {
   .main-nav {
