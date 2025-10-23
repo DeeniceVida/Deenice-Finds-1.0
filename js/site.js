@@ -142,7 +142,7 @@ function setupSearch(products) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* POSTER SLIDER — Responsive (Desktop vs Mobile)                             */
+/* POSTER SLIDER — Responsive + Swipe + Custom Timer                          */
 /* -------------------------------------------------------------------------- */
 function setupOffers() {
   const slides = [
@@ -181,6 +181,9 @@ function setupOffers() {
   });
 
   let idx = 0;
+  const slideInterval = 4500; // 🕒 Change this value (ms) for speed — e.g. 4000 = 4s per slide
+  let autoSlide;
+
   function showSlide(n) {
     const ss = container.querySelectorAll(".slide");
     ss.forEach((s, ii) => s.classList.toggle("active", ii === n));
@@ -197,12 +200,47 @@ function setupOffers() {
     showSlide((idx + 1) % slides.length);
   }
 
-  setInterval(next, 6000);
-  document.getElementById("offers-prev")?.addEventListener("click", () => showSlide((idx - 1 + slides.length) % slides.length));
-  document.getElementById("offers-next")?.addEventListener("click", () => showSlide((idx + 1) % slides.length));
+  function prev() {
+    showSlide((idx - 1 + slides.length) % slides.length);
+  }
+
+  function startAutoSlide() {
+    stopAutoSlide();
+    autoSlide = setInterval(next, slideInterval);
+  }
+
+  function stopAutoSlide() {
+    if (autoSlide) clearInterval(autoSlide);
+  }
+
+  // 🔁 Start automatic slideshow
+  startAutoSlide();
+
+  // Manual navigation
+  document.getElementById("offers-prev")?.addEventListener("click", () => {
+    prev();
+    startAutoSlide(); // reset timer
+  });
+  document.getElementById("offers-next")?.addEventListener("click", () => {
+    next();
+    startAutoSlide();
+  });
+
+  // 📱 Swipe gestures (mobile)
+  let startX = 0;
+  container.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+  });
+  container.addEventListener("touchend", (e) => {
+    const diff = e.changedTouches[0].clientX - startX;
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? prev() : next();
+      startAutoSlide();
+    }
+  });
 }
 
-/* ✅ Optional: Reload correct images on screen resize */
+/* ✅ Reload correct images on resize */
 window.addEventListener("resize", () => {
   clearTimeout(window._resizeTimer);
   window._resizeTimer = setTimeout(setupOffers, 400);
