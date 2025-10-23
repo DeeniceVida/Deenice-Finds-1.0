@@ -253,24 +253,25 @@ a, button {
 .offers {
   position: relative;
   width: 100%;
-  max-width: 2400px;
-  margin: 0 auto 2rem; /* only small gap before next section */
+  margin: 0 auto 2.5rem; /* spacing below poster */
   overflow: hidden;
   border-radius: 0;
   background: transparent;
+  max-width: 2400px;
 }
 
-/* Ensure no gap above or below */
-.offers + * {
-  margin-top: 2rem !important;
+/* Fix top spacing - ensure no space above */
+.site-header + main .offers {
+  margin-top: 0 !important;
 }
 
-/* Slider container */
+/* Slider container with responsive ratio */
 .offers-slider {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 1; /* ~2400x800 */
+  aspect-ratio: 3 / 1; /* desktop ratio 2400x800 */
   overflow: hidden;
+  background: #000; /* fallback color while image loads */
 }
 
 /* Slides */
@@ -283,7 +284,7 @@ a, button {
   background-position: center;
   background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.7s ease;
+  transition: opacity 0.8s ease-in-out;
 }
 
 .offers-slider .slide.active {
@@ -291,7 +292,7 @@ a, button {
   z-index: 1;
 }
 
-/* Controls */
+/* Controls (arrows + dots) */
 .offers-controls {
   position: absolute;
   bottom: 20px;
@@ -303,21 +304,21 @@ a, button {
   z-index: 10;
 }
 
-/* Arrow buttons */
+/* Arrows */
 .offers-controls button {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   font-size: 18px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
 .offers-controls button:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.75);
 }
 
 /* Dots */
@@ -332,7 +333,7 @@ a, button {
   height: 8px;
   border-radius: 50%;
   border: none;
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: pointer;
   transition: opacity 0.3s ease;
 }
@@ -342,18 +343,28 @@ a, button {
   opacity: 1;
 }
 
-/* Hide nav buttons on mobile */
+/* 📱 Mobile adjustments */
 @media (max-width: 900px) {
   .offers-slider {
-    aspect-ratio: 1 / 1; /* 800x800 */
+    aspect-ratio: 1 / 1; /* 800x800 mobile */
+    background: #fff; /* no black backdrop */
   }
 
   .offers-controls {
-    display: none !important;
+    display: none !important; /* hide navigation on mobile */
+  }
+
+  .offers {
+    margin-bottom: 1.5rem;
   }
 }
 
-/* Prevent unwanted background */
+/* Smooth fade-in animation for text below */
+.hero-copy {
+  margin-top: 0.5rem;
+}
+
+/* Ensure no overlapping background behind images */
 .offers-slider,
 .offers-slider .slide {
   background-color: transparent;
