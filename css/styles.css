@@ -23,6 +23,15 @@ body {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.main-nav li.open > .sub {
+  animation: slideDown 0.25s ease forwards;
+}
 /* --- Product Cards Animation --- */
 .product-card {
   background: white;
