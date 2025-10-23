@@ -249,27 +249,31 @@ a, button {
   cursor: pointer;
 }
 
-/* 🌅 OFFERS / HERO SLIDER */
+/* 🌅 OFFERS / HERO SLIDER SECTION */
 .offers {
   position: relative;
   width: 100%;
   max-width: 2400px;
-  margin: 2rem auto 0;
+  margin: 0 auto 2rem; /* space below slider before next section */
   overflow: hidden;
   border-radius: 0; /* no rounded corners */
+  background: transparent;
 }
 
+/* 🎞️ Slider container */
 .offers-slider {
   position: relative;
   width: 100%;
-  height: auto;
+  aspect-ratio: 3 / 1; /* default desktop aspect ratio (e.g. 2400x800) */
+  overflow: hidden;
 }
 
+/* 🖼️ Slides */
 .offers-slider .slide {
   position: absolute;
   inset: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -279,36 +283,10 @@ a, button {
 
 .offers-slider .slide.active {
   opacity: 1;
-  position: relative;
   z-index: 1;
 }
 
-/* 👇 This keeps your slider from collapsing before images load */
-.offers::before {
-  content: "";
-  display: block;
-  padding-top: 33%; /* gives roughly a 3:1 aspect ratio (800px : 2400px) */
-}
-
-/* 🌍 Desktop: fills wide screens */
-@media (min-width: 901px) {
-  .offers::before {
-    padding-top: 33%; /* same ratio as your 2400x800 desktop image */
-  }
-}
-
-/* 📱 Mobile: taller square image */
-@media (max-width: 900px) {
-  .offers::before {
-    padding-top: 100%; /* square ratio (800x800 mobile image) */
-  }
-
-  .offers-controls {
-    display: none !important; /* hide nav buttons on mobile */
-  }
-}
-
-/* 🕹️ Navigation buttons */
+/* 🕹️ Controls (arrows + dots) */
 .offers-controls {
   position: absolute;
   bottom: 20px;
@@ -320,6 +298,7 @@ a, button {
   z-index: 10;
 }
 
+/* ⬅️ ➡️ Arrows */
 .offers-controls button {
   background: rgba(0, 0, 0, 0.6);
   color: #fff;
@@ -336,6 +315,7 @@ a, button {
   background: rgba(0, 0, 0, 0.8);
 }
 
+/* ⚪ Dots */
 .offers-controls .dots {
   display: flex;
   gap: 6px;
@@ -349,6 +329,7 @@ a, button {
   border: none;
   opacity: 0.45;
   cursor: pointer;
+  transition: opacity 0.3s ease;
 }
 
 .offers-controls .dots button.active,
@@ -356,9 +337,27 @@ a, button {
   opacity: 1;
 }
 
-/* 🧭 Add space before next section */
+/* 📱 Responsive layout: mobile & small tablets */
+@media (max-width: 900px) {
+  .offers-slider {
+    aspect-ratio: 1 / 1; /* 800x800 mobile image ratio */
+  }
+
+  /* Hide navigation controls on mobile */
+  .offers-controls {
+    display: none !important;
+  }
+}
+
+/* ✨ Spacing before the next section */
 .offers + * {
   margin-top: 2rem !important;
+}
+
+/* ✅ Optional: Prevent grey/black background flash */
+.offers-slider,
+.offers-slider .slide {
+  background-color: transparent;
 }
 
 /* search */
