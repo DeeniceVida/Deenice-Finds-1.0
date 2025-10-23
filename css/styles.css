@@ -325,6 +325,32 @@ a, button {
 .offers-controls .dots button:hover {
   opacity: 1;
 }
+/* 🌅 Responsive Hero Poster Adjustments */
+
+/* Desktop (default) */
+.offers {
+  height: 800px; /* matches your desktop image height */
+  max-width: 2400px; /* keeps the full width visible on large screens */
+}
+
+.offers-slider .slide {
+  background-size: cover; /* fill the banner */
+  background-position: center;
+}
+
+/* 📱 Mobile layout */
+@media (max-width: 900px) {
+  .offers {
+    height: 800px; /* matches your mobile image height */
+    max-width: 800px; /* ensure correct aspect ratio */
+  }
+
+  .offers-slider .slide {
+    background-size: contain; /* show full 800×800 image */
+    background-repeat: no-repeat;
+    background-color: #f8f8f8; /* soft background behind image if not full width */
+  }
+}
 
 /* --- MOBILE NAVIGATION --- */
 @media (max-width: 900px) {
