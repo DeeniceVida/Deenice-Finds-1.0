@@ -142,7 +142,7 @@ function setupSearch(products) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* POSTER SLIDER — Responsive + Swipe + Custom Timer                          */
+/* POSTER SLIDER — Responsive + Swipe + Pause on Hover + Custom Timer         */
 /* -------------------------------------------------------------------------- */
 function setupOffers() {
   const slides = [
@@ -181,7 +181,7 @@ function setupOffers() {
   });
 
   let idx = 0;
-  const slideInterval = 4500; // 🕒 Change this value (ms) for speed — e.g. 4000 = 4s per slide
+  const slideInterval = 5000; // 🕒 Change slide every 5 seconds
   let autoSlide;
 
   function showSlide(n) {
@@ -216,10 +216,10 @@ function setupOffers() {
   // 🔁 Start automatic slideshow
   startAutoSlide();
 
-  // Manual navigation
+  // Manual navigation buttons
   document.getElementById("offers-prev")?.addEventListener("click", () => {
     prev();
-    startAutoSlide(); // reset timer
+    startAutoSlide();
   });
   document.getElementById("offers-next")?.addEventListener("click", () => {
     next();
@@ -238,6 +238,12 @@ function setupOffers() {
       startAutoSlide();
     }
   });
+
+  // 🖱️ Pause on hover (desktop only)
+  if (!isMobile) {
+    container.addEventListener("mouseenter", stopAutoSlide);
+    container.addEventListener("mouseleave", startAutoSlide);
+  }
 }
 
 /* ✅ Reload correct images on resize */
