@@ -271,22 +271,109 @@ input, select, textarea {
   }
 }
 
-/* responsive rules */
-@media (max-width:900px){
-  .product-grid{grid-template-columns:repeat(2,1fr)}
-  .main-nav{display:none}
-  .hamburger{display:block}
-  .brand-logo{height:36px}
-  .offers-slider{height:160px}
-  .main-nav.open{display:block;position:absolute;top:64px;left:0;right:0;background:var(--card);padding:12px;box-shadow:var(--card-shadow);z-index:10010}
+/* --- FINAL RESPONSIVE HEADER FIX --- */
+@media (max-width: 900px) {
+  .header-inner {
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+  }
+
+  .brand {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .brand-logo {
+    height: 36px;
+  }
+
+  .brand-name {
+    display: none;
+  }
+
+  .hamburger {
+    display: block;
+    font-size: 28px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+  }
+
+  .header-right {
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  /* --- Mobile Dropdown Nav --- */
+  .main-nav {
+    display: none;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    position: absolute;
+    top: 64px;
+    left: 10px;
+    right: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 14px;
+    z-index: 10010;
+  }
+
+  .main-nav.open {
+    display: flex;
+    animation: dropdownFade 0.3s ease forwards;
+  }
+
+  .main-nav ul {
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+  }
+
+  .main-nav li {
+    width: 100%;
+    padding: 8px 0;
+    border-radius: 8px;
+  }
+
+  .main-nav li:hover {
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  @keyframes dropdownFade {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- Search below header --- */
+  .search-container {
+    top: 64px;
+    border-radius: 0 0 12px 12px;
+  }
 }
-@media (max-width:480px){
-  .product-grid{grid-template-columns:1fr}
-  .offers-slider{height:140px}
-  .header-inner{padding:6px}
-  .brand-name{display:none}
-  .header-right{gap:6px}
+
+/* --- Small screens (480px and below) --- */
+@media (max-width: 480px) {
+  .offers-slider {
+    height: 140px;
+  }
+  .header-inner {
+    padding: 6px;
+  }
+  .header-right {
+    gap: 6px;
+  }
+  .main-nav {
+    top: 58px;
+    left: 8px;
+    right: 8px;
+  }
 }
+
 
 /* --- Product Color Options Fix --- */
 .color-options {
