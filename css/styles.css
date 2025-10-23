@@ -1046,29 +1046,30 @@ body.about-page {
 
 .price-section {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: baseline;
+  gap: 8px;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
-.current-price {
-  font-size: 1.4rem;
-  font-weight: 600;
+.price-current {
+  font-size: 1.4em;
+  font-weight: 700;
   color: #111;
 }
 
-.old-price {
+.price-old {
+  font-size: 1em;
+  color: #999;
   text-decoration: line-through;
-  color: #888;
-  font-size: 1rem;
 }
 
-.discount-tag {
-  background-color: #b7f5b7;
-  color: #067a06;
-  padding: 2px 8px;
-  border-radius: 5px;
-  font-size: 0.9rem;
-  font-weight: 500;
+.price-save {
+  font-size: 0.95em;
+  color: #0bbf66;
+  font-style: italic;
+  font-weight: bold;
+  background: #e5fff1;
+  padding: 2px 6px;
+  border-radius: 6px;
 }
