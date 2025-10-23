@@ -1,27 +1,73 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const priceInput = document.getElementById("bfm-price");
+  const linkInput = document.getElementById("bfm-link");
+  const resultBox = document.getElementById("bfm-results");
+  const sendBtn = document.getElementById("bfm-send");
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  const priceInput = document.getElementById('bfm-price');
-  const linkInput = document.getElementById('bfm-link');
-  const results = document.getElementById('bfm-results');
-  const sendBtn = document.getElementById('bfm-send');
+  const USD_TO_KES = 135; // Adjust to your current exchange rate
 
-  function compute(){
-    const priceUSD = Number(priceInput.value||0);
-    const cfg = window.DEENICE_CONFIG;
-    const servicePct = priceUSD > 750 ? cfg.serviceFeePctOver750 : cfg.serviceFeePctUnder750;
-    const shippingFee = cfg.shippingFlatUSD + (priceUSD * cfg.serviceFeePctUnder750);
-    const serviceFee = priceUSD > 750 ? (priceUSD * cfg.serviceFeePctOver750) : (priceUSD * cfg.serviceFeePctUnder750);
-    const totalUSD = priceUSD + shippingFee + serviceFee;
-    const totalKES = Math.round(totalUSD * cfg.usdToKesRate);
-    results.innerHTML = `<p>Price (USD): $${priceUSD.toFixed(2)}</p><p>Shipping estimate: $${shippingFee.toFixed(2)}</p><p>Service fee: $${serviceFee.toFixed(2)}</p><p><strong>Total est: KES ${totalKES.toLocaleString()}</strong></p><p>Delivery: 3 weeks</p>`;
-    return {priceUSD,shippingFee,serviceFee,totalUSD,totalKES};
+  function calculateTotal(price) {
+    let shipping, service;
+
+    if (price <= 750) {
+      shipping = 20 + 0.035 * price;
+      service = 30;
+    } else {
+      shipping = 20 + 0.035 * price;
+      service = 0.045 * price;
+    }
+
+    const totalUSD = price + shipping + service;
+    const totalKES = totalUSD * USD_TO_KES;
+
+    return { shipping, service, totalUSD, totalKES };
   }
-  if(priceInput) priceInput.addEventListener('input', compute);
-  if(sendBtn) sendBtn.addEventListener('click', ()=>{
-    const link = linkInput.value || '';
-    const c = compute();
-    const cfg = window.DEENICE_CONFIG;
-    const txt = encodeURIComponent(`BuyForMe order:\nLink: ${link}\nPrice(USD): $${c.priceUSD.toFixed(2)}\nShipping(USD): $${c.shippingFee.toFixed(2)}\nService(USD): $${c.serviceFee.toFixed(2)}\nTotal(KES): ${c.totalKES}`);
-    window.open(`https://wa.me/${cfg.whatsappNumber.replace('+','')}?text=${txt}`,'_blank');
+
+  function updateResults() {
+    const price = parseFloat(priceInput.value);
+    if (isNaN(price) || price <= 0) {
+      resultBox.innerHTML = `<p style="color:#888;">Enter a valid price to see the total.</p>`;
+      return;
+    }
+
+    const { shipping, service, totalUSD, totalKES } = calculateTotal(price);
+
+    resultBox.innerHTML = `
+      <div class="quote-box">
+        <p><strong>Item Price:</strong> $${price.toFixed(2)}</p>
+        <p><strong>Shipping Fee:</strong> $${shipping.toFixed(2)}</p>
+        <p><strong>Service Fee:</strong> $${service.toFixed(2)}</p>
+        <hr>
+        <p><strong>Total (USD):</strong> $${totalUSD.toFixed(2)}</p>
+        <p><strong>Total (KES):</strong> ${totalKES.toLocaleString("en-KE", {
+          maximumFractionDigits: 0,
+        })} KES</p>
+      </div>
+    `;
+  }
+
+  // Update live as user types
+  priceInput.addEventListener("input", updateResults);
+
+  // WhatsApp order
+  sendBtn.addEventListener("click", () => {
+    const price = parseFloat(priceInput.value);
+    const link = linkInput.value.trim();
+    if (isNaN(price) || price <= 0) {
+      alert("Please enter a valid price.");
+      return;
+    }
+
+    const { totalUSD, totalKES } = calculateTotal(price);
+
+    const message = encodeURIComponent(
+      `Buy For Me Request:\n\nProduct link: ${link}\nPrice: $${price.toFixed(
+        2
+      )}\nEstimated total: $${totalUSD.toFixed(
+        2
+      )} (${totalKES.toLocaleString()} KES)\n\nPlease confirm details.`
+    );
+
+    window.open(`https://wa.me/254700000000?text=${message}`, "_blank");
   });
 });
