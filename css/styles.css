@@ -1034,3 +1034,12 @@ input, select, textarea {
 .qty-btn:hover {
   background: #444;
 }
+/* 🚫 Disable text selection on Cart, Reviews, and About pages */
+body.cart-page,
+body.reviews-page,
+body.about-page {
+  -webkit-user-select: none; /* Safari / iOS */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE/Edge */
+  user-select: none;         /* Standard */
+}
