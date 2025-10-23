@@ -76,7 +76,47 @@ body {
 .main-nav li{position:relative;padding:8px 6px;border-radius:8px}
 .main-nav li:hover{background:var(--glass-bg)}
 .main-nav .sub{position:absolute;left:0;top:44px;background:var(--card);box-shadow:var(--card-shadow);padding:8px;border-radius:12px;display:none;min-width:160px;z-index:10005}
-.main-nav li:hover .sub{display:block}
+/* Desktop hover fix for dropdowns */
+@media (min-width: 901px) {
+  .main-nav li.has-sub {
+    position: relative;
+  }
+
+  .main-nav li.has-sub:hover > .sub {
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .main-nav .sub {
+    position: absolute;
+    left: 0;
+    top: 100%; /* ensures submenu touches parent with no gap */
+    background: var(--card);
+    box-shadow: var(--card-shadow);
+    padding: 8px;
+    border-radius: 12px;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(5px);
+    pointer-events: none;
+    transition: all 0.2s ease-in-out;
+    min-width: 160px;
+    z-index: 10005;
+  }
+
+  .main-nav .sub li {
+    padding: 8px;
+  }
+
+  .main-nav .sub li:hover {
+    background: var(--glass-bg);
+  }
+}
+
 /* --- MOBILE DROPDOWN FIX --- */
 @media (max-width: 900px) {
   .main-nav {
