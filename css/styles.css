@@ -999,3 +999,38 @@ input, select, textarea {
 .bfm-results p {
   margin: 4px 0;
 }
+.cart-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #ddd;
+  padding: 0.5rem 0;
+}
+
+.cart-qty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qty-btn {
+  background: #222;
+  color: #fff;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.qty-btn:hover {
+  background: #444;
+}
