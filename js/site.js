@@ -146,7 +146,7 @@ function setupSearch(products) {
 /* -------------------------------------------------------------------------- */
 function setupOffers() {
   const slides = [
-    { img: "https://i.postimg.cc/xT35t3WK/image.png" },
+    { img: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761236101/ad_2_desktop_2x_osqqeq.png" },
     { img: "https://i.postimg.cc/k4tGgwxc/image.png" },
     { img: "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg" }
   ];
