@@ -36,32 +36,30 @@
   },
   {
     "id": "p2",
-    "title": "Demo Product 2",
-    "price": 2300,
+    "title": "Selfie Monitor Screen",
+    "price": 5,900,
     "currency": "KES",
-    "description": "Demo product 2 \u2014 premium placeholder description.",
+    "description": "Elevate your selfie and vlogging game with the Kingma Magnetic Phone Vlog Screen, the ultimate portable display for creators. Designed for effortless content creation, this innovative monitor lets you see your phone’s rear camera view in real time, giving you crystal-clear framing and focus for every shot — no more guesswork, no more blurry selfies.",
     "images": [
-      "https://i.postimg.cc/xT35t3WK/image.png",
-      "https://i.postimg.cc/k4tGgwxc/image.png",
-      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249585/Hf61d2c41e40b45939e0d4ce8ec75bc0dC_joticu.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/H12efc6a1c1114d09a8c38bb519d0a450M_lp9mfk.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/H7ee94322f7e84d4dbde33a59869474413_aafeqz.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/Heba15b97d129437ba1104ee23efb1069Q_vcvzfo.jpg"
     ],
     "colors": [
       {
         "name": "Black",
-        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761248558/1761248534169_ildvon.jpg"
       },
       {
         "name": "White",
-        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761248555/1761248530442_oi3py7.jpg"
       },
       {
-        "name": "Blue",
-        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
-      },
-      {
-        "name": "Red",
-        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+        "name": "Pink",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761248556/1761248523799_oo188t.jpg"
       }
+      
     ],
     "sku": "DEMO-2",
     "stock": 12,
