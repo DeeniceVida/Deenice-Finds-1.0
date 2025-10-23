@@ -101,14 +101,21 @@ function setupOffers(){
     ss.forEach((s,ii)=> s.classList.toggle('active', ii===n));
     idx=n; refreshDots();
   }
-  function refreshDots(){ const btns = dots.querySelectorAll('button'); btns.forEach((b,i)=> b.style.opacity = i===idx?1:0.45); }
+  function refreshDots(){ 
+    const btns = dots.querySelectorAll('button'); 
+    btns.forEach((b,i)=> b.style.opacity = i===idx?1:0.45); 
+  }
   function next(){ showSlide((idx+1)%slides.length); }
   timer = setInterval(next,6000);
   document.getElementById('offers-prev').addEventListener('click', ()=> { showSlide((idx-1+slides.length)%slides.length); });
   document.getElementById('offers-next').addEventListener('click', ()=> { showSlide((idx+1)%slides.length); });
 }
 
+// ✅ Run it
+document.addEventListener("DOMContentLoaded", () => {
+  setupOffers();
 });
+
 
 document.addEventListener('DOMContentLoaded', async ()=>{
   const products = await loadProducts();
