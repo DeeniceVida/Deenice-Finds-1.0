@@ -249,86 +249,87 @@ a, button {
   cursor: pointer;
 }
 
-/* 🌅 OFFERS (Poster / Hero Slider) */
+/* 🌅 OFFERS (Hero Poster / Slider) */
 .offers {
   position: relative;
-  display: block;
   width: 100%;
-  height: 800px; /* desktop poster height */
+  max-width: 2400px;
+  margin: 0 auto 1.5rem auto;
   overflow: hidden;
   border-radius: 16px;
-  margin: 0; /* remove all external space */
-  padding: 0; /* no internal padding */
-  max-width: 2400px;
-  background: #f5f5f5;
-  line-height: 0; /* prevent image spacing */
 }
 
+/* Each slide */
 .offers-slider {
   position: relative;
   width: 100%;
-  height: 100%;
 }
 
 .offers-slider .slide {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.7s ease;
+  transition: opacity 0.6s ease;
 }
 
+/* Active slide */
 .offers-slider .slide.active {
   opacity: 1;
 }
 
-/* ✅ Controls INSIDE poster */
-.offers-controls {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  z-index: 10;
+/* Make the slider height auto-adjust using aspect ratio */
+.offers-slider::before {
+  content: "";
+  display: block;
+  aspect-ratio: 3 / 1; /* desktop ratio */
 }
 
+/* 🎯 Controls BELOW the poster */
+.offers-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  position: relative;
+  z-index: 5;
+}
+
+/* Arrow buttons */
 .offers-controls button {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0,0,0,0.6);
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   cursor: pointer;
   font-size: 18px;
-  transition: background 0.3s;
+  transition: background 0.3s ease;
 }
 
 .offers-controls button:hover {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0,0,0,0.8);
 }
 
+/* Dots */
 .offers-controls .dots {
   display: flex;
   gap: 8px;
-  align-items: center;
 }
 
 .offers-controls .dots button {
-  background: #fff;
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   border: none;
-  opacity: 0.45;
+  background: #000;
+  opacity: 0.3;
   cursor: pointer;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s ease;
 }
 
 .offers-controls .dots button.active,
@@ -336,36 +337,16 @@ a, button {
   opacity: 1;
 }
 
-/* 📱 MOBILE */
+/* 📱 Mobile adjustments */
 @media (max-width: 900px) {
-  .offers {
-    height: 800px; /* your mobile poster height */
-    max-width: 800px; /* your mobile poster width */
-    border-radius: 12px;
-    margin: 0 auto;
-  }
-
-  .offers-slider .slide {
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: #f8f8f8;
-  }
-
-  .offers-controls {
-    bottom: 14px;
-    gap: 6px;
+  .offers-slider::before {
+    aspect-ratio: 1 / 1; /* square for mobile */
   }
 
   .offers-controls button {
     width: 28px;
     height: 28px;
     font-size: 16px;
-  }
-
-  .offers-controls .dots button {
-    width: 7px;
-    height: 7px;
   }
 }
 
