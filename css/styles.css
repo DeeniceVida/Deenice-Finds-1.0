@@ -253,11 +253,12 @@ a, button {
 .offers {
   position: relative;
   width: 100%;
-  height: 360px;
+  height: 800px; /* desktop image height */
   overflow: hidden;
   border-radius: 16px;
-  margin: 1.5rem auto;
-  max-width: 1200px;
+  margin: 0 auto; /* removed bottom gap */
+  max-width: 2400px; /* desktop image width */
+  background: #f5f5f5;
 }
 
 .offers-slider {
@@ -280,75 +281,86 @@ a, button {
   opacity: 1;
 }
 
+/* ✅ Controls now inside or directly below poster */
 .offers-controls {
   position: absolute;
-  bottom: 12px;
+  bottom: 20px; /* inside the poster area */
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  z-index: 10;
 }
 
 .offers-controls button {
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   cursor: pointer;
   font-size: 18px;
   transition: background 0.3s;
 }
 
 .offers-controls button:hover {
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
 }
 
 .offers-controls .dots {
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  align-items: center;
 }
 
 .offers-controls .dots button {
   background: #fff;
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   border: none;
   opacity: 0.45;
   cursor: pointer;
+  transition: opacity 0.3s;
 }
 
 .offers-controls .dots button.active,
 .offers-controls .dots button:hover {
   opacity: 1;
 }
-/* 🌅 Responsive Hero Poster Adjustments */
 
-/* Desktop (default) */
-.offers {
-  height: 800px; /* matches your desktop image height */
-  max-width: 2400px; /* keeps the full width visible on large screens */
-}
-
-.offers-slider .slide {
-  background-size: cover; /* fill the banner */
-  background-position: center;
-}
-
-/* 📱 Mobile layout */
+/* 📱 MOBILE */
 @media (max-width: 900px) {
   .offers {
-    height: 800px; /* matches your mobile image height */
-    max-width: 800px; /* ensure correct aspect ratio */
+    height: 800px; /* your mobile height */
+    max-width: 800px; /* your mobile width */
+    border-radius: 12px;
+    margin: 0 auto;
   }
 
   .offers-slider .slide {
-    background-size: contain; /* show full 800×800 image */
+    background-size: contain;
     background-repeat: no-repeat;
-    background-color: #f8f8f8; /* soft background behind image if not full width */
+    background-position: center;
+    background-color: #f8f8f8;
+  }
+
+  .offers-controls {
+    bottom: 14px;
+    gap: 6px;
+  }
+
+  .offers-controls button {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .offers-controls .dots button {
+    width: 7px;
+    height: 7px;
   }
 }
 
