@@ -142,41 +142,54 @@ function setupSearch(products) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* POSTER SLIDER                                                              */
+/* POSTER SLIDER — Responsive (Desktop vs Mobile)                             */
 /* -------------------------------------------------------------------------- */
 function setupOffers() {
   const slides = [
-    { img: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761236101/ad_2_desktop_2x_osqqeq.png" },
-    { img: "https://i.postimg.cc/k4tGgwxc/image.png" },
-    { img: "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg" }
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761236101/ad_2_desktop_2x_osqqeq.png",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761236101/ad_2_mobile_2x_vkuveu.png"
+    },
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761236101/ad_1_desktop_2x_rtzh0s.png",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761236131/ad_1_mobile_2x_ys6san.png"
+    },
+    {
+      desktop: "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg",
+      mobile:  "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F-mobile.jpg"
+    }
   ];
 
-  const container = document.getElementById('offers-slider');
-  const dots = document.getElementById('offers-dots');
+  const container = document.getElementById("offers-slider");
+  const dots = document.getElementById("offers-dots");
   if (!container || !dots) return;
 
-  slides.forEach((s, i) => {
-    const d = document.createElement('div');
-    d.className = 'slide';
-    if (i === 0) d.classList.add('active');
-    d.style.backgroundImage = `url('${s.img}')`;
-    container.appendChild(d);
+  const isMobile = window.innerWidth <= 900;
+  container.innerHTML = "";
+  dots.innerHTML = "";
 
-    const btn = document.createElement('button');
-    btn.addEventListener('click', () => showSlide(i));
-    dots.appendChild(btn);
+  slides.forEach((s, i) => {
+    const slide = document.createElement("div");
+    slide.className = "slide";
+    if (i === 0) slide.classList.add("active");
+    slide.style.backgroundImage = `url('${isMobile ? s.mobile : s.desktop}')`;
+    container.appendChild(slide);
+
+    const dot = document.createElement("button");
+    dot.addEventListener("click", () => showSlide(i));
+    dots.appendChild(dot);
   });
 
   let idx = 0;
   function showSlide(n) {
-    const ss = container.querySelectorAll('.slide');
-    ss.forEach((s, ii) => s.classList.toggle('active', ii === n));
+    const ss = container.querySelectorAll(".slide");
+    ss.forEach((s, ii) => s.classList.toggle("active", ii === n));
     idx = n;
     refreshDots();
   }
 
   function refreshDots() {
-    const btns = dots.querySelectorAll('button');
+    const btns = dots.querySelectorAll("button");
     btns.forEach((b, i) => (b.style.opacity = i === idx ? 1 : 0.45));
   }
 
@@ -185,9 +198,15 @@ function setupOffers() {
   }
 
   setInterval(next, 6000);
-  document.getElementById('offers-prev')?.addEventListener('click', () => showSlide((idx - 1 + slides.length) % slides.length));
-  document.getElementById('offers-next')?.addEventListener('click', () => showSlide((idx + 1) % slides.length));
+  document.getElementById("offers-prev")?.addEventListener("click", () => showSlide((idx - 1 + slides.length) % slides.length));
+  document.getElementById("offers-next")?.addEventListener("click", () => showSlide((idx + 1) % slides.length));
 }
+
+/* ✅ Optional: Reload correct images on screen resize */
+window.addEventListener("resize", () => {
+  clearTimeout(window._resizeTimer);
+  window._resizeTimer = setTimeout(setupOffers, 400);
+});
 
 /* -------------------------------------------------------------------------- */
 /* SCROLL ANIMATION                                                           */
