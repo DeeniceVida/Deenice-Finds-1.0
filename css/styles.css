@@ -252,13 +252,16 @@ a, button {
 /* 🌅 OFFERS (Poster / Hero Slider) */
 .offers {
   position: relative;
+  display: block;
   width: 100%;
-  height: 800px; /* desktop image height */
+  height: 800px; /* desktop poster height */
   overflow: hidden;
   border-radius: 16px;
-  margin: 0 auto; /* removed bottom gap */
-  max-width: 2400px; /* desktop image width */
+  margin: 0; /* remove all external space */
+  padding: 0; /* no internal padding */
+  max-width: 2400px;
   background: #f5f5f5;
+  line-height: 0; /* prevent image spacing */
 }
 
 .offers-slider {
@@ -269,6 +272,8 @@ a, button {
 
 .offers-slider .slide {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   background-size: cover;
@@ -281,10 +286,10 @@ a, button {
   opacity: 1;
 }
 
-/* ✅ Controls now inside or directly below poster */
+/* ✅ Controls INSIDE poster */
 .offers-controls {
   position: absolute;
-  bottom: 20px; /* inside the poster area */
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -334,8 +339,8 @@ a, button {
 /* 📱 MOBILE */
 @media (max-width: 900px) {
   .offers {
-    height: 800px; /* your mobile height */
-    max-width: 800px; /* your mobile width */
+    height: 800px; /* your mobile poster height */
+    max-width: 800px; /* your mobile poster width */
     border-radius: 12px;
     margin: 0 auto;
   }
@@ -362,6 +367,12 @@ a, button {
     width: 7px;
     height: 7px;
   }
+}
+
+/* 🚫 Remove any default spacing around offers */
+.offers + * {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
 /* --- MOBILE NAVIGATION --- */
