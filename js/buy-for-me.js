@@ -68,6 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
       )} (${totalKES.toLocaleString()} KES)\n\nPlease confirm details.`
     );
 
-    window.open(`https://wa.me/254700000000?text=${message}`, "_blank");
+    window.open(`https://wa.me/254106590617?text=${message}`, "_blank");
   });
 });
