@@ -249,84 +249,80 @@ a, button {
   cursor: pointer;
 }
 
-/* 🌅 OFFERS (Hero Poster / Slider) */
+/* 🌅 OFFERS (Poster / Hero Slider) */
 .offers {
   position: relative;
   width: 100%;
-  max-width: 2400px;
-  margin: 0 auto 2.5rem auto; /* adds space before "Best-reviewed & tested…" */
+  height: 600px; /* Balanced height for desktop hero */
   overflow: hidden;
-  border-radius: 0; /* no rounded corners */
-  background: #f5f5f5;
+  border-radius: 0; /* No rounded corners */
+  margin: 0 auto 3rem; /* Adds clean space below before next section */
+  max-width: 100%;
+  background: #000; /* Fallback color in case image doesn't cover fully */
 }
 
-/* Wrapper ensures correct proportions */
 .offers-slider {
   position: relative;
   width: 100%;
-  overflow: hidden;
+  height: 100%;
 }
 
-/* Each slide */
 .offers-slider .slide {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 3 / 1; /* desktop ratio */
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.7s ease;
 }
 
-/* Active slide visible */
 .offers-slider .slide.active {
   opacity: 1;
-  position: relative;
-  z-index: 1;
 }
 
-/* Controls (arrows + dots) */
+/* Navigation controls inside the poster */
 .offers-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  justify-content: center;
   align-items: center;
   gap: 12px;
-  margin-top: 12px;
+  z-index: 5;
 }
 
-/* Arrows */
 .offers-controls button {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0,0,0,0.5);
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
   font-size: 18px;
-  transition: background 0.3s ease;
+  transition: background 0.3s;
 }
 
 .offers-controls button:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0,0,0,0.8);
 }
 
-/* Dots */
+/* Dots navigation */
 .offers-controls .dots {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .offers-controls .dots button {
-  width: 8px;
-  height: 8px;
+  background: #fff;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   border: none;
-  background: #000;
-  opacity: 0.3;
+  opacity: 0.4;
   cursor: pointer;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s;
 }
 
 .offers-controls .dots button.active,
@@ -334,90 +330,29 @@ a, button {
   opacity: 1;
 }
 
-/* 📱 MOBILE: simpler, no arrows */
+/* 📱 Mobile */
 @media (max-width: 900px) {
-  .offers-slider .slide {
-    aspect-ratio: 1 / 1; /* square for mobile */
+  .offers {
+    height: 400px; /* Better proportion on mobile */
+    margin-bottom: 2rem;
   }
 
-  .offers-controls button {
-    display: none; /* hide nav arrows on mobile */
+  .offers-slider .slide {
+    background-size: cover;
+    background-position: center;
   }
 
   .offers-controls {
-    margin-top: 6px;
+    bottom: 12px;
+    gap: 10px;
+  }
+
+  .offers-controls button {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
   }
 }
-
-/* 💻 SERVICES HOVER FIX */
-.services-item {
-  position: relative;
-}
-
-.services-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 240px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-  opacity: 0;
-  transform: translateY(10px);
-  pointer-events: none;
-  transition: all 0.3s ease;
-  z-index: 50;
-}
-
-/* show dropdown on hover (desktop only) */
-@media (min-width: 900px) {
-  .services-item:hover .services-dropdown {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-}
-
-/* --- MOBILE NAVIGATION --- */
-@media (max-width: 900px) {
-  .main-nav {
-    display: none;
-    flex-direction: column;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    position: absolute;
-    top: 60px;
-    left: 10px;
-    right: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    padding: 14px;
-  }
-
-  .main-nav.open {
-    display: flex;
-    animation: dropdownFade 0.3s ease forwards;
-  }
-
-  .main-nav ul {
-    flex-direction: column;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-  }
-
-  .main-nav li {
-    padding: 8px 0;
-    border-radius: 8px;
-  }
-
-  @keyframes dropdownFade {
-    from { opacity: 0; transform: translateY(-6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-}
-
 
 /* search */
 .search-box{position:relative}
