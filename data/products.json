@@ -4,7 +4,7 @@
     "title": "Magsafe Battery pack 10,000mAh",
     "price": 3900,
     "currency": "KES",
-    "description": "Portable Magnetic Wireless Power Bank (10000 mAh) \u2014 Powerseed PS-A156.",
+    "description": "Portable Magnetic Wireless Power Bank (10000 mAh) — Powerseed PS-A156.",
     "images": [
       "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg",
       "https://i.postimg.cc/D03nz6zL/Screenshot-2025-10-15-201118.png",
@@ -27,7 +27,7 @@
       },
       {
         "name": "Pink",
-        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+        "img": "https://i.postimg.cc/3xPZ1f4C/pink.png"
       }
     ],
     "sku": "PS-A156",
@@ -37,7 +37,37 @@
   {
     "id": "p2",
     "title": "Selfie Monitor Screen",
-    "price": 5,900,
+    "price": 5900,
+    "currency": "KES",
+    "description": "Elevate your selfie and vlogging game with the Kingma Magnetic Phone Vlog Screen, the ultimate portable display for creators. Designed for effortless content creation, this innovative monitor lets you see your phone’s rear camera view in real time, giving you crystal-clear framing and focus for every shot — no more guesswork, no more blurry selfies.",
+    "images": [
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249585/Hf61d2c41e40b45939e0d4ce8ec75bc0dC_joticu.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/H12efc6a1c1114d09a8c38bb519d0a450M_lp9mfk.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/H7ee94322f7e84d4dbde33a59869474413_aafeqz.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/Heba15b97d129437ba1104ee23efb1069Q_vcvzfo.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761248558/1761248534169_ildvon.jpg"
+      },
+      {
+        "name": "White",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761248555/1761248530442_oi3py7.jpg"
+      },
+      {
+        "name": "Pink",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761248556/1761248523799_oo188t.jpg"
+      }
+    ],
+    "sku": "DEMO-2",
+    "stock": 12,
+    "category": "phones"
+  },
+  {
+    "id": "p2",
+    "title": "Selfie Monitor Screen",
+    "price": 5900,
     "currency": "KES",
     "description": "Elevate your selfie and vlogging game with the Kingma Magnetic Phone Vlog Screen, the ultimate portable display for creators. Designed for effortless content creation, this innovative monitor lets you see your phone’s rear camera view in real time, giving you crystal-clear framing and focus for every shot — no more guesswork, no more blurry selfies.",
     "images": [
