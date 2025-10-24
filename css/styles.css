@@ -32,6 +32,20 @@ body {
 .main-nav li.open > .sub {
   animation: slideDown 0.25s ease forwards;
 }
+/* Disable selection on most elements */
+.product-page-card h2,
+.product-page-card .price-section,
+.product-page-card .color-options,
+.product-page-card label,
+.product-page-card button {
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow selection for product description */
+.product-page-card p {
+  user-select: text;
+}
 /* --- Product Cards Animation --- */
 .product-card {
   background: white;
