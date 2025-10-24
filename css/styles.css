@@ -1102,3 +1102,12 @@ body.about-page {
   color: #16a34a; /* Tailwind green-600 */
   font-style: italic;
 }
+.product-page-card p {
+  padding: 14px 4px;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  color: #666;
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.3px;
+}
