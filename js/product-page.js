@@ -16,7 +16,11 @@
     <div class="product-page-card">
       <div class="product-slideshow">
         <div class="product-main">
-          <img id="main-image" src="${p.images[0]}" alt="${p.title}" style="width:100%;border-radius:12px"/>
+          <img id="main-image" 
+     src="${p.images[0]}" 
+     alt="${p.title}" 
+     style="width:100%;border-radius:12px"
+     onerror="this.onerror=null;this.src='images/placeholder.png';"/>
         </div>
         <div class="product-thumbs">
           ${p.images.map((im, idx) => `
