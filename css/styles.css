@@ -32,22 +32,34 @@ body {
 .main-nav li.open > .sub {
   animation: slideDown 0.25s ease forwards;
 }
-/* 🔒 Disable accidental text highlighting on tap */
+/* 🚫 Prevent tap highlight or accidental selection everywhere */
 .product-page-card,
 .product-page-card * {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
-/* ✍️ Allow selection only when long-pressing the description text */
+/* ✍️ Allow selection only after long press in description */
 .product-page-card p {
-  -webkit-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
-  user-select: text;
+  pointer-events: auto;
+  touch-action: manipulation; /* smoother touch */
+}
+
+/* 💡 Advanced fix for Android: use press-delay logic */
+.product-page-card p::selection {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Optional: visually tone down text for comfort */
+.product-page-card p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #444;
+  font-weight: 400;
+  padding: 0.75rem 0;
 }
 /* --- Product Cards Animation --- */
 .product-card {
