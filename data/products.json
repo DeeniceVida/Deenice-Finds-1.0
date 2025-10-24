@@ -66,36 +66,29 @@
     "category": "phones"
   },
   {
-    "id": "p2",
-    "title": "Selfie Monitor Screen",
-    "price": 5900,
-    "currency": "KES",
-    "description": "Elevate your selfie and vlogging game with the Kingma Magnetic Phone Vlog Screen, the ultimate portable display for creators. Designed for effortless content creation, this innovative monitor lets you see your phone’s rear camera view in real time, giving you crystal-clear framing and focus for every shot — no more guesswork, no more blurry selfies.",
-    "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249585/Hf61d2c41e40b45939e0d4ce8ec75bc0dC_joticu.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/H12efc6a1c1114d09a8c38bb519d0a450M_lp9mfk.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/H7ee94322f7e84d4dbde33a59869474413_aafeqz.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/Heba15b97d129437ba1104ee23efb1069Q_vcvzfo.jpg"
-    ],
-    "colors": [
-      {
-        "name": "Black",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761248558/1761248534169_ildvon.jpg"
-      },
-      {
-        "name": "White",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761248555/1761248530442_oi3py7.jpg"
-      },
-      {
-        "name": "Pink",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761248556/1761248523799_oo188t.jpg"
-      }
-      
-    ],
-    "sku": "DEMO-2",
-    "stock": 12,
-    "category": "phones"
-  },
+  "id": "p3",
+  "title": "High End Desk Mat",
+  "price": 1400,
+  "currency": "KES",
+  "description": "A temperature-sensitive smart bottle that displays water temperature on its lid.",
+  "images": [
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01N2mCVw1uM8C9BzjHU__983656022-0-cib_bd41x9.jpg"
+  ],
+  "colors": [
+    { "name": "F1", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg" },
+    { "name": "F2", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01qhIrSb1uM8C8IBTvm__983656022-0-cib_ccu8ux.jpg" },
+    { "name": "F3", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331004/O1CN01XIdjOq1uM8C2wcZFf__983656022-0-cib_e1ajug.jpg" }
+  ],
+  "sizes": [
+    { "label": "300*800*3mm", "price": 1400 },
+    { "label": "400*900*3mm", "price": 1600 }
+    { "label": "750ml", "price": 3900 }
+  ],
+  "sku": "BOTTLE-01",
+  "stock": 18,
+  "category": "Desk Mat"
+},
   {
     "id": "p3",
     "title": "Demo Product 3",
