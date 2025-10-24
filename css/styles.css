@@ -32,18 +32,21 @@ body {
 .main-nav li.open > .sub {
   animation: slideDown 0.25s ease forwards;
 }
-/* Disable selection on most elements */
-.product-page-card h2,
-.product-page-card .price-section,
-.product-page-card .color-options,
-.product-page-card label,
-.product-page-card button {
+/* 🔒 Disable accidental text highlighting on tap */
+.product-page-card,
+.product-page-card * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Allow selection for product description */
+/* ✍️ Allow selection only when long-pressing the description text */
 .product-page-card p {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
   user-select: text;
 }
 /* --- Product Cards Animation --- */
