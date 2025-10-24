@@ -1145,3 +1145,66 @@ body.about-page {
   max-width: 100%;
   border-radius: 12px;
 }
+/* 🧩 Product Page Layout - Responsive Padding */
+#product-page {
+  padding: clamp(0.75rem, 3vw, 2rem); /* auto scales padding by screen width */
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+}
+
+/* 🧱 Product Card Styling */
+.product-page-card {
+  background: #fff;
+  padding: clamp(1rem, 2vw, 2rem);
+  margin: 0 auto;
+  max-width: 800px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* 📱 Mobile - keep things compact */
+@media (max-width: 600px) {
+  .product-page-card {
+    padding: 1rem;
+    border-radius: 0; /* edge-to-edge feel like BackMarket mobile */
+    box-shadow: none;
+  }
+}
+
+/* 💻 Desktop - more breathing room */
+@media (min-width: 1024px) {
+  #product-page {
+    padding: 3rem 4rem;
+  }
+
+  .product-page-card {
+    padding: 2rem 3rem;
+  }
+}
+
+/* 🖼️ Images - prevent touching edges */
+.product-page-card img {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+/* ✏️ Description styling - softer & readable */
+.product-page-card p {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #444;
+  font-weight: 400;
+  user-select: none; /* Disable accidental tap highlight */
+}
+
+/* Allow text selection only on long press (Android fix) */
+.product-page-card p:active {
+  user-select: text;
+}
