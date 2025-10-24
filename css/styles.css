@@ -1044,31 +1044,32 @@ body.about-page {
   user-select: none;         /* Standard */
 }
 
-/* --- Price Styling Fix (works on Android, iPhone, Desktop) --- */
+/* --- Price Styling (Fixed for current class names) --- */
 .price-section {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
   font-family: 'Inter', 'Roboto', sans-serif;
+  margin: 10px 0;
 }
 
-.price-current {
-  font-size: 1.4rem;
+.current-price {
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #000;
+  color: #111;
 }
 
-.price-old {
+.old-price {
   font-size: 1.1rem;
   text-decoration: line-through;
-  color: #999;
-  opacity: 0.6;
+  color: #777;
+  opacity: 0.7;
 }
 
-.price-save {
+.discount-tag {
   font-size: 1rem;
   font-weight: 600;
-  color: #15a24a;
+  color: #16a34a; /* Tailwind green-600 */
   font-style: italic;
 }
