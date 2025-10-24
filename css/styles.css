@@ -1111,3 +1111,25 @@ body.about-page {
   font-weight: 300;
   letter-spacing: 0.3px;
 }
+/* 🧩 Product Page Layout Improvements */
+.product-page-card {
+  padding: 1rem; /* default for mobile */
+  margin: 0 auto;
+  max-width: 800px; /* keeps things centered on large screens */
+  box-sizing: border-box;
+}
+
+/* 💻 Larger screens get extra breathing room */
+@media (min-width: 768px) {
+  .product-page-card {
+    padding: 2rem;
+  }
+}
+
+/* 🖼️ Make sure inner elements don’t hug edges */
+.product-page-card img {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  border-radius: 12px;
+}
