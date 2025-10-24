@@ -90,7 +90,7 @@
   "category": "Desk Mat"
 },
   {
-    "id": "p3",
+    "id": "p4",
     "title": "Demo Product 3",
     "price": 2450,
     "currency": "KES",
@@ -123,7 +123,7 @@
     "category": "phones"
   },
   {
-    "id": "p4",
+    "id": "p5",
     "title": "Demo Product 4",
     "price": 2600,
     "currency": "KES",
@@ -156,7 +156,7 @@
     "category": "phones"
   },
   {
-    "id": "p5",
+    "id": "p6",
     "title": "Demo Product 5",
     "price": 2750,
     "currency": "KES",
@@ -189,7 +189,7 @@
     "category": "phones"
   },
   {
-    "id": "p6",
+    "id": "p7",
     "title": "Demo Product 6",
     "price": 2900,
     "currency": "KES",
@@ -222,7 +222,7 @@
     "category": "phones"
   },
   {
-    "id": "p7",
+    "id": "p8",
     "title": "Demo Product 7",
     "price": 3050,
     "currency": "KES",
@@ -255,7 +255,7 @@
     "category": "phones"
   },
   {
-    "id": "p8",
+    "id": "p9",
     "title": "Demo Product 8",
     "price": 3200,
     "currency": "KES",
@@ -288,7 +288,7 @@
     "category": "phones"
   },
   {
-    "id": "p9",
+    "id": "p10",
     "title": "Demo Product 9",
     "price": 3350,
     "currency": "KES",
@@ -321,7 +321,7 @@
     "category": "phones"
   },
   {
-    "id": "p10",
+    "id": "p11",
     "title": "Demo Product 10",
     "price": 3500,
     "currency": "KES",
