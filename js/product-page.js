@@ -83,11 +83,17 @@
             </div>` : ''}
 
             ${p.sizes && p.sizes.length > 0 ? `
-            <div class="size-options">
-                <label for="size-select">Choose size:</label>
-                <select id="size-select">
-                    ${p.sizes.map(s => `<option value="${s.label}" data-price="${s.price}">${s.label}</option>`).join('')}
-                </select>
+            <div class="size-options-container">
+                <label>Choose size:</label>
+                <div class="size-buttons" id="size-buttons-group">
+                    ${p.sizes.map((s, idx) => `
+                        <button class="size-button ${idx === 0 ? 'selected' : ''}" 
+                                data-size="${s.label}" 
+                                data-price="${s.price}">
+                            ${s.label}
+                        </button>
+                    `).join('')}
+                </div>
             </div>` : ''}
 
             <label>Quantity:
@@ -100,9 +106,8 @@
 
 
     // 6. Add Event Listeners for User Interactions
-    // (Listeners are placed outside the innerHTML assignment)
 
-    // Thumbnail switching
+    // Thumbnail switching (unchanged)
     document.querySelectorAll('.product-thumbs img').forEach(img => {
         img.addEventListener('click', () => {
             document.getElementById('main-image').src = img.dataset.src;
@@ -111,7 +116,7 @@
         });
     });
 
-    // Color selection
+    // Color selection (unchanged)
     document.querySelectorAll('.color-option').forEach(opt => {
         opt.addEventListener('click', () => {
             document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
@@ -120,18 +125,29 @@
         });
     });
 
-    // Size selection (price updates)
-    const sizeSelect = document.getElementById('size-select');
-    if (sizeSelect) {
-        sizeSelect.addEventListener('change', () => {
-            const sel = sizeSelect.options[sizeSelect.selectedIndex];
-            selectedSize = sel.value;
-            currentPrice = Number(sel.dataset.price);
-            document.getElementById('product-price').textContent = `${p.currency} ${currentPrice.toLocaleString()}`;
+    // Size selection (price updates) - MODIFIED FOR CUSTOM BUTTONS
+    const sizeButtons = document.querySelectorAll('.size-button');
+    if (sizeButtons.length > 0) {
+        sizeButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Important: Prevent page reload if button is inside a form
+                e.preventDefault(); 
+                
+                // 1. Update selected class
+                sizeButtons.forEach(b => b.classList.remove('selected'));
+                button.classList.add('selected');
+
+                // 2. Update size and price variables
+                selectedSize = button.dataset.size;
+                currentPrice = Number(button.dataset.price);
+
+                // 3. Update the displayed price
+                document.getElementById('product-price').textContent = `${p.currency} ${currentPrice.toLocaleString()}`;
+            });
         });
     }
 
-    // Add to Cart
+    // Add to Cart (unchanged)
     document.getElementById('add-cart').addEventListener('click', () => {
         const qty = Number(document.getElementById('qty').value || 1);
         const colorEl = document.querySelector('.color-option.selected');
@@ -141,12 +157,12 @@
         cart.push({
             id: p.id,
             title: p.title,
-            price: currentPrice,
+            price: currentPrice, // Uses the current price (updated by size selection)
             currency: p.currency,
             qty,
             color,
-            size: selectedSize || 'Standard',
-            img: p.images[0] // Save product image for cart display
+            size: selectedSize || 'Standard', // Uses the selected size
+            img: p.images[0]
         });
 
         localStorage.setItem('de_cart', JSON.stringify(cart));
