@@ -1,10 +1,18 @@
+You are referring to the two JavaScript code snippets for your product page, where the second one included logic for product sizes.
+
+The **second code snippet** is already an **improved and more complete** version of the first one. It contains all the core functionality of the first (fetching data, rendering price, handling discounts, displaying colors, and adding to cart), plus the new, essential logic for handling and rendering product **sizes** and updating the **price** accordingly.
+
+Therefore, the **second snippet is the final, complete code**.
+
+Here is the finalized and consolidated code:
+
+```javascript
 (async () => {
     // 1. Get Product ID from URL
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
 
     // 2. Fetch and Parse Product Data
-    // Assumes 'data/products.json' is accessible
     const res = await fetch('data/products.json');
     const data = await res.json();
     
@@ -12,12 +20,17 @@
     const p = data.find(x => x.id === id) || data[0]; 
     const container = document.getElementById('product-page');
 
-    // 3. Calculate Discount Information
-    const hasDiscount = p.originalPrice && p.originalPrice > p.price;
-    const discountAmount = hasDiscount ? p.originalPrice - p.price : 0;
+    // 3. Initialize Price and Size Variables
+    // Default to first size price/label if 'sizes' array exists, otherwise use product's base price.
+    let currentPrice = p.sizes ? p.sizes[0].price : p.price;
+    let selectedSize = p.sizes ? p.sizes[0].label : null;
+
+    // 4. Calculate Discount Information based on currentPrice
+    const hasDiscount = p.originalPrice && p.originalPrice > currentPrice;
+    const discountAmount = hasDiscount ? p.originalPrice - currentPrice : 0;
     const saveText = hasDiscount ? `Save ${p.currency} ${discountAmount.toLocaleString()}` : "";
 
-    // 4. Build and Render the Product Page HTML
+    // 5. Build and Render the Product Page HTML
     if (container && p) {
         container.innerHTML = `
             <div class="product-page-card">
@@ -39,13 +52,14 @@
                 <h2>${p.title}</h2>
 
                 <div class="price-section">
-                    <span class="current-price">${p.currency} ${p.price.toLocaleString()}</span>
+                    <span id="product-price" class="current-price">${p.currency} ${currentPrice.toLocaleString()}</span>
                     ${hasDiscount ? `<span class="old-price">${p.currency} ${p.originalPrice.toLocaleString()}</span>` : ""}
                     ${hasDiscount ? `<span class="discount-tag">${saveText}</span>` : ""}
                 </div>
 
                 <p><em>${p.description}</em></p>
 
+                ${p.colors && p.colors.length > 0 ? `
                 <div class="color-options">
                     ${p.colors.map((c, idx) => `
                         <div class="color-item">
@@ -55,7 +69,15 @@
                             </div>
                         </div>
                     `).join('')}
-                </div>
+                </div>` : ''}
+
+                ${p.sizes ? `
+                <div class="size-options">
+                    <label for="size-select">Choose size:</label>
+                    <select id="size-select">
+                        ${p.sizes.map(s => `<option value="${s.label}" data-price="${s.price}">${s.label}</option>`).join('')}
+                    </select>
+                </div>` : ''}
 
                 <label>Quantity:
                     <input id="qty" type="number" value="1" min="1" max="${p.stock}" />
@@ -66,60 +88,67 @@
         `;
     }
 
-    // 5. Add Event Listeners for User Interactions
+    // 6. Add Event Listeners for User Interactions
 
-    // Thumbnail switching (changes the main image)
+    // Thumbnail switching
     document.querySelectorAll('.product-thumbs img').forEach(img => {
         img.addEventListener('click', () => {
             document.getElementById('main-image').src = img.dataset.src;
-            // Update selected thumbnail class
             document.querySelectorAll('.product-thumbs img').forEach(i => i.classList.remove('selected'));
             img.classList.add('selected');
         });
     });
 
-    // Color selection (changes selected color and main image)
+    // Color selection
     document.querySelectorAll('.color-option').forEach(opt => {
         opt.addEventListener('click', () => {
-            // Update selected color class
             document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
             opt.classList.add('selected');
-            
-            // Change main image to the color-specific image
-            const img = opt.dataset.img;
-            document.getElementById('main-image').src = img;
+            document.getElementById('main-image').src = opt.dataset.img;
         });
     });
 
-    // Add to cart functionality
-    const addButton = document.getElementById('add-cart');
-    if (addButton) {
-        addButton.addEventListener('click', () => {
-            const qty = Number(document.getElementById('qty').value || 1);
-            const colorEl = document.querySelector('.color-option.selected');
-            const color = colorEl ? colorEl.dataset.name : 'Default';
-            
-            // Get existing cart or start a new array
-            const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
-            
-            // Add current product to cart
-            cart.push({ 
-                id: p.id, 
-                title: p.title, 
-                price: p.price, 
-                currency: p.currency, 
-                qty, 
-                color,
-                img: p.images[0] // Save product image for cart display
-            });
-            
-            // Update localStorage and notify user
-            localStorage.setItem('de_cart', JSON.stringify(cart));
-            alert('Added to cart');
-            
-            // Update a visual cart count badge if it exists
-            const badge = document.getElementById('cart-count');
-            if (badge) badge.textContent = cart.length;
+    // Size selection (price updates)
+    const sizeSelect = document.getElementById('size-select');
+    if (sizeSelect) {
+        sizeSelect.addEventListener('change', () => {
+            const sel = sizeSelect.options[sizeSelect.selectedIndex];
+            selectedSize = sel.value;
+            currentPrice = Number(sel.dataset.price);
+            // Update the displayed price
+            document.getElementById('product-price').textContent = `${p.currency} ${currentPrice.toLocaleString()}`;
         });
     }
+
+    // Add to Cart
+    document.getElementById('add-cart').addEventListener('click', () => {
+        const qty = Number(document.getElementById('qty').value || 1);
+        
+        // Get selected color
+        const colorEl = document.querySelector('.color-option.selected');
+        const color = colorEl ? colorEl.dataset.name : 'Default';
+
+        // Get existing cart
+        const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
+
+        // Add item to cart, using currentPrice and selectedSize
+        cart.push({
+            id: p.id,
+            title: p.title,
+            price: currentPrice,
+            currency: p.currency,
+            qty,
+            color,
+            size: selectedSize || 'Standard',
+            img: p.images[0] // Save product image for cart display
+        });
+
+        localStorage.setItem('de_cart', JSON.stringify(cart));
+        alert('Added to cart');
+        
+        // Update cart badge
+        const badge = document.getElementById('cart-count');
+        if (badge) badge.textContent = cart.length;
+    });
 })();
+```
