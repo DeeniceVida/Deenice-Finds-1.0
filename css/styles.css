@@ -1208,3 +1208,14 @@ body.about-page {
 .product-page-card p:active {
   user-select: text;
 }
+
+.size-options {
+  margin: 12px 0;
+}
+
+#size-select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
