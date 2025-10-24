@@ -1208,3 +1208,66 @@ body.about-page {
 .product-page-card p:active {
   user-select: text;
 }
+/* Container for the size buttons */
+.size-options-container {
+    margin-top: 15px;
+    margin-bottom: 20px;
+}
+
+.size-options-container label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+/* Flex container for the buttons */
+.size-buttons {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    flex-wrap: wrap;
+}
+
+/* The custom size button styling for the 'Glassy' effect */
+.size-button {
+    /* Base Button Reset */
+    border: none;
+    cursor: pointer;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9em;
+    min-width: 80px;
+    text-align: center;
+    transition: all 0.2s ease;
+
+    /* 💎 Glassmorphism Effect 💎 */
+    background: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+    backdrop-filter: blur(5px);         /* The key "glassy" blur effect */
+    border: 1px solid rgba(255, 255, 255, 0.4); /* Light border for definition */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    color: #333; /* Dark text for contrast */
+}
+
+/* Hover effect */
+.size-button:hover {
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Selected/Active Button State */
+.size-button.selected {
+    /* Highlight the selected button */
+    background: var(--primary-color, #007bff); /* Use your theme's primary color */
+    color: white;
+    border-color: var(--primary-color, #007bff);
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4); /* Stronger shadow for emphasis */
+}
+
+/* Optional: Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+    .size-button {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #ddd;
+    }
+}
