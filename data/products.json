@@ -82,7 +82,7 @@
   ],
   "sizes": [
     { "label": "300*800*3mm", "price": 1400 },
-    { "label": "400*900*3mm", "price": 1600 }
+    { "label": "400*900*3mm", "price": 1600 },
     { "label": "750ml", "price": 3900 }
   ],
   "sku": "BOTTLE-01",
