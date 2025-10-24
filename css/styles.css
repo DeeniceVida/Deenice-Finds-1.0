@@ -1111,22 +1111,34 @@ body.about-page {
   font-weight: 300;
   letter-spacing: 0.3px;
 }
-/* 🧩 Product Page Layout Improvements */
-.product-page-card {
-  padding: 1rem; /* default for mobile */
-  margin: 0 auto;
-  max-width: 800px; /* keeps things centered on large screens */
+/* 🧩 Ensure product page has spacing on all devices */
+#product-page {
+  padding: 1rem; /* Space around the entire content area */
   box-sizing: border-box;
 }
 
-/* 💻 Larger screens get extra breathing room */
+/* 🧱 Product card styling */
+.product-page-card {
+  background: #fff; /* or transparent if your background is white already */
+  padding: 1.5rem;
+  margin: 0 auto;
+  max-width: 800px;
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+
+/* 💻 Larger screens get more breathing room */
 @media (min-width: 768px) {
+  #product-page {
+    padding: 2rem;
+  }
+
   .product-page-card {
     padding: 2rem;
   }
 }
 
-/* 🖼️ Make sure inner elements don’t hug edges */
+/* 🖼️ Prevent edge-hugging images */
 .product-page-card img {
   display: block;
   margin: 0 auto;
