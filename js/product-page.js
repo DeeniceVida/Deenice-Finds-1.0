@@ -81,7 +81,15 @@
     const colorEl = document.querySelector('.color-option.selected');
     const color = colorEl ? colorEl.dataset.name : 'Default';
     const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
-    cart.push({ id: p.id, title: p.title, price: p.price, currency: p.currency, qty, color });
+    cart.push({ 
+  id: p.id, 
+  title: p.title, 
+  price: p.price, 
+  currency: p.currency, 
+  qty, 
+  color,
+  img: p.images[0] // ✅ save product image for cart display
+});
     localStorage.setItem('de_cart', JSON.stringify(cart));
     alert('Added to cart');
     const badge = document.getElementById('cart-count');
