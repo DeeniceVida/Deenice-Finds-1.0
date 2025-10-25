@@ -1464,7 +1464,7 @@ h1 {
     text-align: center;
     font-size: 2em;
     margin-bottom: 30px;
-    color: #007bff; /* Primary brand color */
+    color: #B3C8EF; /* Primary brand color */
 }
 
 .feature-grid {
@@ -1503,7 +1503,7 @@ h1 {
 
 .cta-button {
     display: inline-block;
-    background-color: #007bff;
+    background-color: #B3C8EF;
     color: white;
     font-size: 1.1em;
     font-weight: bold;
