@@ -105,7 +105,7 @@ body {
 }
 .brand{display:flex;align-items:center;gap:10px}
 .brand-logo {
-    height: 55px; /* Increase this value to make the logo image larger */
+    height: 144px; /* Increase this value to make the logo image larger */
     border-radius: 8px;
 }
 .brand-name{font-weight:600}
