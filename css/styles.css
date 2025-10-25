@@ -104,7 +104,10 @@ body {
     /* We will control spacing via media queries and grouping */
 }
 .brand{display:flex;align-items:center;gap:10px}
-.brand-logo{height:42px;border-radius:8px}
+.brand-logo {
+    height: 55px; /* Increase this value to make the logo image larger */
+    border-radius: 8px;
+}
 .brand-name{font-weight:600}
 .main-nav{margin-left:20px}
 .main-nav ul{display:flex;list-style:none;gap:18px;padding:0;margin:0;align-items:center}
