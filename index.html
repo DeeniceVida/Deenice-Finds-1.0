@@ -46,14 +46,20 @@
 
     <!-- Cart + Search -->
     <div class="header-right">
-      <button id="search-toggle" class="icon-btn" aria-label="Search">🔍</button>
-      <div id="search-box" class="search-box hidden">
-        <input id="search-input" placeholder="Search products, cases, sunglasses..." autocomplete="off" />
-        <div id="search-suggestions" class="suggestions"></div>
-      </div>
-      <a href="cart.html" class="icon-btn cart-btn" aria-label="Cart">🛒<span id="cart-count">0</span></a>
-    </div>
+  <button id="search-toggle" class="icon-btn search-icon-btn" aria-label="Search">
+    <img src="https://i.postimg.cc/Hs6F1M4Y/icons8-search-windows-metro-114.png" />
+  </button>
+  
+  <div id="search-box" class="search-box hidden">
+    <input id="search-input" placeholder="Search products, cases, sunglasses..." autocomplete="off" />
+    <div id="search-suggestions" class="suggestions"></div>
   </div>
+
+  <a href="cart.html" class="icon-btn cart-btn" aria-label="Cart">
+    <img src="https://i.postimg.cc/Ls3zGtLG/icons8-cart-96.png" alt="Cart" class="header-icon cart-icon" />
+    <span id="cart-count">0</span>
+  </a>
+</div>
 
   <!-- Mobile Dropdown Menu -->
   <nav class="main-nav">
