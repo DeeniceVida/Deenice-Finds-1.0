@@ -1627,7 +1627,7 @@ h1 {
     
     /* Padding and Height */
     padding: 15px 20px; /* Generous padding */
-    height: 85px; /* Fixed height for clean look */
+    height: 75px; /* Fixed height for clean look */
     
     /* 🍏 GLASS MORPHISM EFFECT 🍏 */
     background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white background */
