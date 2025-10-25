@@ -1707,14 +1707,36 @@ h1 {
 .search-icon-btn:hover .search-icon {
     transform: rotate(180deg);
 }
-/* Adjust positioning of the floating badge over the new image icon */
-#cart-count {
-    /* Keep existing styling (color, size, border-radius) */
-    
-    position: absolute; 
-    top: -5px;      /* Move up relative to the anchor tag (.cart-btn) */
-    right: -2px;    /* Move right relative to the anchor tag (.cart-btn) */
-    z-index: 1; 
+/* 1. Ensure the Cart link acts as the positioning container */
+.cart-btn {
+    position: relative; /* CRITICAL: Allows #cart-count to be positioned absolutely inside it */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px; 
+    /* The .icon-btn class likely defines the size (e.g., 40x40px) */
+}
 
-    /* ... (rest of the #cart-count styles like background, width, height) ... */
+/* 2. Style the Floating Badge (#cart-count) */
+#cart-count {
+    /* Positioning */
+    position: absolute; 
+    top: -5px;      /* Moves it up and over the icon */
+    right: -2px;    
+    z-index: 2;     /* Ensures it sits above the icon */
+
+    /* Aesthetics (Example matching the light blue/cyan badge) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    background-color: #79F2F2; /* Light blue/Cyan color */
+    color: #1a1a1a;           /* Dark text for contrast */
+    
+    font-size: 0.75em;        
+    font-weight: 700;
+    
+    width: 18px;              
+    height: 18px;
+    border-radius: 50%;       /* Makes it a perfect circle */
 }
