@@ -562,6 +562,11 @@ input, select, textarea {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+    /* FIX: Force the link container to shrink its height to the content's size */
+    height: fit-content; 
+    display: inline-flex; /* Ensures content dictates size */
+    top: 50%; /* Adjust vertical centering, may need to be added */
+    transform: translate(-50%, -50%); /* Adjust centering to account for top: 50% */
   }
 
   .brand-logo {
