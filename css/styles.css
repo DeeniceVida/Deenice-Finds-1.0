@@ -1271,6 +1271,18 @@ body.about-page {
         color: #ddd;
     }
 }
+/* --- Disable Text Selection for Blog Posts --- */
+
+/* Targets the articles on the main blog index page */
+#blogs article {
+    /* Standard property (supported by most browsers) */
+    user-select: none;
+    
+    /* Vendor prefixes for wider compatibility */
+    -webkit-user-select: none; /* Safari, Chrome, older versions */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* Internet Explorer/Edge */
+}
 /* --- Blog List View Styling (The #blogs container) --- */
 #blogs {
     display: flex; /* Use Flexbox to manage post layout (good for future use) */
