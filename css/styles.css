@@ -1606,3 +1606,84 @@ h1 {
     background-color: #f0fff0; /* Very light background on hover */
     color: #1B751B !important;
 }
+/* --- PREMIUM GLASS MORPHISM HEADER --- */
+
+.site-header {
+    /* Base Layout for spacing items (Brand, Products, Cart) */
+    display: flex;
+    justify-content: space-between; /* Pushes the logo to one side, links to the other */
+    align-items: center;
+    
+    /* Positioning */
+    position: sticky; /* Keeps header fixed at the top when scrolling */
+    top: 0;
+    z-index: 1000; /* Ensures the header is above all other content */
+    
+    /* Padding and Height */
+    padding: 15px 20px; /* Generous padding */
+    height: 60px; /* Fixed height for clean look */
+    
+    /* 🍏 GLASS MORPHISM EFFECT 🍏 */
+    background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white background */
+    backdrop-filter: blur(10px); /* The key to the frosted glass look */
+    -webkit-backdrop-filter: blur(10px); /* For Safari support */
+    
+    /* Optional: Subtle border and rounded corners for a refined look */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Brand Logo Styling */
+.site-header .logo {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #333; /* Dark text for contrast against the light glass */
+    text-decoration: none;
+    padding: 5px 0; /* Align with nav links */
+}
+
+/* Navigation Links (Products, Cart) */
+.site-header nav a {
+    color: #555; /* Neutral color */
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 20px; /* Spacing between Products and Cart */
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+/* Active and Hover States */
+.site-header nav a:hover,
+.site-header nav a.active {
+    color: #1a1a1a;
+    background-color: rgba(0, 0, 0, 0.05); /* Very subtle background highlight */
+}
+
+/* Cart Count Badge Styling */
+#cart-count {
+    background-color: #ff3b30; /* Apple Red for notifications */
+    color: white;
+    font-size: 0.7em;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 50%;
+    margin-left: 4px;
+    vertical-align: top;
+}
+
+/* Mobile Responsiveness: Stack links if screen gets too small (optional) */
+@media (max-width: 450px) {
+    .site-header {
+        padding: 10px 15px;
+    }
+    
+    .site-header .logo {
+        font-size: 1.3em;
+    }
+    
+    .site-header nav a {
+        margin-left: 10px;
+        padding: 6px 8px;
+    }
+}
