@@ -1738,3 +1738,39 @@ h1 {
     height: 18px;
     border-radius: 50%;       /* Makes it a perfect circle */
 }
+/* --- Make ALL navigation links fill the line --- */
+
+/* Target all anchor tags within the main navigation */
+.main-nav ul li a {
+    /* CRITICAL: Change from inline to block-level element */
+    display: block; 
+    
+    /* Force the link to fill 100% of the parent <li> width */
+    width: 100%;
+    
+    /* Add padding to give the link a comfortable clickable height */
+    padding: 12px 20px; 
+    
+    /* Remove text decoration (e.g., underline) and set text color */
+    text-decoration: none;
+    color: #333; /* Use your desired text color */
+    
+    /* Ensure a smooth hover transition */
+    transition: background-color 0.2s, color 0.2s;
+    
+    /* Optional: Ensure text is aligned correctly */
+    text-align: left; 
+}
+
+/* Optional: Add hover/active states for visual feedback */
+.main-nav ul li a:hover,
+.main-nav ul li a:focus {
+    background-color: #f0f0f0; /* Light gray background on hover/focus */
+    color: #000; /* Darker text on hover */
+}
+
+/* Optional: Adjust spacing for sub-menu items if needed */
+.main-nav ul.sub li a {
+    /* You might want a slightly different padding or a left indentation */
+    padding-left: 40px; /* Indent sub-menu items */
+}
