@@ -181,7 +181,7 @@ function setupOffers() {
   });
 
   let idx = 0;
-  const slideInterval = 5000; // 🕒 Change slide every 5 seconds
+  const slideInterval = 7000; // 🕒 Change slide every 7 seconds
   let autoSlide;
 
   function showSlide(n) {
