@@ -1320,3 +1320,93 @@ h1 {
     margin-bottom: 8px;
     font-size: 1.5em;
 }
+/* --- PREMIUM BLOG POST STYLES --- */
+
+/* Center and constrain the content width */
+.blog-post {
+    max-width: 800px; /* Standard reading width for premium feel */
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: Georgia, serif; /* Using a serif font for a classic, premium look */
+    line-height: 1.7; /* Increased line spacing for readability */
+    color: #333; /* Darker text */
+}
+
+/* Typography Reset for the Blog Post */
+.blog-post h1 {
+    font-size: 2.5em; 
+    font-weight: 700;
+    margin-bottom: 0.2em;
+    color: #222;
+}
+
+.blog-post h2 {
+    font-size: 1.8em;
+    color: #444;
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+    border-bottom: 2px solid #eee; /* Subtle separator */
+    padding-bottom: 5px;
+}
+
+.blog-post h3 {
+    font-size: 1.2em;
+    color: #555;
+    margin-top: 1.5em;
+}
+
+/* Post Meta (Date) */
+.post-meta {
+    font-style: italic;
+    color: #888;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+}
+
+/* Separator below the title */
+.header-separator {
+    border: 0;
+    height: 1px;
+    background: #ccc;
+    margin-top: 15px;
+    margin-bottom: 30px;
+}
+
+/* Lists (Bulleted points) */
+.blog-post ul {
+    list-style: square;
+    margin-left: 20px;
+    padding-left: 0;
+}
+
+/* Links (Read more, sources) */
+.source-link, .back-link, .home-link {
+    color: #007bff; /* A distinct primary color */
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 15px;
+    transition: color 0.3s;
+}
+
+.source-link:hover, .back-link:hover, .home-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Tip Box (for high-impact notes) */
+.tip-box {
+    background-color: #f7f7f7;
+    border-left: 5px solid #ffcc00; /* Yellow accent color */
+    padding: 15px;
+    margin: 25px 0;
+    font-style: italic;
+    color: #444;
+}
+
+/* Footer styling */
+.post-footer {
+    border-top: 1px dashed #ccc;
+    padding-top: 20px;
+    margin-top: 40px;
+}
