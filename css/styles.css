@@ -1530,3 +1530,17 @@ h1 {
         flex-direction: column;
     }
 }
+/* --- Disable Text Selection (Highlighting) for Blog Posts --- */
+
+/* Targets the articles within the #blogs container on the index page */
+#blogs article,
+#blogs h2,
+#blogs p {
+    /* Standard property */
+    user-select: none;
+    
+    /* Vendor prefixes for broader browser compatibility */
+    -webkit-user-select: none; /* Safari, Chrome, iOS */
+    -moz-user-select: none;    /* Firefox */
+    -ms-user-select: none;     /* Edge, Internet Explorer */
+}
