@@ -29,6 +29,9 @@ function renderCart() {
     const btn = document.getElementById('cart-send');
     const cart = getCart();
 
+    // Find the existing form container by its first input element
+    const existingForm = document.getElementById('user-name') ? document.getElementById('user-name').closest('div') : null;
+
     if (!list) return;
 
     // Apply basic mobile layout styles
@@ -39,6 +42,11 @@ function renderCart() {
     if (cart.length === 0) {
         list.innerHTML = '<p>Your cart is empty.</p>';
         if (btn) btn.style.display = 'none';
+        
+        // 🟢 FIX 1: Hide the form when the cart is empty 🟢
+        if (existingForm) {
+            existingForm.style.display = 'none';
+        }
         return;
     }
 
@@ -81,7 +89,25 @@ function renderCart() {
     list.innerHTML = html;
     if (btn) btn.style.display = 'block';
 
-    // 🟢 NEW: Attach Event Listeners to the Remove Buttons 🟢
+    // 🟢 NEW: Ensure the form is visible when the cart is NOT empty 🟢
+    if (existingForm) {
+        existingForm.style.display = 'block';
+    }
+
+
+    // 🟢 FIX 2: Prevent the form from being inserted multiple times 🟢
+    // Only insert the form if it doesn't already exist in the DOM
+    if (!existingForm) {
+        const form = document.createElement('div');
+        form.innerHTML = `
+          <h3>Your Details</h3>
+          <label>Name:<br><input id="user-name" type="text" placeholder="Your name" required style="width:100%;padding:8px;margin-bottom:10px;"></label>
+          <label>City:<br><input id="user-city" type="text" placeholder="Your city" required style="width:100%;padding:8px;margin-bottom:10px;"></label>
+        `;
+        list.insertAdjacentElement('afterend', form);
+    }
+    
+    // --- Attach Event Listeners to the Remove Buttons (Same as before) ---
     document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
         button.addEventListener('click', (e) => {
             const titleToRemove = e.currentTarget.getAttribute('data-item-title');
@@ -91,21 +117,14 @@ function renderCart() {
         });
     });
 
-    // --- Show name & city form (Original Logic) ---
-    const form = document.createElement('div');
-    form.innerHTML = `
-      <h3>Your Details</h3>
-      <label>Name:<br><input id="user-name" type="text" placeholder="Your name" required style="width:100%;padding:8px;margin-bottom:10px;"></label>
-      <label>City:<br><input id="user-city" type="text" placeholder="Your city" required style="width:100%;padding:8px;margin-bottom:10px;"></label>
-    `;
-    list.insertAdjacentElement('afterend', form);
-
-    // --- WhatsApp Button Logic (Original Logic) ---
+    // --- WhatsApp Button Logic (Original Logic - remains the same, just better placed) ---
     if (btn) {
       btn.addEventListener('click', () => {
         const name = document.getElementById('user-name').value.trim();
         const city = document.getElementById('user-city').value.trim();
-
+        // ... (rest of the WhatsApp logic) ...
+        
+        // ... (WhatsApp logic continues) ...
         if (!name || !city) {
           alert('Please enter your name and city before sending your order.');
           return;
@@ -126,6 +145,5 @@ function renderCart() {
       });
     }
 }
-
 // Ensure the rendering starts when the page is fully loaded
 document.addEventListener('DOMContentLoaded', renderCart);
