@@ -93,7 +93,16 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.header-inner{display:flex;align-items:center;gap:12px;max-width:1200px;margin:0 auto;position:relative}
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ensures the three groups spread out */
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    width: 100%;
+    /* We will control spacing via media queries and grouping */
+}
 .brand{display:flex;align-items:center;gap:10px}
 .brand-logo{height:42px;border-radius:8px}
 .brand-name{font-weight:600}
