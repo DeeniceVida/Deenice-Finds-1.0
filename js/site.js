@@ -147,16 +147,24 @@ function setupSearch(products) {
 function setupOffers() {
   const slides = [
     {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761405025/as_2_desktop_3x-100_tptxsw.jpg",
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761405024/ad_1_mobile_copy_3x-100_uxuu9m.jpg"
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418668/ad_1_desktop_3x-100_hmbljc.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418667/ad_1_mobile_3x-100_edwyal.jpg"
     },
     {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761405024/ad_1_desktop_3x-100_dbvukp.jpg",
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761405024/ad_1_mobile_3x-100_gpk8up.jpg"
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418672/as_2_desktop_3x-100_is2hkt.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418669/ad_1_mobile_copy_3x-100_dy46n7.jpg"
     },
     {
-      desktop: "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg",
-      mobile:  "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F-mobile.jpg"
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418908/as_4_desktop_3x-100_vhin3a.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_4_mobile_3x-100_hgjitp.jpg"
+    },
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418670/ad_3_desktop_3x-100_l6ydnv.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418671/ad_3_mobile_3x-100_lgtdpr.jpg"
+    },
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418672/ad_5_desktop_3x-100_jksvwz.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_5_mobile_3x-100_ze7qzo.jpg"
     }
   ];
 
