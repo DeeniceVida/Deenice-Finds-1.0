@@ -147,12 +147,12 @@ function setupSearch(products) {
 function setupOffers() {
   const slides = [
     {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761236101/ad_2_desktop_2x_osqqeq.png",
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761236101/ad_2_mobile_2x_vkuveu.png"
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761405025/as_2_desktop_3x-100_tptxsw.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761405024/ad_1_mobile_copy_3x-100_uxuu9m.jpg"
     },
     {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761236101/ad_1_desktop_2x_rtzh0s.png",
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761236131/ad_1_mobile_2x_ys6san.png"
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761405024/ad_1_desktop_3x-100_dbvukp.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761405024/ad_1_mobile_3x-100_gpk8up.jpg"
     },
     {
       desktop: "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg",
