@@ -1690,6 +1690,8 @@ h1 {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
+  /* FIX: Remove the circle border */
+    border: none; /* Crucial: removes the border */
 }
 /* Search Icon Animation: Turns to the other side (180 degrees) on hover */
 .search-icon-btn:hover .search-icon {
