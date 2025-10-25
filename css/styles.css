@@ -1544,3 +1544,65 @@ h1 {
     -moz-user-select: none;    /* Firefox */
     -ms-user-select: none;     /* Edge, Internet Explorer */
 }
+/* --- PREMIUM BUTTON LINKS (Back, Home, Source) --- */
+
+/* Wrapper to control layout and spacing of top/bottom links */
+.link-actions.top {
+    margin-bottom: 30px;
+}
+.link-actions.bottom {
+    margin-top: 30px;
+    text-align: center; /* Center the Home link */
+}
+
+/* Base style for the premium button look */
+.premium-link {
+    /* Reset previous text link styles */
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-family: inherit !important; 
+    
+    /* Button Aesthetics */
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 5px; /* Rounded corners */
+    text-transform: uppercase;
+    font-size: 0.9em;
+    letter-spacing: 0.5px;
+    
+    /* Color using your established accent color (e.g., Green) */
+    background-color: #228B22; /* Primary Button Background */
+    color: white !important; /* White text for contrast */
+    border: 1px solid #228B22; 
+    
+    /* Smooth Transition */
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+/* Hover Effect for Premium Links */
+.premium-link:hover {
+    background-color: #1B751B; /* Darker on hover */
+    color: white !important; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px); /* Slight lift */
+}
+
+/* Style for Source Links (making them look like subtle buttons) */
+.source-link {
+    display: inline-block;
+    padding: 4px 8px;
+    margin-right: 10px; /* Space between multiple links */
+    background-color: transparent;
+    color: #228B22 !important; /* Use color for text */
+    border: 1px solid #228B22; /* Border for button look */
+    border-radius: 3px;
+    text-decoration: none;
+    font-size: 0.85em;
+    transition: background-color 0.2s;
+}
+
+.source-link:hover {
+    background-color: #f0fff0; /* Very light background on hover */
+    color: #1B751B !important;
+}
