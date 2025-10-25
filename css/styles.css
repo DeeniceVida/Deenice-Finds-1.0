@@ -1464,7 +1464,7 @@ h1 {
     text-align: center;
     font-size: 2em;
     margin-bottom: 30px;
-    color: #B3C8EF; /* Primary brand color */
+    color: #1800FF; /* Primary brand color */
 }
 
 .feature-grid {
@@ -1495,7 +1495,7 @@ h1 {
 }
 
 .contact-box {
-    background-color: #e6f0ff; /* Light, clean background */
+    background-color: #D9E4FC; /* Light, clean background */
     padding: 40px;
     border-radius: 10px;
     margin-top: 25px;
@@ -1503,7 +1503,7 @@ h1 {
 
 .cta-button {
     display: inline-block;
-    background-color: #B3C8EF;
+    background-color: #1800FF;
     color: white;
     font-size: 1.1em;
     font-weight: bold;
