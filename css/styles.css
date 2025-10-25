@@ -1271,3 +1271,52 @@ body.about-page {
         color: #ddd;
     }
 }
+/* --- Blog List View Styling (The #blogs container) --- */
+#blogs {
+    display: flex; /* Use Flexbox to manage post layout (good for future use) */
+    flex-direction: column; /* Stacks posts vertically */
+    gap: 30px; /* Space between each blog article */
+    margin-top: 30px;
+}
+
+/* --- Individual Article Summary --- */
+#blogs article {
+    border-left: 5px solid #007bff; /* A clean, modern accent line */
+    padding: 20px 20px 20px 25px; /* Ample padding inside the box */
+    background-color: #ffffff; /* Ensure the post background is white */
+    transition: transform 0.2s; /* Smooth transition for hover effect */
+    border-radius: 4px;
+}
+
+#blogs article:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Lift the card slightly on hover */
+    transform: translateY(-2px);
+}
+
+/* --- Read More Link --- */
+#blogs article a {
+    display: inline-block;
+    margin-top: 10px;
+    color: #007bff; /* Your main brand color */
+    text-decoration: none;
+    font-weight: bold;
+}
+
+#blogs article a:hover {
+    text-decoration: underline;
+}
+
+/* --- Headings --- */
+h1 {
+    color: #333;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+#blogs article h2 {
+    color: #222; /* Slightly darker title */
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 1.5em;
+}
