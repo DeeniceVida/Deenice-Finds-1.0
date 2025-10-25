@@ -227,24 +227,26 @@ a, button {
 }
 
 /* --- UPDATED HEADER LAYOUT --- */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 9999;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.7);
-  padding: 10px 16px;
-  border-bottom: 1px solid rgba(15, 20, 30, 0.05);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
 
+/* Update the layout for the header contents */
 .header-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative;
+    /* CRUCIAL: Enable Flexbox for spacing */
+    display: flex;
+    align-items: center; /* Vertically center items */
+    
+    /* CRUCIAL: Define how items are spaced horizontally */
+    /* Use space-between to push Hamburger/Brand/Right-Group apart (desktop) */
+    /* On mobile, we might switch this to space-between for Hamburger/Brand/Right-Group */
+    justify-content: space-between; 
+    
+    /* Keep width and centering from your previous setup */
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    
+    /* Ensure no wrapping if space is tight */
+    flex-wrap: nowrap;
+    width: 100%; /* Ensure it spans full width of site-header padding */
 }
 
 .hamburger {
@@ -266,11 +268,13 @@ a, button {
   justify-content: center;
 }
 
+/* Style for the search and cart buttons container */
 .header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between search and cart */
+    /* Pushes this group away from the brand/logo on the left */
+    margin-left: auto;
 }
 
 .cart-btn {
