@@ -288,3 +288,123 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupMobileNav();
   revealOnScroll();
 });
+
+/* -------------------------------------------------------------------------- */
+/* ⭐ NEW: POSTER SLIDER - BOTTOM (with different content)                       */
+/* -------------------------------------------------------------------------- */
+const bottomSlides = [
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418908/as_4_desktop_3x-100_vhin3a.jpg", // Example: Use a different image set
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_4_mobile_3x-100_hgjitp.jpg"
+    },
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418670/ad_3_desktop_3x-100_l6ydnv.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418671/ad_3_mobile_3x-100_lgtdpr.jpg"
+    }
+    // Add more unique slide objects here for the bottom banner
+];
+/* -------------------------------------------------------------------------- */
+/* ⭐ NEW: POSTER SLIDER - BOTTOM LOGIC                                       */
+/* -------------------------------------------------------------------------- */
+function setupBottomOffers() {
+  // Use the new slides data
+  const slides = bottomSlides; 
+
+  // Use the new unique IDs from your HTML
+  const container = document.getElementById("bottom-offers-slider");
+  const dots = document.getElementById("bottom-offers-dots");
+  if (!container || !dots) return;
+
+  const isMobile = window.innerWidth <= 900;
+  container.innerHTML = "";
+  dots.innerHTML = "";
+
+  slides.forEach((s, i) => {
+    const slide = document.createElement("div");
+    slide.className = "slide";
+    if (i === 0) slide.classList.add("active");
+    slide.style.backgroundImage = `url('${isMobile ? s.mobile : s.desktop}')`;
+    container.appendChild(slide);
+
+    const dot = document.createElement("button");
+    dot.addEventListener("click", () => showSlide(i));
+    dots.appendChild(dot);
+  });
+
+  let idx = 0;
+  const slideInterval = 7000; // 🕒 Change slide every 7 seconds
+  let autoSlide;
+
+  function showSlide(n) {
+    const ss = container.querySelectorAll(".slide");
+    ss.forEach((s, ii) => s.classList.toggle("active", ii === n));
+    idx = n;
+    refreshDots();
+  }
+
+  function refreshDots() {
+    const btns = dots.querySelectorAll("button");
+    btns.forEach((b, i) => (b.style.opacity = i === idx ? 1 : 0.45));
+  }
+
+  function next() {
+    showSlide((idx + 1) % slides.length);
+  }
+
+  function prev() {
+    showSlide((idx - 1 + slides.length) % slides.length);
+  }
+
+  function startAutoSlide() {
+    stopAutoSlide();
+    autoSlide = setInterval(next, slideInterval);
+  }
+
+  function stopAutoSlide() {
+    if (autoSlide) clearInterval(autoSlide);
+  }
+
+  // 🔁 Start automatic slideshow
+  startAutoSlide();
+
+  // Manual navigation buttons — TARGET UNIQUE IDs
+  document.getElementById("bottom-offers-prev")?.addEventListener("click", () => {
+    prev();
+    startAutoSlide();
+  });
+  document.getElementById("bottom-offers-next")?.addEventListener("click", () => {
+    next();
+    startAutoSlide();
+  });
+
+  // 📱 Swipe gestures (mobile)
+  let startX = 0;
+  container.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+  });
+  container.addEventListener("touchend", (e) => {
+    const diff = e.changedTouches[0].clientX - startX;
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? prev() : next();
+      startAutoSlide();
+    }
+  });
+
+  // 🖱️ Pause on hover (desktop only)
+  if (!isMobile) {
+    container.addEventListener("mouseenter", stopAutoSlide);
+    container.addEventListener("mouseleave", startAutoSlide);
+  }
+}
+/* -------------------------------------------------------------------------- */
+/* INITIALIZE                                                                 */
+/* -------------------------------------------------------------------------- */
+document.addEventListener('DOMContentLoaded', async () => {
+  const products = await loadProducts();
+  renderGrid();
+  setupSearch(products);
+  setupOffers(); // Calls the TOP slider
+  setupBottomOffers(); // ⭐ NEW: Calls the BOTTOM slider
+  setupMobileNav();
+  revealOnScroll();
+});
