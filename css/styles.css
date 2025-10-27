@@ -556,48 +556,56 @@ html, body {
 
 /* --- Mobile Layout: Thumbnails BELOW Main Image (MAX 768px) --- */
 @media (max-width: 768px) {
+    
+    /* 1. PARENT CONTAINER (.product-slideshow) */
     .product-slideshow {
         flex-direction: column; 
-        align-items: flex-start; /* Reverting to center to keep the blocks centered */
+        /* ✅ CORRECT: This centers the entire block (Main Image Wrapper + Thumbs Container) */
+        align-items: center; 
         width: 100%;
         gap: 12px;
     }
 
+    /* 2. MAIN IMAGE WRAPPER */
     .product-main-image-wrapper {
         width: 100%; 
         max-width: 450px;
         flex: unset;
-        margin: 0 auto; /* Keeps main image centered */
+        /* ✅ CORRECT: Centers the image container */
+        margin: 0 auto; 
     }
 
+    /* 3. THUMBNAIL CONTAINER (.product-thumbs) */
     .product-thumbs {
         width: 100%;
         max-width: 450px;
         flex-direction: row;
         
-        /* ✅ CORRECT: Keep only this to center the 450px block */
+        /* ✅ CORRECT: Centers the thumbnail block on the page */
         margin: 0 auto;
         
-        /* 🟢 CORRECT: Ensures rows start flush left */
+        /* 🟢 CRITICAL: Forces inner rows to start on the far left of the container */
         justify-content: flex-start;
         flex-wrap: wrap;
         
-        /* 🛑 CORRECT: Eliminate the problematic Flexbox gap */
+        /* 🛑 CRITICAL: Must be zero to use margin-right for spacing */
         gap: 0; 
         
         padding-bottom: 5px;
-        padding-left: 0;
+        padding-left: 0; 
         padding-right: 0;
     }
     
+    /* 4. THUMBNAIL IMAGES (.product-thumbs img) */
     .product-thumbs img {
-        /* 🛑 CRITICAL FIX: Ensure width is explicitly 60px and not 100% 🛑 */
         width: 60px; 
         height: 60px;
 
-        /* FIX: Controls spacing consistently on every image */
-        margin-right: 10px;    /* Horizontal space */
-        margin-bottom: 10px;   /* Vertical space between rows */
+        /* ✅ CORRECT: Creates the horizontal space */
+        margin-right: 10px; 
+        
+        /* ✅ CORRECT: Creates the vertical space between rows */
+        margin-bottom: 10px; 
     }
 }
 /* --- Color Selector and Swatch Styles --- */
