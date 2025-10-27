@@ -154,26 +154,26 @@ const DELIVERY_ZONES = [
 // --- 2. NAIROBI AND ENVIRONS DISTANCE DATA (Distance from CBD/GPO) ---
 // Fee: Distance (km) * KES 60. Minimum fee is 360 KES.
 const NAIROBI_DISTANCES = [
-    { name: "Westlands", distance: 5 }, 
+    { name: "Westlands", distance: 11 }, 
     { name: "Upper Hill", distance: 4 }, 
     { name: "Kilimani", distance: 7 }, 
-    { name: "Lavington", distance: 10 }, 
-    { name: "Karen", distance: 18 }, 
-    { name: "Lang'ata", distance: 11 }, 
-    { name: "Embakasi", distance: 15 }, 
-    { name: "Roysambu", distance: 11 }, 
-    { name: "Kasarani", distance: 14 }, 
-    { name: "Rongai", distance: 20 }, 
-    { name: "Syokimau", distance: 22 }, 
-    { name: "Mlolongo", distance: 25 }, 
-    { name: "South C", distance: 6 }, 
-    { name: "South B", distance: 5 }, 
-    { name: "Donholm", distance: 9 }, 
+    { name: "Lavington", distance: 9 }, 
+    { name: "Karen", distance: 26 }, 
+    { name: "Lang'ata", distance: 16 }, 
+    { name: "Embakasi", distance: 14 }, 
+    { name: "Roysambu", distance: 13 }, 
+    { name: "Kasarani", distance: 13 }, 
+    { name: "Rongai", distance: 25 }, 
+    { name: "Syokimau", distance: 21 }, 
+    { name: "Mlolongo", distance: 21 }, 
+    { name: "South C", distance: 7 }, 
+    { name: "South B", distance: 6 }, 
+    { name: "Donholm", distance: 11 }, 
     { name: "Buruburu", distance: 8 }, 
     // This is used for general "Nairobi" input or the minimum
-    { name: "Nairobi and Environs (Flat Rate)", distance: 6 } 
+    { name: "Nairobi and Environs (Flat Rate)", distance: 7 } 
 ];
-const MINIMUM_NAIROBI_FEE = 360; 
+const MINIMUM_NAIROBI_FEE = 420; 
 const DELIVERY_RATE_PER_KM = 60;
 
 // --- 3. DELIVERY FEE LOGIC (UPDATED) ---
