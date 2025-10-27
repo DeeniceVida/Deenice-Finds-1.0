@@ -111,94 +111,97 @@
 
     // 6. Add Event Listeners for User Interactions
     
-    // 🟢 CHANGE 3: Add Description Collapse Logic 🟢
-    const descriptionContainer = document.getElementById('product-description-container');
-    const colorSelector = document.getElementById('color-selector'); 
-
-    if (colorSelector && descriptionContainer) {
+    // 🟢 NEW FUNCTION: Consolidate all listeners here 🟢
+    function setupProductInteractions() {
         
-        const collapseDescription = () => {
-             // Add the 'collapsed' class (defined in styles.css)
-            descriptionContainer.classList.add('collapsed');
+        // --- Description Collapse Logic (Your new feature) ---
+        const descriptionContainer = document.getElementById('product-description-container');
+        const colorSelector = document.getElementById('color-selector'); 
+
+        if (colorSelector && descriptionContainer) {
+            
+            const collapseDescription = () => {
+                 // Add the 'collapsed' class (defined in styles.css)
+                descriptionContainer.classList.add('collapsed');
+            }
+            
+            // Listen for clicks on the color selector container
+            // This is the correct way to delegate the click event
+            colorSelector.addEventListener('click', (event) => {
+                // Check if the click was on a color option (using the class .color-option)
+                if (event.target.closest('.color-option')) {
+                    collapseDescription();
+                }
+            });
+
+            // OPTIONAL: Allow the user to click the description to expand it again
+            descriptionContainer.addEventListener('click', () => {
+                 descriptionContainer.classList.remove('collapsed');
+            });
         }
         
-        // Listen for clicks on the color selector container
-        colorSelector.addEventListener('click', (event) => {
-            // Check if the click was on a color option (using the class already defined)
-            if (event.target.closest('.color-option')) {
-                collapseDescription();
-            }
-        });
-
-        // OPTIONAL: Allow the user to click the description to expand it again
-        descriptionContainer.addEventListener('click', () => {
-             descriptionContainer.classList.remove('collapsed');
-        });
-    }
-
-    // Thumbnail switching (UNCHANGED)
-    document.querySelectorAll('.product-thumbs img').forEach(img => {
-        img.addEventListener('click', () => {
-            document.getElementById('main-image').src = img.dataset.src;
-            document.querySelectorAll('.product-thumbs img').forEach(i => i.classList.remove('selected'));
-            img.classList.add('selected');
-        });
-    });
-
-    // Color selection (UNCHANGED logic, but now triggers collapse via the colorSelector event listener above)
-    document.querySelectorAll('.color-option').forEach(opt => {
-        opt.addEventListener('click', () => {
-            document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
-            opt.classList.add('selected');
-            document.getElementById('main-image').src = opt.dataset.img;
-            // The collapse function runs here automatically due to the general click listener on #color-selector
-        });
-    });
-
-    // Size selection (price updates) (UNCHANGED)
-    const sizeButtons = document.querySelectorAll('.size-button');
-    if (sizeButtons.length > 0) {
-        sizeButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                // Important: Prevent page reload if button is inside a form
-                e.preventDefault(); 
-                
-                // 1. Update selected class
-                sizeButtons.forEach(b => b.classList.remove('selected'));
-                button.classList.add('selected');
-
-                // 2. Update size and price variables
-                selectedSize = button.dataset.size;
-                currentPrice = Number(button.dataset.price);
-
-                // 3. Update the displayed price
-                document.getElementById('product-price').textContent = `${p.currency} ${currentPrice.toLocaleString()}`;
+        // --- Thumbnail switching (Existing Logic) ---
+        document.querySelectorAll('.product-thumbs img').forEach(img => {
+            img.addEventListener('click', () => {
+                document.getElementById('main-image').src = img.dataset.src;
+                document.querySelectorAll('.product-thumbs img').forEach(i => i.classList.remove('selected'));
+                img.classList.add('selected');
             });
         });
-    }
 
-    // Add to Cart (UNCHANGED)
-    document.getElementById('add-cart').addEventListener('click', () => {
-        const qty = Number(document.getElementById('qty').value || 1);
-        const colorEl = document.querySelector('.color-option.selected');
-        const color = colorEl ? colorEl.dataset.name : 'Default';
-        const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
-
-        cart.push({
-            id: p.id,
-            title: p.title,
-            price: currentPrice, // Uses the current price (updated by size selection)
-            currency: p.currency,
-            qty,
-            color,
-            size: selectedSize || 'Standard', // Uses the selected size
-            img: p.images[0]
+        // --- Color selection (Existing Logic) ---
+        document.querySelectorAll('.color-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                document.getElementById('main-image').src = opt.dataset.img;
+            });
         });
 
-        localStorage.setItem('de_cart', JSON.stringify(cart));
-        alert('Added to cart');
-        
-        const badge = document.getElementById('cart-count');
-        if (badge) badge.textContent = cart.length;
-    });
+        // --- Size selection (Existing Logic) ---
+        const sizeButtons = document.querySelectorAll('.size-button');
+        if (sizeButtons.length > 0) {
+            sizeButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    sizeButtons.forEach(b => b.classList.remove('selected'));
+                    button.classList.add('selected');
+
+                    selectedSize = button.dataset.size;
+                    currentPrice = Number(button.dataset.price);
+
+                    document.getElementById('product-price').textContent = `${p.currency} ${currentPrice.toLocaleString()}`;
+                });
+            });
+        }
+
+        // --- Add to Cart (Existing Logic) ---
+        document.getElementById('add-cart').addEventListener('click', () => {
+            const qty = Number(document.getElementById('qty').value || 1);
+            const colorEl = document.querySelector('.color-option.selected');
+            const color = colorEl ? colorEl.dataset.name : 'Default';
+            const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
+
+            cart.push({
+                id: p.id,
+                title: p.title,
+                price: currentPrice,
+                currency: p.currency,
+                qty,
+                color,
+                size: selectedSize || 'Standard',
+                img: p.images[0]
+            });
+
+            localStorage.setItem('de_cart', JSON.stringify(cart));
+            alert('Added to cart');
+            
+            const badge = document.getElementById('cart-count');
+            if (badge) badge.textContent = cart.length;
+        });
+    }
+
+    // 🟢 FINAL STEP: Call the function after all HTML has been injected 🟢
+    setupProductInteractions();
+
 })();
