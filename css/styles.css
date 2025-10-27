@@ -572,23 +572,32 @@ html, body {
     }
 
     .product-thumbs {
-        /* Mobile layout changes: */
-        width: 100%; 
-        max-width: 450px; 
-        flex-direction: row;        /* Horizontal row on mobile */
-      /* 🟢 FIX 2: Manually center the thumbnail block */
-        margin: 0 auto;
-        justify-content: flex-start; /* 🟢 FIX 2: Aligns wrapped items to the left 🟢 */
-        flex-wrap: wrap; 
-        gap: 10px; /* Increased gap slightly for mobile touch targets */
-        padding-bottom: 5px;
-        padding-left: 0; /* Optional: Add slight padding if you want thumbs off the absolute edge */
-        padding-right: 0;
-    }
+    /* Mobile layout changes: */
+    width: 100%; 
+    max-width: 450px; 
+    flex-direction: row; 
+    
+    /* 🟢 Correctly centers the entire thumbnail block 🟢 */
+    margin: 0 auto;
+    
+    /* Ensures rows start flush left */
+    justify-content: flex-start; 
+    flex-wrap: wrap; 
+    
+    /* 🛑 IMPORTANT: REMOVE GAP 🛑 */
+    gap: 0; 
+    
+    padding-bottom: 5px;
+    padding-left: 0; 
+    padding-right: 0;
+}
     
     .product-thumbs img {
         width: 60px; /* Smaller mobile thumbnails */
         height: 60px;
+      /* 🟢 FIX: Use margin on the image to control spacing 🟢 */
+    margin-right: 10px;   /* Creates the 10px horizontal space */
+    margin-bottom: 10px;  /* Creates the vertical space between rows */
     }
 }
 
