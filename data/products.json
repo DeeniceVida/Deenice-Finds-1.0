@@ -82,8 +82,7 @@
   ],
   "sizes": [
     { "label": "300*800*3mm", "price": 1400 },
-    { "label": "400*900*3mm", "price": 1600 },
-    { "label": "750ml", "price": 3900 }
+    { "label": "400*900*3mm", "price": 1600 }
   ],
   "sku": "BOTTLE-01",
   "stock": 18,
@@ -91,36 +90,50 @@
 },
   {
     "id": "p4",
-    "title": "Demo Product 3",
-    "price": 2450,
+    "title": "Chrome Heart Beanie",
+    "price": 1400,
     "currency": "KES",
-    "description": "Demo product 3 \u2014 premium placeholder description.",
+    "description": "Stay warm in rebellious style with this classic Black Knit Beanie featuring a bold White Embroidered Logo that echoes the iconic Chrome Hearts style.Crafted from a soft, stretchable ribbed knit material, this cuffed beanie (or skullcap) provides ultimate warmth and a comfortable, unisex fit. The striking contrast of the black hat and the detailed white cross graphic instantly adds a streetwear edge to any outfit, whether you're hitting the slopes or navigating the city.",
     "images": [
-      "https://i.postimg.cc/xT35t3WK/image.png",
-      "https://i.postimg.cc/k4tGgwxc/image.png",
-      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587467/O1CN01AEPiFT2G1tx27Tgm6__2213981258956-0-cib_1_o4bgdm.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587468/O1CN01qyKPVF2G1tx7obRRo__2213981258956-0-cib_knh53q.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587472/O1CN01SjTbKy2G1tx7ocNfp__2213981258956-0-cib_1_je68yd.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587467/O1CN01C151fx2G1twzv5hqn__2213981258956-0-cib_kdr3i8.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587466/O1CN01cQUWc82G1tx55CBna__2213981258956-0-cib_yq2qlm.jpg"
     ],
     "colors": [
       {
-        "name": "Black",
-        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+        "name": "H1",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587464/O1CN01Syf7ht2G1tx66cSKR__2213981258956-0-cib_kquhcn.jpg"
       },
       {
-        "name": "White",
-        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+        "name": "H2",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761588466/O1CN01oWHH9l2G1tx7p9c4D__2213981258956-0-cib_1_vypkhx.jpg"
       },
       {
-        "name": "Blue",
-        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
+        "name": "H3",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587465/O1CN01b1r7At2G1tx7pEiP6__2213981258956-0-cib_cwtpwy.jpg"
       },
       {
-        "name": "Red",
-        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+        "name": "H4",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587465/O1CN01Wg1AK22G1tx9SrQ0e__2213981258956-0-cib_oyxsnl.jpg"
+      },
+      {
+        "name": "H5",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587465/O1CN01xH9WCV2G1tx9SvFBj__2213981258956-0-cib_ue9bff.jpg"
+      },
+      {
+        "name": "H6",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587466/O1CN01U7SxZZ2G1tx7pHjpn__2213981258956-0-cib_wagzwa.jpg"
+      },
+      {
+        "name": "H7",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587466/O1CN01HgMUtm2G1uCXfOkAW__2213981258956-0-cib_jjocg4.jpg"
       }
     ],
-    "sku": "DEMO-3",
+    "sku": "Beanie",
     "stock": 13,
-    "category": "phones"
+    "category": "Wearables"
   },
   {
     "id": "p5",
