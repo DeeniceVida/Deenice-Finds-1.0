@@ -601,7 +601,7 @@ html, body {
         flex-shrink: 0; 
 
         /* Use margin-right for separation between images */
-        margin-right: 10px; 
+        margin-right: 16px; 
         
         /* Remove vertical margin, as it's one row */
         margin-bottom: 0; 
