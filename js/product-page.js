@@ -33,7 +33,6 @@
 
 
     // 3. Initialize Price and Size Variables
-    // Default to first size price/label if 'sizes' array exists, otherwise use product's base price.
     let currentPrice = p.sizes && p.sizes.length > 0 ? p.sizes[0].price : p.price;
     let selectedSize = p.sizes && p.sizes.length > 0 ? p.sizes[0].label : null;
 
@@ -68,19 +67,25 @@
                 ${hasDiscount ? `<span class="discount-tag">${saveText}</span>` : ""}
             </div>
 
-            <p><em>${p.description}</em></p>
+            <div id="product-description-container" class="long-description">
+                <p><em>${p.description}</em></p>
+            </div>
+
 
             ${p.colors && p.colors.length > 0 ? `
-            <div class="color-options">
-                ${p.colors.map((c, idx) => `
-                    <div class="color-item">
-                        <div class="color-name">${c.name}</div>
-                        <div class="color-option ${idx === 0 ? 'selected' : ''}" data-img="${c.img}" data-name="${c.name}">
-                            <img src="${c.img}" alt="${c.name}">
+            <div id="color-selector">
+                <div class="color-options">
+                    ${p.colors.map((c, idx) => `
+                        <div class="color-item">
+                            <div class="color-name">${c.name}</div>
+                            <div class="color-option ${idx === 0 ? 'selected' : ''}" data-img="${c.img}" data-name="${c.name}">
+                                <img src="${c.img}" alt="${c.name}">
+                            </div>
                         </div>
-                    </div>
-                `).join('')}
-            </div>` : ''}
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
 
             ${p.sizes && p.sizes.length > 0 ? `
             <div class="size-options-container">
@@ -104,10 +109,34 @@
         </div>
     `;
 
-
     // 6. Add Event Listeners for User Interactions
+    
+    // 🟢 CHANGE 3: Add Description Collapse Logic 🟢
+    const descriptionContainer = document.getElementById('product-description-container');
+    const colorSelector = document.getElementById('color-selector'); 
 
-    // Thumbnail switching (unchanged)
+    if (colorSelector && descriptionContainer) {
+        
+        const collapseDescription = () => {
+             // Add the 'collapsed' class (defined in styles.css)
+            descriptionContainer.classList.add('collapsed');
+        }
+        
+        // Listen for clicks on the color selector container
+        colorSelector.addEventListener('click', (event) => {
+            // Check if the click was on a color option (using the class already defined)
+            if (event.target.closest('.color-option')) {
+                collapseDescription();
+            }
+        });
+
+        // OPTIONAL: Allow the user to click the description to expand it again
+        descriptionContainer.addEventListener('click', () => {
+             descriptionContainer.classList.remove('collapsed');
+        });
+    }
+
+    // Thumbnail switching (UNCHANGED)
     document.querySelectorAll('.product-thumbs img').forEach(img => {
         img.addEventListener('click', () => {
             document.getElementById('main-image').src = img.dataset.src;
@@ -116,16 +145,17 @@
         });
     });
 
-    // Color selection (unchanged)
+    // Color selection (UNCHANGED logic, but now triggers collapse via the colorSelector event listener above)
     document.querySelectorAll('.color-option').forEach(opt => {
         opt.addEventListener('click', () => {
             document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
             opt.classList.add('selected');
             document.getElementById('main-image').src = opt.dataset.img;
+            // The collapse function runs here automatically due to the general click listener on #color-selector
         });
     });
 
-    // Size selection (price updates) - MODIFIED FOR CUSTOM BUTTONS
+    // Size selection (price updates) (UNCHANGED)
     const sizeButtons = document.querySelectorAll('.size-button');
     if (sizeButtons.length > 0) {
         sizeButtons.forEach(button => {
@@ -147,7 +177,7 @@
         });
     }
 
-    // Add to Cart (unchanged)
+    // Add to Cart (UNCHANGED)
     document.getElementById('add-cart').addEventListener('click', () => {
         const qty = Number(document.getElementById('qty').value || 1);
         const colorEl = document.querySelector('.color-option.selected');
