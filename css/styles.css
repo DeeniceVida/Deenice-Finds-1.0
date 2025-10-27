@@ -558,7 +558,7 @@ html, body {
 @media (max-width: 768px) {
     .product-slideshow {
         flex-direction: column; 
-        align-items: center; /* Reverting to center to keep the blocks centered */
+        align-items: flex-start; /* Reverting to center to keep the blocks centered */
         width: 100%;
         gap: 12px;
     }
