@@ -556,12 +556,9 @@ html, body {
 
 /* --- Mobile Layout: Thumbnails BELOW Main Image (MAX 768px) --- */
 @media (max-width: 768px) {
-    
-    /* 1. PARENT CONTAINER (.product-slideshow) */
     .product-slideshow {
         flex-direction: column; 
-        /* ✅ CORRECT: This centers the entire block (Main Image Wrapper + Thumbs Container) */
-        align-items: center; 
+        align-items: center; /* Ensures the whole block is centered */
         width: 100%;
         gap: 12px;
     }
@@ -580,32 +577,34 @@ html, body {
         width: 100%;
         max-width: 450px;
         flex-direction: row;
-        
-        /* ✅ CORRECT: Centers the thumbnail block on the page */
         margin: 0 auto;
         
-        /* 🟢 CRITICAL: Forces inner rows to start on the far left of the container */
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        /* 🛑 CRITICAL: Force one row and enable scrolling 🛑 */
+        flex-wrap: nowrap; /* Forces all items onto one line */
+        overflow-x: auto; /* Enables horizontal swiping/scrolling */
+        -webkit-overflow-scrolling: touch; /* Smoother scrolling on iOS */
         
-        /* 🛑 CRITICAL: Must be zero to use margin-right for spacing */
+        /* Ensure items start from the left */
+        justify-content: flex-start;
         gap: 0; 
         
-        padding-bottom: 5px;
-        padding-left: 0; 
-        padding-right: 0;
+        /* Add padding so the first/last images aren't cut off */
+        padding: 0 10px 10px 10px; /* Top, Right, Bottom, Left */
     }
     
     /* 4. THUMBNAIL IMAGES (.product-thumbs img) */
     .product-thumbs img {
         width: 60px; 
         height: 60px;
+        
+        /* 🛑 CRITICAL: Prevent shrinking when scrolling 🛑 */
+        flex-shrink: 0; 
 
-        /* ✅ CORRECT: Creates the horizontal space */
+        /* Use margin-right for separation between images */
         margin-right: 10px; 
         
-        /* ✅ CORRECT: Creates the vertical space between rows */
-        margin-bottom: 10px; 
+        /* Remove vertical margin, as it's one row */
+        margin-bottom: 0; 
     }
 }
 /* --- Color Selector and Swatch Styles --- */
