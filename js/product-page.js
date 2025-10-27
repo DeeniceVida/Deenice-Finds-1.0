@@ -45,11 +45,10 @@
     container.innerHTML = `
         <div class="product-page-card">
             <div class="product-slideshow">
-                <div class="product-main">
+                <div class="product-main-image-wrapper"> {/* Added wrapper */}
                     <img id="main-image" 
                         src="${p.images[0]}" 
                         alt="${p.title}" 
-                        style="width:100%;border-radius:12px"
                         onerror="this.onerror=null;this.src='images/placeholder.png';"/>
                 </div>
                 <div class="product-thumbs">
