@@ -556,10 +556,6 @@ function sendOrder() {
     window.open(`https://wa.me/${cfg.whatsappNumber.replace('+','')}?text=${txt}`, '_blank');
 }
 
-
-// Ensure the rendering starts when the page is fully loaded
-document.addEventListener('DOMContentLoaded', renderCart);
-
     // --- WhatsApp Button Logic (Original Logic - remains the same, just better placed) ---
     if (btn) {
       btn.addEventListener('click', () => {
