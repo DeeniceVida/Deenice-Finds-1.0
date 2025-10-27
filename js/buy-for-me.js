@@ -171,9 +171,9 @@ const NAIROBI_DISTANCES = [
     { name: "Donholm", distance: 11 }, 
     { name: "Buruburu", distance: 8 }, 
     // This is used for general "Nairobi" input or the minimum
-    { name: "Nairobi and Environs (Flat Rate)", distance: 7 } 
+    { name: "Nairobi and Environs (Flat Rate)", distance: 6 } 
 ];
-const MINIMUM_NAIROBI_FEE = 420; 
+const MINIMUM_NAIROBI_FEE = 360; 
 const DELIVERY_RATE_PER_KM = 60;
 
 // --- 3. DELIVERY FEE LOGIC (UPDATED) ---
