@@ -5,6 +5,54 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
+    <style>
+/* ---------------------------------------------------------------- */
+/* --- CSS for Glassy Premium Town Input --- */
+/* ---------------------------------------------------------------- */
+
+/* 1. The Container: This creates the glassy background */
+#bfm-town-container {
+    padding: 15px;
+    margin-top: 20px;
+    margin-bottom: 15px; /* Added some margin for spacing */
+    border-radius: 12px;
+    
+    /* THE GLASSY EFFECT */
+    background: rgba(255, 255, 255, 0.5); /* Semi-transparent white background */
+    border: 1px solid rgba(255, 255, 255, 0.7); /* Light, subtle border */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    
+    /* The most important part for "glass" - BLUR */
+    backdrop-filter: blur(5px); 
+    -webkit-backdrop-filter: blur(5px); /* For Safari support */
+}
+
+/* 2. Style the Input Field inside the glassy container */
+#bfm-town-container input {
+    /* Override your old inline styles */
+    background: transparent; 
+    border: 1px solid #ccc; 
+    padding: 10px; 
+    border-radius: 6px;
+    width: 100%; 
+    box-sizing: border-box;
+    margin-top: 5px; /* Spacing below the label text */
+    transition: border-color 0.3s;
+}
+
+/* 3. Style the Input Field when focused */
+#bfm-town-container input:focus {
+    border-color: #007bff; /* Highlight blue border on focus */
+    outline: none;
+}
+
+/* Optional: Make the label text look better inside the container */
+#bfm-town-container label {
+    font-weight: bold;
+    color: #333;
+    display: block; /* Make the label take up a full line */
+}
+</style>
     <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
