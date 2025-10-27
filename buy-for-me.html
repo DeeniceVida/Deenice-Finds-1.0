@@ -24,7 +24,40 @@
   <h1>Buy For Me Service</h1>
   <p>Get US products shipped directly to Kenya</p>
 </div>
-<div class='calc-card'><label>Product link (paste): <input id='bfm-link' placeholder='https://...'></label><label>Price (USD): <input id='bfm-price' type='number' step='0.01'></label><div id='bfm-results' class='bfm-results'></div><button id='bfm-send' class='primary'>Place order via WhatsApp</button></div>
+<div class='calc-card'>
+        <label>Product link (paste): 
+            <input id='bfm-link' placeholder='https://...'>
+        </label>
+        
+        <label>Price (USD): 
+            <input id='bfm-price' type='number' step='0.01'>
+        </label>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="bfm-town">
+                <strong>Required Delivery Town/City:</strong>
+                <span style="font-size:0.8em; display:block; color:#555;">(Type your town for suggestions, or choose Nairobi & Environs)</span>
+            </label>
+            <input 
+                id="bfm-town" 
+                list="bfm-city-suggestions-list" 
+                type="text" 
+                placeholder="E.g., Mombasa, Nakuru, Nairobi" 
+                required 
+                style="width:100%; padding:8px; margin-bottom:4px; border: 1px solid #ccc;" 
+            />
+            
+            <datalist id="bfm-city-suggestions-list">
+                <option value="Nairobi and Environs"></option>
+            </datalist>
+
+            <div id="bfm-city-feedback" style="margin-top: 5px; background-color:#f0f8ff; padding:8px; border-radius:4px;">
+                </div>
+        </div>
+        <div id='bfm-results' class='bfm-results'></div>
+        
+        <button id='bfm-send' class='primary'>Place order via WhatsApp</button>
+    </div>
   <section class="how-it-works">
   <h2>How It Works</h2>
   <div class="how-step">
