@@ -1775,7 +1775,8 @@ h1 {
     padding-left: 40px; /* Indent sub-menu items */
 }
 .special-fee-notice {
-    color: #D4EDDA; /* A shade of pink/magenta, for example */
-    font-weight: italic;
+    color: #55DD97; /* A shade of pink/magenta, for example */
+    font-weight: normal;
+    font-style: italic;
     /* You can add more styles here */
 }
