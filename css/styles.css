@@ -477,13 +477,97 @@ input, select, textarea {
 .product-card h3{font-size:15px;margin:8px 0 4px}
 .product-card .price{font-weight:600}
 
-/* product page */
-.product-page{max-width:980px;margin:18px auto;padding:12px;background:transparent}
-.product-slideshow{display:flex;gap:12px}
-.product-main{flex:2}
-.product-thumbs{width:120px;display:flex;flex-direction:column;gap:8px}
-.product-thumbs img{height:64px;object-fit:cover;border-radius:8px;border:1px solid transparent;cursor:pointer}
-.product-thumbs img.selected{outline:2px solid #D9E4FC;background:var(--focus)}
+/* --- Global Product Page Structure --- */
+.product-page {
+    max-width: 980px;
+    margin: 18px auto;
+    padding: 12px;
+    background: transparent;
+}
+
+/* --- Product Slideshow (Desktop/Base Layout: Main Image + Thumbnails SIDE-BY-SIDE) --- */
+.product-slideshow {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px; /* Added space below slideshow */
+}
+
+/* Container for the main image (Assuming you've updated product-page.js to use this class/structure) */
+.product-main-image-wrapper {
+    /* Allows the main image area to take available space */
+    flex: 2; 
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Make the main image responsive inside its wrapper */
+#main-image {
+    max-width: 100%; /* 🟢 Ensures the image never overflows its container 🟢 */
+    height: auto;    /* Maintains the image's aspect ratio */
+    display: block;  /* Removes extra spacing below the image */
+    border-radius: 12px; 
+}
+
+/* Thumbnail Container - Desktop/Vertical Layout */
+.product-thumbs {
+    width: 120px; /* Fixed width for the vertical stack on desktop */
+    display: flex;
+    flex-direction: column; /* Vertical stack on desktop */
+    gap: 8px;
+    flex-shrink: 0; /* Prevents shrinking */
+}
+
+/* Thumbnail images */
+.product-thumbs img {
+    width: 100%; /* Take up the full width of the 120px .product-thumbs container */
+    height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s, outline 0.2s;
+}
+
+/* Selected Thumbnail */
+.product-thumbs img.selected {
+    outline: 2px solid #7aa0ff; /* Changed to match primary color for focus */
+    border-color: #7aa0ff;
+    background: var(--focus);
+}
+
+
+/* --- Mobile Layout: Thumbnails BELOW Main Image (MAX 768px) --- */
+@media (max-width: 768px) {
+    .product-slideshow {
+        flex-direction: column; /* Stacks main image and thumbnails vertically */
+        align-items: center;    /* Centers them horizontally */
+        gap: 12px;
+    }
+
+    .product-main-image-wrapper {
+        width: 100%; /* Main image takes full width on mobile */
+        max-width: 450px; /* Optional: Sets a max size for better readability on large phones/tablets */
+        flex: unset;
+    }
+
+    .product-thumbs {
+        /* 🟢 Thumbnails are now a horizontal row below the main image 🟢 */
+        width: 100%; 
+        max-width: 450px; /* Matches max-width of main image wrapper */
+        flex-direction: row; /* Horizontal row on mobile */
+        justify-content: center; /* Center the thumbnails */
+        flex-wrap: wrap; /* Allows thumbnails to wrap to the next line */
+        gap: 10px;
+        padding-bottom: 5px; /* Add some space before next section */
+    }
+    
+    .product-thumbs img {
+        width: 60px; /* Smaller, fixed width for mobile thumbnails */
+        height: 60px;
+    }
+}
+
+/* --- Color Selector and Swatch Styles (Unchanged, but placed for context) --- */
 .select-colors{display:flex;gap:12px;margin-top:12px}
 .color-swatch{width:56px;height:56px;border-radius:10px;border:1px solid rgba(15,20,30,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:visible}
 .color-swatch.selected{background:#F6F2FD;border:1px solid #7aa0ff}
