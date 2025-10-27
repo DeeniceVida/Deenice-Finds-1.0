@@ -45,7 +45,7 @@
     container.innerHTML = `
         <div class="product-page-card">
             <div class="product-slideshow">
-                <div class="product-main-image-wrapper"> {/* Added wrapper */}
+                <div class="product-main-image-wrapper">
                     <img id="main-image" 
                         src="${p.images[0]}" 
                         alt="${p.title}" 
