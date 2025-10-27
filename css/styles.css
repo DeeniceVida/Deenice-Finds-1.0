@@ -567,6 +567,8 @@ html, body {
         width: 100%; 
         max-width: 450px;
         flex: unset;
+      /* This centers the 450px wrapper on the page */
+        margin: 0 auto;
     }
 
     .product-thumbs {
@@ -574,6 +576,8 @@ html, body {
         width: 100%; 
         max-width: 450px; 
         flex-direction: row;        /* Horizontal row on mobile */
+      /* 🟢 FIX 2: Manually center the thumbnail block */
+        margin: 0 auto;
         justify-content: flex-start; /* 🟢 FIX 2: Aligns wrapped items to the left 🟢 */
         flex-wrap: wrap; 
         gap: 10px; /* Increased gap slightly for mobile touch targets */
