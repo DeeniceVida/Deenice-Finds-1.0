@@ -574,13 +574,15 @@ html, body {
         width: 100%;
         max-width: 450px;
         flex-direction: row;
-        margin: 0 auto; /* Keeps the thumbnail block centered */
         
-        /* 🟢 Flush-left alignment for items within the row 🟢 */
+        /* ✅ CORRECT: Keep only this to center the 450px block */
+        margin: 0 auto;
+        
+        /* 🟢 CORRECT: Ensures rows start flush left */
         justify-content: flex-start;
         flex-wrap: wrap;
         
-        /* 🛑 CRITICAL FIX: Eliminate the problematic Flexbox gap 🛑 */
+        /* 🛑 CORRECT: Eliminate the problematic Flexbox gap */
         gap: 0; 
         
         padding-bottom: 5px;
