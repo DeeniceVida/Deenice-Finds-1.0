@@ -73,20 +73,36 @@
   "description": "A temperature-sensitive smart bottle that displays water temperature on its lid.",
   "images": [
     "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg",
-    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01N2mCVw1uM8C9BzjHU__983656022-0-cib_bd41x9.jpg"
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01N2mCVw1uM8C9BzjHU__983656022-0-cib_bd41x9.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589638/O1CN012ecQxF1uM81aiUt21__983656022-0-cib_p9zqyr.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590028/O1CN01ogC7qL1uM8CO9R3js__983656022-0-cib_bg7jfs.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590027/O1CN01CM7GfU1uM8CNcgZG2__983656022-0-cib_lxwbx6.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590029/O1CN014dC6wq1uM7m5iYBhU__983656022-0-cib_f3akp0.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01g1I3dd1uM81aEf89a__983656022-0-cib_gouvjt.jpg"
   ],
   "colors": [
     { "name": "F1", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg" },
     { "name": "F2", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01qhIrSb1uM8C8IBTvm__983656022-0-cib_ccu8ux.jpg" },
-    { "name": "F3", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331004/O1CN01XIdjOq1uM8C2wcZFf__983656022-0-cib_e1ajug.jpg" }
+    { "name": "F3", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331004/O1CN01XIdjOq1uM8C2wcZFf__983656022-0-cib_e1ajug.jpg" },
+    { "name": "F4", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589638/O1CN012ecQxF1uM81aiUt21__983656022-0-cib_p9zqyr.jpg" },
+    { "name": "F5", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01g1I3dd1uM81aEf89a__983656022-0-cib_gouvjt.jpg" },
+    { "name": "F6", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01u3wxTp1uM80d1ZVtl__983656022-0-cib_c3fk8v.jpg" },
+    { "name": "F7", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589640/O1CN01xAxjnk1uM81d5LCN5__983656022-0-cib_mcsadz.jpg" },
+    { "name": "F8", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01Yd1E6R1uM81bvYiah__983656022-0-cib_mmrxhy.jpg" },
+    { "name": "F9", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589641/O1CN01ODLOEE1uM81ZDqn5e__983656022-0-cib_oswwwe.jpg" },
+    { "name": "F10", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590032/O1CN01UpMyts1uM7m8ZP3tJ__983656022-0-cib_wfv3gv.jpg" }
+    { "name": "F11", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590029/O1CN014dC6wq1uM7m5iYBhU__983656022-0-cib_f3akp0.jpg" }
+    { "name": "F12", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590027/O1CN01CM7GfU1uM8CNcgZG2__983656022-0-cib_lxwbx6.jpg" }
+    { "name": "F13", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590027/O1CN01PQmgmU1uM8CNio4IL__983656022-0-cib_gxpmpc.jpg" }
+    { "name": "F14", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590028/O1CN01ogC7qL1uM8CO9R3js__983656022-0-cib_bg7jfs.jpg" }
   ],
   "sizes": [
     { "label": "300*800*3mm", "price": 1400 },
     { "label": "400*900*3mm", "price": 1600 }
   ],
-  "sku": "BOTTLE-01",
+  "sku": "Desk Mat",
   "stock": 18,
-  "category": "Desk Mat"
+  "category": "Comp"
 },
   {
     "id": "p4",
