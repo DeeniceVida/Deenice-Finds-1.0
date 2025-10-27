@@ -1,8 +1,6 @@
-// --- 1. ACCURATE WELLS FARGO DELIVERY DATA ---
+// --- 1. ACCURATE WELLS FARGO DELIVERY DATA (OUTSIDE NAIROBI) ---
+// This list remains for long-distance parcel rates (typically branch pickup).
 const DELIVERY_ZONES = [
-    // Nairobi and Environs/Manual Option (Must be the first option for logic below)
-    { name: "Nairobi and Environs (Manual Entry)", fee: 360, type: 'manual' }, 
-    
     // Rift Valley Routes
     { name: "Baraton", fee: 700, type: 'suggested' },
     { name: "Bungoma", fee: 600, type: 'suggested' },
@@ -128,7 +126,7 @@ const DELIVERY_ZONES = [
     { name: "Watamu", fee: 850, type: 'suggested' },
     { name: "Wundanyi", fee: 800, type: 'suggested' },
 
-    // Outer Nairobi Routes
+    // Outer Nairobi Routes (Wells Fargo Branches)
     { name: "Athi River", fee: 360, type: 'suggested' },
     { name: "Emali", fee: 580, type: 'suggested' },
     { name: "Garissa", fee: 750, type: 'suggested' },
@@ -153,24 +151,54 @@ const DELIVERY_ZONES = [
     { name: "Nairobi (Branch Pickup)", fee: 690, type: 'suggested' }
 ];
 
-// --- 2. DELIVERY FEE LOGIC ---
+// --- 2. NAIROBI AND ENVIRONS DISTANCE DATA (Distance from CBD/GPO) ---
+// Fee: Distance (km) * KES 60. Minimum fee is 360 KES.
+const NAIROBI_DISTANCES = [
+    { name: "Westlands", distance: 5 }, 
+    { name: "Upper Hill", distance: 4 }, 
+    { name: "Kilimani", distance: 7 }, 
+    { name: "Lavington", distance: 10 }, 
+    { name: "Karen", distance: 18 }, 
+    { name: "Lang'ata", distance: 11 }, 
+    { name: "Embakasi", distance: 15 }, 
+    { name: "Roysambu", distance: 11 }, 
+    { name: "Kasarani", distance: 14 }, 
+    { name: "Rongai", distance: 20 }, 
+    { name: "Syokimau", distance: 22 }, 
+    { name: "Mlolongo", distance: 25 }, 
+    { name: "South C", distance: 6 }, 
+    { name: "South B", distance: 5 }, 
+    { name: "Donholm", distance: 9 }, 
+    { name: "Buruburu", distance: 8 }, 
+    // This is used for general "Nairobi" input or the minimum
+    { name: "Nairobi and Environs (Flat Rate)", distance: 6 } 
+];
+const MINIMUM_NAIROBI_FEE = 360; 
+const DELIVERY_RATE_PER_KM = 60;
+
+// --- 3. DELIVERY FEE LOGIC (UPDATED) ---
 
 function getDeliveryFee(town) {
-    const cleanedTown = town.toLowerCase().trim().replace(' (manual entry)', '');
-    const nairobiFee = DELIVERY_ZONES.find(z => z.type === 'manual').fee;
-
-    // 1. Check for exact match
-    const matchedZone = DELIVERY_ZONES.find(z => z.name.toLowerCase().replace(' (manual entry)', '') === cleanedTown);
-    if (matchedZone) {
-        return matchedZone.fee;
+    const cleanedTown = town.toLowerCase().trim();
+    
+    // 1. Check Nairobi Distance Logic
+    const matchedNairobiZone = NAIROBI_DISTANCES.find(z => cleanedTown.includes(z.name.toLowerCase()));
+    
+    if (matchedNairobiZone) {
+        // Calculate fee based on distance
+        let fee = Math.round(matchedNairobiZone.distance * DELIVERY_RATE_PER_KM); 
+        
+        // Enforce minimum fee
+        return Math.max(fee, MINIMUM_NAIROBI_FEE);
     }
 
-    // 2. Check for Nairobi/Environs (manual) logic
-    if (cleanedTown.includes('nairobi') || cleanedTown.includes('environs')) {
-        return nairobiFee;
+    // 2. Check Wells Fargo Long-Distance Logic
+    const matchedLongDistanceZone = DELIVERY_ZONES.find(z => z.name.toLowerCase().replace(' (branch pickup)', '') === cleanedTown);
+    if (matchedLongDistanceZone) {
+        return matchedLongDistanceZone.fee;
     }
 
-    // 3. Fallback (no valid town entered)
+    // 3. Fallback (Any other input)
     return 0;
 }
 
@@ -180,48 +208,65 @@ function updateCityFeedback(town) {
     if (!feedbackDiv || !townInput) return;
 
     const townFee = getDeliveryFee(town);
-    const nairobiFee = DELIVERY_ZONES.find(z => z.type === 'manual').fee;
-    const cleanedTown = town.toLowerCase().trim().replace(' (manual entry)', '');
-
+    
+    // Check if the town matches a Nairobi distance zone
+    const matchedNairobiZone = NAIROBI_DISTANCES.find(z => town.toLowerCase().trim().includes(z.name.toLowerCase()));
+    const isNairobiDistanceZone = !!matchedNairobiZone;
+    
     feedbackDiv.style.padding = '8px';
     feedbackDiv.style.borderRadius = '4px';
 
     if (townFee > 0) {
-        if (townFee === nairobiFee && (cleanedTown.includes('nairobi') || cleanedTown.includes('environs'))) {
-            // Nairobi/Manual Case
-            feedbackDiv.style.backgroundColor = '#fff3cd'; // Light yellow
-            feedbackDiv.innerHTML = `**Delivery Fee (Nairobi/Environs):** ${townFee.toLocaleString()} KES`;
-        } else {
-            // Suggested Town Case
-            feedbackDiv.style.backgroundColor = '#d4edda'; // Light green
-            feedbackDiv.innerHTML = `**Delivery Fee for ${town}:** ${townFee.toLocaleString()} KES`;
+        let feeType = "Exact Branch Fee";
+        let feedbackColor = '#d4edda'; // Light green
+        
+        if (isNairobiDistanceZone) {
+            // **NOTE ADDED HERE:**
+            feeType = `Nairobi Doorstep (Approx. ${matchedNairobiZone.distance}km @ KES ${DELIVERY_RATE_PER_KM}/km)`;
+            feedbackColor = '#fff3cd'; // Light yellow for distance estimate
+        } else if (townFee === MINIMUM_NAIROBI_FEE) {
+            feeType = `Nairobi Environs Flat Fee (Min)`;
         }
+
+        feedbackDiv.style.backgroundColor = feedbackColor;
+        feedbackDiv.innerHTML = `**Delivery Fee for ${town}:** ${townFee.toLocaleString()} KES (${feeType})`;
+        
     } else {
         // No Match/TBD Case
         feedbackDiv.style.backgroundColor = '#f0f8ff'; // Light blue
-        feedbackDiv.innerHTML = `**Delivery Fee:** TBD. Type your town for suggestion, or select **Nairobi** for **${nairobiFee.toLocaleString()} KES**.`;
+        feedbackDiv.innerHTML = `**Delivery Fee:** TBD. Type your town for suggestion, or select a Wells Fargo branch. Minimum Nairobi doorstep fee: **${MINIMUM_NAIROBI_FEE.toLocaleString()} KES**`;
     }
 }
 
 
-// --- 3. MAIN CALCULATOR LOGIC (Updated) ---
+// --- 4. MAIN CALCULATOR LOGIC (Updated to pull ALL towns for suggestions) ---
 
 document.addEventListener("DOMContentLoaded", () => {
     const priceInput = document.getElementById("bfm-price");
     const linkInput = document.getElementById("bfm-link");
-    const townInput = document.getElementById("bfm-town"); // NEW: Get town input
+    const townInput = document.getElementById("bfm-town"); 
     const resultBox = document.getElementById("bfm-results");
     const sendBtn = document.getElementById("bfm-send");
 
-    const USD_TO_KES = 135; // Adjust to your current exchange rate
+    const USD_TO_KES = 135; 
 
-    // Populate datalist dynamically (for town suggestions)
+    // Combine all unique town names for the datalist
+    const allTowns = [
+        ...NAIROBI_DISTANCES.map(z => z.name),
+        ...DELIVERY_ZONES.map(z => z.name)
+    ].filter(name => !name.includes('Flat Rate')); // Filter out the internal flat rate entry
+
+    // Populate datalist dynamically 
     const dataList = document.getElementById('bfm-city-suggestions-list');
     if (dataList) {
-        dataList.innerHTML = DELIVERY_ZONES.map(z => 
-            // Use a cleaner value in the list option
-            `<option value="${z.name.replace(' (Manual Entry)', '')}">`
-        ).join('');
+        // Clear existing options (if any) and add new ones
+        dataList.innerHTML = '';
+        allTowns.forEach(name => {
+            const option = document.createElement('option');
+            // Clean up the names for display in the datalist
+            option.value = name.replace(' (Branch Pickup)', '').replace(' (Flat Rate)', '').replace(' (Manual Entry)', '');
+            dataList.appendChild(option);
+        });
     }
 
     function calculateTotal(price) {
@@ -243,21 +288,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateResults() {
         const price = parseFloat(priceInput.value);
-        const town = townInput.value.trim(); // NEW: Get current town
-        const deliveryKES = getDeliveryFee(town); // NEW: Get delivery fee
+        const town = townInput.value.trim(); 
+        const deliveryKES = getDeliveryFee(town); 
 
         if (isNaN(price) || price <= 0) {
             resultBox.innerHTML = `<p style="color:#888;">Enter a valid price to see the total.</p>`;
-            updateCityFeedback(town); // Still show city feedback
+            updateCityFeedback(town); 
             return;
         }
         
-        // Update city feedback first
         updateCityFeedback(town);
 
         const { shipping, service, totalUSD, totalKES } = calculateTotal(price);
         
-        const grandTotalKES = totalKES + deliveryKES; // NEW: Add delivery fee
+        const grandTotalKES = totalKES + deliveryKES; 
 
         resultBox.innerHTML = `
             <div class="quote-box" style="border:1px solid #ccc; padding:15px; border-radius:8px;">
@@ -282,27 +326,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update live as user types (both price and town)
     priceInput.addEventListener("input", updateResults);
-    townInput.addEventListener("input", updateResults); // NEW: React to town changes
+    townInput.addEventListener("input", updateResults); 
 
-    // WhatsApp order (Updated)
+    // WhatsApp order (Updated to reflect new logic)
     sendBtn.addEventListener("click", () => {
         const price = parseFloat(priceInput.value);
         const link = linkInput.value.trim();
-        const town = townInput.value.trim(); // NEW
-        const deliveryKES = getDeliveryFee(town); // NEW
+        const town = townInput.value.trim(); 
+        const deliveryKES = getDeliveryFee(town); 
 
         if (isNaN(price) || price <= 0) {
             alert("Please enter a valid price.");
             return;
         }
 
-        if (!town || deliveryKES === 0) { // NEW: Require a town selection with a valid fee
+        if (!town || deliveryKES === 0) { 
             alert("🚨 Please enter a delivery town and ensure the delivery fee is calculated before sending the order.");
             return;
         }
 
         const { totalKES } = calculateTotal(price);
-        const grandTotalKES = totalKES + deliveryKES; // NEW
+        const grandTotalKES = totalKES + deliveryKES; 
 
         const message = encodeURIComponent(
     	    `🛍 Buy For Me Request (Calculated)\n\n` +
