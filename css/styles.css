@@ -557,9 +557,9 @@ html, body {
 /* --- Mobile Layout: Thumbnails BELOW Main Image (MAX 768px) --- */
 @media (max-width: 768px) {
     .product-slideshow {
-        flex-direction: column; /* Stack vertically */
-        align-items: flex-start;    /* Center everything */
-        width: 100%; /* Ensure the container spans full width to allow left-alignment */
+        flex-direction: column; 
+        align-items: center; /* Reverting to center to keep the blocks centered */
+        width: 100%;
         gap: 12px;
     }
 
@@ -567,40 +567,37 @@ html, body {
         width: 100%; 
         max-width: 450px;
         flex: unset;
-      /* This centers the 450px wrapper on the page */
-        margin: 0 auto;
+        margin: 0 auto; /* Keeps main image centered */
     }
 
     .product-thumbs {
-    /* Mobile layout changes: */
-    width: 100%; 
-    max-width: 450px; 
-    flex-direction: row; 
-    
-    /* 🟢 Correctly centers the entire thumbnail block 🟢 */
-    margin: 0 auto;
-    
-    /* Ensures rows start flush left */
-    justify-content: flex-start; 
-    flex-wrap: wrap; 
-    
-    /* 🛑 IMPORTANT: REMOVE GAP 🛑 */
-    gap: 0; 
-    
-    padding-bottom: 5px;
-    padding-left: 0; 
-    padding-right: 0;
-}
+        width: 100%;
+        max-width: 450px;
+        flex-direction: row;
+        margin: 0 auto; /* Keeps the thumbnail block centered */
+        
+        /* 🟢 Flush-left alignment for items within the row 🟢 */
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        
+        /* 🛑 CRITICAL FIX: Eliminate the problematic Flexbox gap 🛑 */
+        gap: 0; 
+        
+        padding-bottom: 5px;
+        padding-left: 0;
+        padding-right: 0;
+    }
     
     .product-thumbs img {
-        width: 60px; /* Smaller mobile thumbnails */
+        /* 🛑 CRITICAL FIX: Ensure width is explicitly 60px and not 100% 🛑 */
+        width: 60px; 
         height: 60px;
-      /* 🟢 FIX: Use margin on the image to control spacing 🟢 */
-    margin-right: 10px;   /* Creates the 10px horizontal space */
-    margin-bottom: 10px;  /* Creates the vertical space between rows */
+
+        /* FIX: Controls spacing consistently on every image */
+        margin-right: 10px;    /* Horizontal space */
+        margin-bottom: 10px;   /* Vertical space between rows */
     }
 }
-
 /* --- Color Selector and Swatch Styles --- */
 .select-colors{display:flex;gap:12px;margin-top:12px}
 .color-swatch{width:56px;height:56px;border-radius:10px;border:1px solid rgba(15,20,30,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:visible}
