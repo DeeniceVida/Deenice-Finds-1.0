@@ -1774,3 +1774,8 @@ h1 {
     /* You might want a slightly different padding or a left indentation */
     padding-left: 40px; /* Indent sub-menu items */
 }
+.special-fee-notice {
+    color: #D4EDDA; /* A shade of pink/magenta, for example */
+    font-weight: italic;
+    /* You can add more styles here */
+}
