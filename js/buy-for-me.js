@@ -308,10 +308,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalKES = totalUSD * USD_TO_KES;
         const grandTotalKES = totalKES + deliveryKES; 
 
-        // Conditional display for Apple Fee
-        const appleFeeDisplay = appleFee > 0 ? 
-            `<p style="color:red;"><strong>Apple Pick Up Fee:</strong> $${appleFee.toFixed(2)}</p>` : 
-            '';
+        // --- Updated appleFeeDisplay (Using a CSS class) ---
+const appleFeeDisplay = appleFee > 0 ? 
+    `<p class="special-fee-notice"><strong>Apple Pick Up Fee:</strong> $${appleFee.toFixed(2)}</p>` : 
+    '';
 
         resultBox.innerHTML = `
             <div class="quote-box" style="border:1px solid #ccc; padding:15px; border-radius:8px;">
