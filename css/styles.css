@@ -1780,3 +1780,21 @@ h1 {
     font-style: italic;
     /* You can add more styles here */
 }
+
+/* Initial State (Expanded) */
+#product-description-container {
+    max-height: 400px; /* Adjust this to fit your initial design */
+    overflow: hidden;
+    transition: max-height 0.3s ease-out; /* For a smooth animation */
+}
+
+/* Collapsed State (When color is selected) */
+#product-description-container.collapsed {
+    max-height: 50px; /* Reduced height to keep description visible but brief */
+}
+
+/* Make sure your color swatches/buttons have a recognizable class */
+.color-swatch {
+    cursor: pointer;
+    /* Other styling for your color buttons */
+}
