@@ -1,67 +1,73 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
-  <title>Products — Deenice Finds</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
+  <title>Products — Deenice Finds</title>
 
-  <!-- ✅ Styles -->
-  <link rel="stylesheet" href="css/styles.css" />
+  <!-- ✅ Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
 
-  <!-- ✅ Google Analytics (replace G-XXXXXXXX with your ID) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXX');
-  </script>
+  <!-- ✅ Google Analytics (replace G-XXXXXXXX with your ID) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXX');
+  </script>
 
-  <!-- ✅ Facebook Pixel (replace PIXEL_ID with your ID) -->
-  <script>
-    !(function(f,b,e,v,n,t,s){
-      if(f.fbq)return;
-      n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;
-      n.push=n;
-      n.loaded=!0;
-      n.version='2.0';
-      n.queue=[];
-      t=b.createElement(e);
-      t.async=!0;
-      t.src=v;
-      s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)
-    })(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', 'PIXEL_ID');
-    fbq('track', 'PageView');
-  </script>
+  <!-- ✅ Facebook Pixel (replace PIXEL_ID with your ID) -->
+  <script>
+    !(function(f,b,e,v,n,t,s){
+      if(f.fbq)return;
+      n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;
+      n.push=n;
+      n.loaded=!0;
+      n.version='2.0';
+      n.queue=[];
+      t=b.createElement(e);
+      t.async=!0;
+      t.src=v;
+      s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    })(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', 'PIXEL_ID');
+    fbq('track', 'PageView');
+  </script>
 </head>
 
 <body>
-  <!-- ✅ Header -->
-  <header class="site-header">
-    <a href="index.html" class="logo">Deenice Finds</a>
-    <nav>
-      <a href="products.html" class="active">Products</a>
-      <a href="cart.html">Cart <span id="cart-count"></span></a>
-    </nav>
-  </header>
+  <!-- ✅ Header -->
+  <header class="site-header">
+    <a href="index.html" class="logo">Deenice Finds</a>
+    <nav>
+      <a href="products.html" class="active">Products</a>
+      <a href="cart.html">Cart <span id="cart-count"></span></a>
+    </nav>
+  </header>
 
-  <!-- ✅ Main Content -->
-  <main class="page-content">
-    <h1>Our Products</h1>
-    <div id="products-grid" class="products-grid"></div>
-  </main>
+  <!-- ✅ Main Content -->
+  <main class="page-content">
+    <h1>Our Products</h1>
+    <div id="products-grid" class="products-grid"></div>
+  </main>
 
-  <!-- ✅ Footer -->
-  <footer class="site-footer">
-    <p>&copy; 2025 Deenice Finds. All rights reserved.</p>
-  </footer>
+  <!-- ✅ Footer -->
+  <footer class="site-footer">
+    <!-- NEW POLICY LINKS SECTION -->
+    <div class="policy-links">
+      <a href="returns.html">Refund & Returns</a>
+      <span class="separator">|</span>
+      <a href="shipping.html">Shipping Policy</a>
+    </div>
+    <p>&copy; 2025 Deenice Finds. All rights reserved.</p>
+  </footer>
 
-  <!-- ✅ Scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/products.js"></script>
+  <!-- ✅ Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/products.js"></script>
 </body>
 </html>
