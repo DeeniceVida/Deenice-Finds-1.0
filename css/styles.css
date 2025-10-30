@@ -2125,3 +2125,17 @@ h1 {
         object-fit: contain; 
     }
 }
+/* Styling for the thumbnail images */
+.product-thumbs img {
+    width: 60px; /* Adjust size as needed */
+    height: 60px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    transition: border-color 0.2s;
+}
+
+.product-thumbs img.selected {
+    border-color: #007bff; /* Highlight selected thumb */
+}
