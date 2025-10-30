@@ -2,8 +2,6 @@
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
     const container = document.getElementById('product-page');
-    // 💡 NEW: Define a dedicated container for the alert and specs.
-    const productDetailsContainer = document.getElementById('product-details'); 
     let data = [];
     let p = null;
 
@@ -32,7 +30,6 @@
         console.warn("Product or container element not found.");
         return;
     }
-
 
     // 3. Initialize Price and Size Variables
     let currentPrice = p.sizes && p.sizes.length > 0 ? p.sizes[0].price : p.price;
@@ -78,24 +75,36 @@
     }
 
     // ***********************************************
-    // 5. Build and Render the Product Page HTML
+    // 5. Build and Render the Product Page HTML (Now with Swiper Structure)
     // ***********************************************
     container.innerHTML = `
         <div class="product-page-card">
+            
             <div class="product-slideshow">
-                <div class="product-main-image-wrapper">
-                    <img id="main-image" 
-                        src="${p.images[0]}" 
-                        alt="${p.title}" 
-                        onerror="this.onerror=null;this.src='images/placeholder.png';"/>
+                
+                <div id="product-main-swiper" class="swiper">
+                    <div class="swiper-wrapper">
+                        ${p.images.map((im) => `
+                            <div class="swiper-slide product-main-image-wrapper">
+                                <img src="${im}" 
+                                     alt="${p.title}" 
+                                     onerror="this.onerror=null;this.src='images/placeholder.png';"/>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="swiper-pagination"></div>
                 </div>
-                <div class="product-thumbs">
-                    ${p.images.map((im, idx) => `
-                        <img data-src="${im}" ${idx === 0 ? 'class="selected"' : ''} src="${im}" />
-                    `).join('')}
+
+                <div id="product-thumb-swiper" class="swiper product-thumbs">
+                    <div class="swiper-wrapper">
+                        ${p.images.map((im, idx) => `
+                            <div class="swiper-slide">
+                                <img data-index="${idx}" src="${im}" class="thumb-img ${idx === 0 ? 'selected' : ''}" />
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             </div>
-
             <div id="product-details">
                 ${alertHtml} <h2>${p.title}</h2>
 
@@ -108,7 +117,6 @@
                 <div id="product-description-container" class="long-description">
                     <p><em>${p.description}</em></p>
                 </div>
-
 
                 ${p.colors && p.colors.length > 0 ? `
                 <div id="color-selector">
@@ -131,8 +139,8 @@
                     <div class="size-buttons" id="size-buttons-group">
                         ${p.sizes.map((s, idx) => `
                             <button class="size-button ${idx === 0 ? 'selected' : ''}" 
-                                    data-size="${s.label}" 
-                                    data-price="${s.price}">
+                                        data-size="${s.label}" 
+                                        data-price="${s.price}">
                                 ${s.label}
                             </button>
                         `).join('')}
@@ -164,51 +172,100 @@
 
     // 6. Add Event Listeners for User Interactions
     
-    // 🟢 NEW FUNCTION: Consolidate all listeners here 🟢
+    // 🟢 NEW FUNCTION: Initialize Swiper instances
+    function initializeSwipers() {
+        
+        // 1. Initialize the Thumbnail Swiper
+        const thumbsSwiper = new Swiper('#product-thumb-swiper', {
+            spaceBetween: 10,
+            slidesPerView: 4,
+            freeMode: true,
+            watchSlidesProgress: true,
+        });
+
+        // 2. Initialize the Main Product Image Swiper (now with swipe support!)
+        const mainSwiper = new Swiper('#product-main-swiper', {
+            spaceBetween: 10,
+            pagination: { // Adds dots at the bottom for image count
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+            thumbs: {
+                swiper: thumbsSwiper, // Links the main slider to the thumbnail slider
+            },
+            // Enable touch/swipe sensitivity for mobile
+            touchEventsTarget: 'wrapper',
+            longSwipes: true, 
+        });
+        
+        // 3. Handle Thumbnail Clicks to update swiper
+        document.querySelectorAll('.thumb-img').forEach(img => {
+            img.addEventListener('click', (e) => {
+                const index = parseInt(e.target.dataset.index);
+                mainSwiper.slideTo(index);
+                
+                // Manually handle the 'selected' class on thumbnails for visual feedback
+                document.querySelectorAll('.thumb-img').forEach(i => i.classList.remove('selected'));
+                e.target.classList.add('selected');
+            });
+        });
+        
+        // 4. Sync Thumbnail selection with main swipe action
+        mainSwiper.on('slideChange', function() {
+            const activeIndex = this.activeIndex;
+            
+            // Remove 'selected' from all thumbnails
+            document.querySelectorAll('.thumb-img').forEach(i => i.classList.remove('selected'));
+            
+            // Add 'selected' to the active thumbnail
+            const activeThumb = document.querySelector(`.thumb-img[data-index="${activeIndex}"]`);
+            if (activeThumb) {
+                 activeThumb.classList.add('selected');
+                 // Scroll the thumbnail slider to keep the active thumbnail in view
+                 thumbsSwiper.slideTo(activeIndex);
+            }
+        });
+    }
+
+    // This function manages everything else that's not related to swiping
     function setupProductInteractions() {
-        // ... (Listener setup code remains the same as your original script) ...
         
         // --- Description Collapse Logic (Your new feature) ---
         const descriptionContainer = document.getElementById('product-description-container');
         const colorSelector = document.getElementById('color-selector'); 
 
         if (colorSelector && descriptionContainer) {
-            
             const collapseDescription = () => {
-                // Add the 'collapsed' class (defined in styles.css)
                 descriptionContainer.classList.add('collapsed');
             }
             
-            // Listen for clicks on the color selector container
-            // This is the correct way to delegate the click event
             colorSelector.addEventListener('click', (event) => {
-                // Check if the click was on a color option (using the class .color-option)
                 if (event.target.closest('.color-option')) {
                     collapseDescription();
                 }
             });
 
-            // OPTIONAL: Allow the user to click the description to expand it again
             descriptionContainer.addEventListener('click', () => {
                 descriptionContainer.classList.remove('collapsed');
             });
         }
         
-        // --- Thumbnail switching (Existing Logic) ---
-        document.querySelectorAll('.product-thumbs img').forEach(img => {
-            img.addEventListener('click', () => {
-                document.getElementById('main-image').src = img.dataset.src;
-                document.querySelectorAll('.product-thumbs img').forEach(i => i.classList.remove('selected'));
-                img.classList.add('selected');
-            });
-        });
-
         // --- Color selection (Existing Logic) ---
         document.querySelectorAll('.color-option').forEach(opt => {
             opt.addEventListener('click', () => {
                 document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
                 opt.classList.add('selected');
-                document.getElementById('main-image').src = opt.dataset.img;
+                
+                // NOTE: Swiper is not directly compatible with changing the single image element's source.
+                // To display the color-specific image:
+                // 1. You could add it to the 'p.images' array temporarily.
+                // 2. Or, for simplicity and assuming color images are outside the main gallery:
+                // We'll keep the direct image change logic for color selection for now.
+                // This will REPLACE the current image in the active swiper slide.
+                const activeSlideImg = document.querySelector('#product-main-swiper .swiper-slide-active img');
+                if (activeSlideImg) {
+                    activeSlideImg.src = opt.dataset.img; 
+                }
             });
         });
 
@@ -253,7 +310,7 @@
                 color,
                 size: selectedSize || 'Standard',
                 model: selectedModel || 'Standard',
-                img: p.images[0]
+                img: p.images[0] 
             });
 
             localStorage.setItem('de_cart', JSON.stringify(cart));
@@ -264,7 +321,8 @@
         });
     }
 
-    // 🟢 FINAL STEP: Call the function after all HTML has been injected 🟢
+    // 🟢 FINAL STEP: Call the functions after all HTML has been injected 🟢
     setupProductInteractions();
+    initializeSwipers(); // Must be called after the HTML is rendered
 
 })();
