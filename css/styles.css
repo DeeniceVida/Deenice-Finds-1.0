@@ -1949,6 +1949,7 @@ h1 {
 .product-option-select {
     /* General appearance */
     width: 100%; /* Full width for responsiveness */
+    max-width: 300px; /* 👈 ADD THIS: Limits the maximum width of the SELECT box itself */
     padding: 12px 15px;
     border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle white border */
     border-radius: 10px;
@@ -1966,6 +1967,8 @@ h1 {
     white-space: nowrap; /* Prevent option text from wrapping */
     overflow: hidden;
     text-overflow: ellipsis; /* Use ellipsis (...) if text is too long */
+  /* Ensure the options dropdown stays contained in the visible box */
+    box-sizing: border-box;
 }
 
 /* Optional: Better focus state */
@@ -1980,9 +1983,10 @@ h1 {
 /* For simplicity, we'll keep the default arrow visible if 'appearance: none' is removed. */
 
 /* Small screen adjustment (Ensures it looks good on mobile) */
-@media (max-width: 600px) {
+@media (max-width: 400px) {
     .product-option-select {
         padding: 10px 12px;
         font-size: 15px;
+        max-width: 100%;
     }
 }
