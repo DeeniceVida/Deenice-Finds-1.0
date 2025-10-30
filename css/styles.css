@@ -2069,15 +2069,50 @@ h1 {
     width: 40%; /* Ensures the label column isn't too wide */
     font-weight: 600;
 }
-@media (min-width: 768px) {
+/* --- Desktop Two-Column Layout (FIXED AND EXPANDED) --- */
+@media (min-width: 769px) {
     .product-page-card {
         display: grid;
-        grid-template-columns: 1fr 1.2fr; /* Example ratio for image/details */
-        gap: 30px;
+        /* Define the columns: 1 unit for the image area, 1.2 units for the details area */
+        grid-template-columns: minmax(350px, 1fr) minmax(350px, 1.2fr); 
+        gap: 40px; /* Space between columns */
+        
+        /* Define the layout using named areas */
+        grid-template-areas:
+            "slideshow details"
+            "specs     specs"; /* Specs span the full width */
+        
+        /* Ensure the card spans wider on desktop */
+        max-width: 1200px;
+        margin: 0 auto; /* Center the card */
+        box-shadow: none; /* Remove box-shadow on this large container if it looks odd */
     }
 
-    #product-main-image {
+    /* Assign elements to the grid areas */
+    .product-slideshow {
+        grid-area: slideshow; /* Left column */
+        /* Ensure the side-by-side layout you had originally intended: vertical thumbs next to the main image */
+        display: flex;
+        flex-direction: row; 
+        align-items: flex-start; /* Aligns thumbnails to the top */
+    }
+
+    #product-details {
+        grid-area: details; /* Right column */
+    }
+
+    /* Place the specifications table at the bottom, spanning both columns */
+    #product-specs-container {
+        grid-area: specs;
+        margin-top: 20px;
+    }
+    
+    /* Ensure the main image itself is responsive within its wrapper */
+    #main-image {
         width: 100%;
         height: auto;
+        /* Use a ratio to reserve space for the image and prevent content jump */
+        aspect-ratio: 4 / 3; 
+        object-fit: contain; 
     }
 }
