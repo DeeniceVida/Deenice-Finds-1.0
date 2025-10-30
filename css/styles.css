@@ -2090,12 +2090,21 @@ h1 {
 
     /* Assign elements to the grid areas */
     .product-slideshow {
-        grid-area: slideshow; /* Left column */
-        /* Ensure the side-by-side layout you had originally intended: vertical thumbs next to the main image */
-        display: flex;
-        flex-direction: row; 
-        align-items: flex-start; /* Aligns thumbnails to the top */
-    }
+    grid-area: slideshow; /* Left column */
+    /* CHANGE: Stacks the main image wrapper and the thumbnails vertically */
+    display: flex;
+    flex-direction: column; 
+    align-items: center; /* Center the image/thumbs in the left column */
+    gap: 15px; /* Add some space between the main image and the thumbs */
+}
+
+/* Add styling for the thumbs to arrange them horizontally */
+.product-thumbs {
+    display: flex;
+    gap: 10px; /* Space between each thumbnail */
+    justify-content: center; /* Center the thumbnails */
+    width: 100%; /* Ensure the row of thumbs is full width */
+}
 
     #product-details {
         grid-area: details; /* Right column */
