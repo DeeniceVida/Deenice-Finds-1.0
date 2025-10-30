@@ -2106,8 +2106,11 @@ h1 {
 
     /* Ensure the thumbnail container and its images are centered horizontally (globally defined) */
     .product-thumbs {
-        width: 100%; /* Ensure it spans the width */
-        /* Flex properties for the horizontal row are set in the global CSS (outside this block) */
+    width: 100%; /* Ensure it spans the width */
+    /* 👇 ADD THESE FLEX PROPERTIES 👇 */
+    display: flex; /* Make it a flex container */
+    justify-content: center; /* Center the thumbnails inside the container */
+    gap: 10px; /* Add space between the thumbnails (optional, but good practice) */
     }
 
     #product-details {
