@@ -1,68 +1,65 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
-  <title>Product — Deenice Finds</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
+  <title>Product — Deenice Finds</title>
 
-  <!-- ✅ Styles -->
-  <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/styles.css" />
 
-  <!-- ✅ Google Analytics (replace G-XXXXXXXX with your ID) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXX');
-  </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
-  <!-- ✅ Facebook Pixel (replace PIXEL_ID with your ID) -->
-  <script>
-    !(function(f,b,e,v,n,t,s){
-      if(f.fbq)return;
-      n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;
-      n.push=n;
-      n.loaded=!0;
-      n.version='2.0';
-      n.queue=[];
-      t=b.createElement(e);
-      t.async=!0;
-      t.src=v;
-      s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)
-    })(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', 'PIXEL_ID');
-    fbq('track', 'PageView');
-  </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXX');
+  </script>
+
+    <script>
+    !(function(f,b,e,v,n,t,s){
+      if(f.fbq)return;
+      n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;
+      n.push=n;
+      n.loaded=!0;
+      n.version='2.0';
+      n.queue=[];
+      t=b.createElement(e);
+      t.async=!0;
+      t.src=v;
+      s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    })(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', 'PIXEL_ID');
+    fbq('track', 'PageView');
+  </script>
 </head>
 
 <body>
-  <!-- ✅ Header -->
-  <header class="site-header">
-    <a href="index.html" class="logo">Deenice Finds</a>
-    <nav>
-      <a href="products.html">Products</a>
-      <a href="cart.html">Cart <span id="cart-count"></span></a>
-    </nav>
-  </header>
+    <header class="site-header">
+    <a href="index.html" class="logo">Deenice Finds</a>
+    <nav>
+      <a href="products.html">Products</a>
+      <a href="cart.html">Cart <span id="cart-count"></span></a>
+    </nav>
+  </header>
 
-  <!-- ✅ Main Content -->
-  <main class="page-content">
-    <div id="product-page">
-        <p>Loading product details...</p> 
-    </div>
+    <main class="page-content">
+    <div id="product-page">
+        <p>Loading product details...</p> 
+    </div>
 </main>
 
-  <!-- ✅ Footer -->
-  <footer class="site-footer">
-    <p>&copy; 2025 Deenice Finds. All rights reserved.</p>
-  </footer>
+    <footer class="site-footer">
+    <p>&copy; 2025 Deenice Finds. All rights reserved.</p>
+  </footer>
 
-  <!-- ✅ Scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/product-page.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script src="js/config.js"></script>
+  <script src="js/product-page.js"></script>
 </body>
 </html>
