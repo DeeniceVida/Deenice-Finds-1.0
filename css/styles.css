@@ -522,11 +522,13 @@ html, body {
     max-width: 100%;
     display: flex;
     flex-direction: row; /* Force horizontal layout */
-    justify-content: center; /* Center the thumbnails */
     gap: 8px;
-    flex-wrap: wrap; /* Allow wrapping on desktop */
-    overflow-x: visible; /* No scrolling on desktop */
-    padding: 10px 0;
+    flex-wrap: nowrap;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    padding: 15px 10px;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
 }
 
 /* Hide scrollbar for Chrome/Safari */
@@ -2067,11 +2069,13 @@ h1 {
     
     display: flex; /* Makes the images line up horizontally */
     flex-direction: row; /* Force horizontal layout */
-    justify-content: center; /* CENTERS the horizontal row */
     gap: 10px; /* Adds space between the thumbnails */
-    flex-wrap: wrap; /* Allow thumbnails to wrap to next line if needed */
-    overflow-x: visible; /* No scrolling on desktop */
-    padding: 10px 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 15px 10px;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
 }
 
 /* Hide scrollbar for Chrome/Safari in desktop too */
@@ -2109,26 +2113,4 @@ h1 {
 
 .product-thumbs img.selected {
     border-color: #007bff; /* Highlight selected thumb */
-}
-/* --- Mobile Swiping for Thumbnails --- */
-@media (max-width: 768px) {
-    .product-thumbs {
-        flex-wrap: nowrap; /* Force single row on mobile */
-        overflow-x: auto; /* Enable horizontal scrolling */
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-        justify-content: flex-start; /* Start from left for swiping */
-        padding: 15px 10px;
-        scrollbar-width: none; /* Hide scrollbar for Firefox */
-        -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
-    }
-    
-    /* Hide scrollbar for Chrome/Safari */
-    .product-thumbs::-webkit-scrollbar {
-        display: none;
-    }
-    
-    /* Make thumbnails non-shrinkable for consistent swiping */
-    .product-thumbs img {
-        flex-shrink: 0;
-    }
 }
