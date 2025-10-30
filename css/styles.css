@@ -2026,8 +2026,8 @@ h1 {
 @media (min-width: 769px) {
     .product-page-card {
         display: grid;
-        /* Define the columns: 1 unit for the image area, 1.2 units for the details area */
-        grid-template-columns: minmax(350px, 1fr) minmax(350px, 1.2fr); 
+        /* Define the columns: 1.5 units for the image area, 1 unit for the details area */
+        grid-template-columns: minmax(400px, 1.5fr) minmax(300px, 1fr); 
         gap: 40px; /* Space between columns */
         
         /* Define the layout using named areas */
