@@ -2069,7 +2069,7 @@ h1 {
     width: 40%; /* Ensures the label column isn't too wide */
     font-weight: 600;
 }
-/* --- Desktop Two-Column Layout (FIXED AND EXPANDED) --- */
+/* --- Desktop Two-Column Layout (FIXED FOR VERTICAL THUMBS) --- */
 @media (min-width: 769px) {
     .product-page-card {
         display: grid;
@@ -2085,32 +2085,36 @@ h1 {
         /* Ensure the card spans wider on desktop */
         max-width: 1200px;
         margin: 0 auto; /* Center the card */
-        box-shadow: none; /* Remove box-shadow on this large container if it looks odd */
+        box-shadow: none;
     }
 
     /* Assign elements to the grid areas */
     .product-slideshow {
-    grid-area: slideshow; /* Left column */
-    /* CHANGE: Stacks the main image wrapper and the thumbnails vertically */
-    display: flex;
-    flex-direction: column; 
-    align-items: center; /* Center the image/thumbs in the left column */
-    gap: 15px; /* Add some space between the main image and the thumbs */
-}
+        grid-area: slideshow; /* Left column */
+        
+        /* CRITICAL CHANGE: The main image wrapper and thumbs container are side-by-side */
+        display: flex;
+        flex-direction: row; /* Main image and thumbs container are in a ROW */
+        align-items: flex-start; /* Aligns content to the top */
+        gap: 15px; /* Space between the thumb column and the main image */
+    }
 
-/* Add styling for the thumbs to arrange them horizontally */
-.product-thumbs {
-    display: flex;
-    gap: 10px; /* Space between each thumbnail */
-    justify-content: center; /* Center the thumbnails */
-    width: 100%; /* Ensure the row of thumbs is full width */
-}
+    /* CRITICAL CHANGE: This ensures the individual thumbnails stack vertically */
+    .product-thumbs {
+        display: flex;
+        flex-direction: column; /* Thumbs are in a COLUMN */
+        gap: 10px; 
+        width: 80px; /* Give the thumbnail column a fixed width */
+    }
+    
+    .product-main-image-wrapper {
+        flex-grow: 1; /* Allows the main image to take up the remaining space */
+    }
 
     #product-details {
         grid-area: details; /* Right column */
     }
 
-    /* Place the specifications table at the bottom, spanning both columns */
     #product-specs-container {
         grid-area: specs;
         margin-top: 20px;
@@ -2120,7 +2124,6 @@ h1 {
     #main-image {
         width: 100%;
         height: auto;
-        /* Use a ratio to reserve space for the image and prevent content jump */
         aspect-ratio: 4 / 3; 
         object-fit: contain; 
     }
