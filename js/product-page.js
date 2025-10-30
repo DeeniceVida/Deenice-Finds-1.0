@@ -35,6 +35,8 @@
     // 3. Initialize Price and Size Variables
     let currentPrice = p.sizes && p.sizes.length > 0 ? p.sizes[0].price : p.price;
     let selectedSize = p.sizes && p.sizes.length > 0 ? p.sizes[0].label : null;
+    // 🟢 NEW: Initialize Model Variable
+    let selectedModel = p.models && p.models.length > 0 ? p.models[0] : null;
 
     // 4. Calculate Discount Information based on currentPrice
     const hasDiscount = p.originalPrice && p.originalPrice > currentPrice;
@@ -99,6 +101,18 @@
                     `).join('')}
                 </div>
             </div>` : ''}
+            
+            ${p.models && p.models.length > 0 ? `
+            <div class="model-options-container">
+                <label for="model-selector">Choose Model:</label>
+                <select id="model-selector" class="product-option-select">
+                    ${p.models.map((model, idx) => `
+                        <option value="${model}" ${idx === 0 ? 'selected' : ''}>
+                            ${model}
+                        </option>
+                    `).join('')}
+                </select>
+            </div>` : ''}
 
             <label>Quantity:
                 <input id="qty" type="number" value="1" min="1" max="${p.stock}" />
@@ -173,6 +187,14 @@
                 });
             });
         }
+        // 🟢 NEW: Model selection logic 🟢
+        const modelSelector = document.getElementById('model-selector');
+        if (modelSelector) {
+            modelSelector.addEventListener('change', (e) => {
+                selectedModel = e.target.value;
+                console.log('Selected Model:', selectedModel);
+            });
+        }
 
         // --- Add to Cart (Existing Logic) ---
         document.getElementById('add-cart').addEventListener('click', () => {
@@ -189,6 +211,8 @@
                 qty,
                 color,
                 size: selectedSize || 'Standard',
+                // 🟢 NEW: Add the selected model 🟢
+                model: selectedModel || 'Standard',
                 img: p.images[0]
             });
 
