@@ -36,37 +36,40 @@ function sendOrderViaWhatsApp() {
         return;
     }
 
-    // 2. Build the order message (same as before)
-    let total = 0;
-    let message = `*✨ New Order from Deenice Finds!*
+    // 2. Build the order message (with Emojis and better spacing)
+let total = 0;
+let message = `*✨ NEW ORDER from Deenice Finds!* ✨
 
-*Customer Details:*
-Name: ${name}
-City: ${city}
+*👤 Customer Details:*
+*Name:* ${name}
+*City:* ${city}
+
 ---
-*Order Items:*
+*🛒 Order Items:*
 `;
 
-    cart.forEach((item, index) => {
-        const itemTotal = item.price * item.qty;
-        total += itemTotal;
-        
-        let details = [];
-        if (item.color) details.push(`Color: ${item.color}`);
-        if (item.size) details.push(`Size: ${item.size}`);
-        if (item.model && item.model !== 'Standard') details.push(`Model: ${item.model}`);
-
-        message += `${index + 1}. ${item.title}
-   - Qty: ${item.qty}
-   - Price: ${item.currency} ${item.price.toLocaleString()}
-   - Specs: ${details.join(' / ')}
-   - Subtotal: ${item.currency} ${itemTotal.toLocaleString()}
-`;
-    });
+cart.forEach((item, index) => {
+    const itemTotal = item.price * item.qty;
+    total += itemTotal;
+    
+    let details = [];
+    if (item.color) details.push(`🎨 Color: ${item.color}`);
+    if (item.size) details.push(`📏 Size: ${item.size}`);
+    if (item.model && item.model !== 'Standard') details.push(`📱 Model: ${item.model}`);
 
     message += `
+*${index + 1}. ${item.title}*
+   - *Quantity:* ${item.qty}
+   - *Unit Price:* ${item.currency} ${item.price.toLocaleString()}
+   - *Specifications:* ${details.join(' / ')}
+   - *Subtotal:* ${item.currency} ${itemTotal.toLocaleString()}
+`;
+});
+
+message += `
 ---
-*Total Amount: ${cart[0].currency} ${total.toLocaleString()}*
+*💰 FINAL TOTAL:*
+*${cart[0].currency} ${total.toLocaleString()}*
 `;
 
     // 3. 🔑 FIXED: Get WhatsApp Number from the global configuration object 🔑
