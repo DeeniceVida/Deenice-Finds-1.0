@@ -2033,3 +2033,39 @@ h1 {
     transform: translateY(1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+/* --- Order Alert Box --- */
+.order-alert-box {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 15px;
+    border: 1px solid #ffeeba;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* --- Specification Table Styling --- */
+.specs-heading {
+    margin-top: 30px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+}
+
+.specs-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.specs-table th, .specs-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.specs-table th {
+    background-color: #f8f8f8;
+    width: 40%; /* Ensures the label column isn't too wide */
+    font-weight: 600;
+}
