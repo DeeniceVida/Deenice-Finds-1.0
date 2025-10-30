@@ -2071,9 +2071,9 @@ h1 {
 }
 /* --- BASE PRODUCT PAGE LAYOUT (Mobile First) --- */
 
-/* Default Stacked Layout for Mobile */
+/* Default Stacked Layout for Mobile (Screens < 768px) */
 .product-page-card {
-    /* Products stack vertically on mobile */
+    /* Ensures stacking and proper spacing on mobile */
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -2082,11 +2082,10 @@ h1 {
 
 /* --- SWIPER.JS SPECIFIC STYLES --- */
 
-/* 1. MAIN IMAGE SWIPER (The Fix for Desktop Collapse) */
+/* 1. MAIN IMAGE SWIPER (Fixes height collapse) */
 #product-main-swiper {
-    /* Ensures the main image container has a visible area */
     width: 100%;
-    /* Sets a square container, preventing collapse */
+    /* Sets a square container, preventing height collapse on all devices */
     aspect-ratio: 1 / 1; 
     overflow: hidden;
 }
@@ -2098,23 +2097,20 @@ h1 {
 }
 
 #product-main-swiper img {
-    /* Ensures the image fills the container height and width */
     width: 100%;
     height: 100%; 
-    /* Centers and scales the image without cropping */
-    object-fit: contain; 
+    object-fit: contain; /* Scales image without cropping */
 }
 
 /* 2. THUMBNAIL SWIPER STYLES */
 #product-thumb-swiper {
-    height: 70px; /* Reduced height for better mobile look */
+    height: 70px; 
     box-sizing: border-box;
     padding: 10px 0;
 }
 
 #product-thumb-swiper .swiper-slide {
-    /* Important for Swiper: Ensure slide width is managed by the Swiper settings in JS */
-    width: 25% !important; 
+    width: 25% !important; /* Forces 4 thumbs per view on all screens */
     opacity: 0.5;
     cursor: pointer;
     transition: opacity 0.3s;
@@ -2124,35 +2120,40 @@ h1 {
 #product-thumb-swiper .thumb-img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Use cover for thumbnails for a cleaner look */
+    object-fit: cover; /* Cleaner look for thumbnails */
     border-radius: 4px;
 }
 
-/* Highlight the active thumbnail */
-#product-thumb-swiper .thumb-img.selected {
-    opacity: 1; 
-    border: 2px solid var(--primary-color, #007bff); 
+/* 3. SWIPER PAGINATION DOTS (To make them visible) */
+.swiper-pagination {
+    position: relative; /* Ensure it doesn't float below content */
+    margin-top: 10px;
 }
 
-/* 3. SWIPER PAGINATION DOTS (A common Swiper element) */
+.swiper-pagination-bullet {
+    width: 8px; /* Slightly larger dot */
+    height: 8px;
+}
+
 .swiper-pagination-bullet-active {
     background: var(--primary-color, #007bff);
 }
 
-/* --- MEDIA QUERY FOR DESKTOP LAYOUT (The Desktop Fix) --- */
+/* --- MEDIA QUERY FOR DESKTOP LAYOUT (The Desktop Grid Fix) --- */
 @media (min-width: 768px) {
     .product-page-card {
-        /* Reinstates the side-by-side grid for desktop */
+        /* Overrides mobile flex for the two-column grid on desktop */
         display: grid;
-        /* Image column (1fr) | Details column (1.2fr) */
+        /* Defines 3 areas: Image | Details | Specs (Specs span both columns) */
         grid-template-columns: minmax(350px, 1fr) minmax(350px, 1.2fr); 
         gap: 40px;
-        /* Ensures specs are outside the two-column grid */
-        grid-template-areas: "slideshow details"
-                             "specs specs";
+        grid-template-areas: 
+            "slideshow details"
+            "specs specs";
+        padding: 20px; /* More padding on desktop */
     }
 
-    /* Assign grid areas */
+    /* Assign elements to grid areas */
     .product-slideshow {
         grid-area: slideshow;
     }
@@ -2162,12 +2163,12 @@ h1 {
     }
 
     #product-specs-container {
+        /* Ensures the specifications table spans the full width below the image and details */
         grid-area: specs;
     }
 
-    /* Fine-tune Swiper for Desktop Aspect Ratio (e.g., slightly wider) */
+    /* Adjust the main image ratio for a standard desktop product image look */
     #product-main-swiper {
-        /* You can adjust the aspect ratio if you want it taller or wider on desktop */
-        aspect-ratio: 4 / 3; 
+        aspect-ratio: 4 / 3; /* Slightly wider than square on desktop */
     }
 }
