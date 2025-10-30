@@ -1928,3 +1928,61 @@ h1 {
     cursor: pointer;
     /* Other styling for your color buttons */
 }
+
+/* --- NEW STYLES FOR MODEL DROPDOWN --- */
+
+.model-options-container {
+    /* Ensures the label and dropdown flow nicely */
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.model-options-container label {
+    /* Style the label */
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #444; /* Darker text for contrast */
+}
+
+/* Base style for all new option selects (if you add more later) */
+.product-option-select {
+    /* General appearance */
+    width: 100%; /* Full width for responsiveness */
+    padding: 12px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle white border */
+    border-radius: 10px;
+    font-size: 16px;
+    appearance: none; /* Hide default dropdown arrow (optional, but modern) */
+    background-color: rgba(255, 255, 255, 0.1); /* Very light, transparent background */
+    cursor: pointer;
+    
+    /* 🌟 THE GLASSY EFFECT 🌟 */
+    backdrop-filter: blur(5px); /* Frosted glass effect */
+    -webkit-backdrop-filter: blur(5px); /* Safari support */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow lift */
+    
+    /* Text handling for responsiveness */
+    white-space: nowrap; /* Prevent option text from wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Use ellipsis (...) if text is too long */
+}
+
+/* Optional: Better focus state */
+.product-option-select:focus {
+    outline: none;
+    border-color: #007bff; /* Highlight color on focus */
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+}
+
+/* Optional: Custom arrow if you hid the default one */
+/* You would need to wrap the select in a div and use background-image for a custom arrow */
+/* For simplicity, we'll keep the default arrow visible if 'appearance: none' is removed. */
+
+/* Small screen adjustment (Ensures it looks good on mobile) */
+@media (max-width: 600px) {
+    .product-option-select {
+        padding: 10px 12px;
+        font-size: 15px;
+    }
+}
