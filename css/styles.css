@@ -1990,3 +1990,46 @@ h1 {
         max-width: 100%;
     }
 }
+/* --- Premium WhatsApp Button Style --- */
+
+#cart-send.primary {
+    /* Base Button Reset */
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 100%;
+    padding: 15px 25px;
+    border-radius: 8px;
+    margin-top: 20px;
+
+    /* Colors and Aesthetics (Using a clean WhatsApp Green theme) */
+    color: white;
+    background: #25d366; /* Base WhatsApp Green */
+    background: linear-gradient(145deg, #128C7E 0%, #25d366 100%); /* Subtle Gradient */
+    
+    /* Premium Lift and Shadow */
+    box-shadow: 
+        0 4px 6px rgba(0, 0, 0, 0.15), /* Standard bottom shadow */
+        0 1px 3px rgba(0, 0, 0, 0.08); /* Lighter closer shadow */
+    
+    /* Smooth Transition for hover effects */
+    transition: all 0.2s ease-in-out;
+}
+
+#cart-send.primary:hover {
+    /* Slightly darker/smaller on hover to indicate interaction */
+    background: linear-gradient(145deg, #075E54 0%, #1DA851 100%);
+    box-shadow: 
+        0 6px 12px rgba(0, 0, 0, 0.25), /* Deeper shadow on hover */
+        0 3px 6px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+#cart-send.primary:active {
+    /* Push down on click */
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
