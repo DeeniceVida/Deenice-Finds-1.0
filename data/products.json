@@ -192,32 +192,45 @@
     "category": "phones"
   },
   {
-    "id": "p6",
-    "title": "Demo Product 5",
-    "price": 2750,
+    "id": "thermal-label-printer",
+    "title": "High-Speed Thermal Label Printer",
+    "price": 18900,
     "currency": "KES",
-    "description": "Demo product 5 \u2014 premium placeholder description.",
+    "description": "High-resolution thermal printer ideal for shipping labels, barcodes, and more. Fast, reliable, and compact.",
+    "available_status": "Available only on order (5-7 days)",
+    "specs": [
+      {"label": "Method", "value": "Thermo sensitive"},
+      {"label": "Resolution", "value": "203 dpi"},
+      {"label": "Max Printing Speed", "value": "150 mm/s"},
+      {"label": "Paper Width", "value": "48-108 mm"},
+      {"label": "Paper Thickness", "value": "0.08-0.2 mm"},
+      {"label": "Paper Roll Diameter", "value": "100 mm"},
+      {"label": "Supported Paper", "value": "Thermal paper, black label paper, thermal label paper"},
+      {"label": "Power Adapter", "value": "24V/2.0A"},
+      {"label": "Printing Life", "value": "TPH100Km"},
+      {"label": "Operating Environment", "value": "Temperature: -10 to 50℃, Humidity: 10-90% (non condensing)"},
+      {"label": "Storage Environment", "value": "Temperature: -40 to 80 ℃, Humidity: 5-95% (non condensing)"},
+      {"label": "Connection", "value": "USB"},
+      {"label": "Color", "value": "Black"},
+      {"label": "Weight", "value": "2.20 lbs/1 kg"},
+      {"label": "Dimensions", "value": "W225mm*D162mm*H106mm"}
+    ]
+  },
     "images": [
-      "https://i.postimg.cc/xT35t3WK/image.png",
-      "https://i.postimg.cc/k4tGgwxc/image.png",
-      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848469/H7c63956d9aa3494ba1bbb39340c4a4da6_ht5kyy.png",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848470/O1CN01BRm9Ad1wKs9daUDBA__2208322336290-0-cib_gwtvme.jpg",
+      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848565/H528adeecdea54355bbbf1d78eb81f32aS_je8vkp.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761849088/Artboard_1_3x-100_ks7jlc.jpg"
     ],
     "colors": [
       {
         "name": "Black",
-        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848489/O1CN01e63pJj1wKs9WIvBXn__2208322336290-0-cib_oqaorx.jpg"
       },
       {
         "name": "White",
-        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
-      },
-      {
-        "name": "Blue",
-        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
-      },
-      {
-        "name": "Red",
-        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848470/Hb3727df828794bd18c256d9a157926a5h_tbraiq.png"
       }
     ],
     "sku": "DEMO-5",
