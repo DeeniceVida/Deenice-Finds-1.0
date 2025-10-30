@@ -2069,3 +2069,15 @@ h1 {
     width: 40%; /* Ensures the label column isn't too wide */
     font-weight: 600;
 }
+@media (min-width: 768px) {
+    .product-page-card {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr; /* Example ratio for image/details */
+        gap: 30px;
+    }
+
+    #product-main-image {
+        width: 100%;
+        height: auto;
+    }
+}
