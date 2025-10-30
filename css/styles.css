@@ -2092,10 +2092,10 @@ h1 {
     .product-slideshow {
         grid-area: slideshow; /* Left column */
         
-        /* CRITICAL FIX: Stacks the main image wrapper and the thumbnails row vertically */
+        /* CRITICAL: Stacks the main image wrapper and the thumbnails row vertically */
         display: flex;
         flex-direction: column; /* Main image and thumbs container are in a COLUMN */
-        align-items: center; /* Centers the image/thumbs in the left column */
+        align-items: center; /* Centers the whole slideshow stack in the column */
         gap: 15px; /* Add some space between the main image and the thumbs */
     }
 
@@ -2104,13 +2104,13 @@ h1 {
         width: 100%; 
     }
 
-    /* Ensure the thumbnail container and its images are centered horizontally (globally defined) */
+    /* ✅ THE FIX: Thumbnail container is now a centered horizontal flex row */
     .product-thumbs {
-    width: 100%; /* Ensure it spans the width */
-    /* 👇 ADD THESE FLEX PROPERTIES 👇 */
-    display: flex; /* Make it a flex container */
-    justify-content: center; /* Center the thumbnails inside the container */
-    gap: 10px; /* Add space between the thumbnails (optional, but good practice) */
+        width: 100%; /* Ensure it spans the width */
+        
+        display: flex; /* Makes the images line up horizontally */
+        justify-content: center; /* CENTERS the horizontal row */
+        gap: 10px; /* Adds space between the thumbnails */
     }
 
     #product-details {
