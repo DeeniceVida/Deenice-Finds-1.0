@@ -2,6 +2,8 @@
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
     const container = document.getElementById('product-page');
+    // 💡 NEW: Define a dedicated container for the alert and specs.
+    const productDetailsContainer = document.getElementById('product-details'); 
     let data = [];
     let p = null;
 
@@ -35,15 +37,49 @@
     // 3. Initialize Price and Size Variables
     let currentPrice = p.sizes && p.sizes.length > 0 ? p.sizes[0].price : p.price;
     let selectedSize = p.sizes && p.sizes.length > 0 ? p.sizes[0].label : null;
-    // 🟢 NEW: Initialize Model Variable
-    let selectedModel = p.models && p.models.length > 0 ? p.models[0] : null;
+    let selectedModel = p.models && p.models.length > 0 ? p.models[0] : null;
 
     // 4. Calculate Discount Information based on currentPrice
     const hasDiscount = p.originalPrice && p.originalPrice > currentPrice;
     const discountAmount = hasDiscount ? p.originalPrice - currentPrice : 0;
     const saveText = hasDiscount ? `Save ${p.currency} ${discountAmount.toLocaleString()}` : "";
 
+
+    // ***********************************************
+    // 🟢 NEW LOGIC: Availability Alert and Specs Table 🟢
+    // ***********************************************
+
+    let alertHtml = '';
+    let specsHtml = '';
+
+    // A. Build 'Order Only' Alert
+    if (p.available_status) {
+        alertHtml = `<div class="order-alert-box">
+            ⚠️ *Note:* This product is ${p.available_status}.
+        </div>`;
+    }
+
+    // B. Build Specifications Table
+    if (p.specs && p.specs.length > 0) {
+        specsHtml = '<section id="product-specs-container">';
+        specsHtml += '<h3 class="specs-heading">Technical Specifications</h3>';
+        specsHtml += '<table class="specs-table">';
+        
+        p.specs.forEach(spec => {
+            specsHtml += `
+                <tr>
+                    <th>${spec.label}</th>
+                    <td>${spec.value}</td>
+                </tr>
+            `;
+        });
+        
+        specsHtml += '</table></section>';
+    }
+
+    // ***********************************************
     // 5. Build and Render the Product Page HTML
+    // ***********************************************
     container.innerHTML = `
         <div class="product-page-card">
             <div class="product-slideshow">
@@ -60,65 +96,69 @@
                 </div>
             </div>
 
-            <h2>${p.title}</h2>
+            <div id="product-details">
+                ${alertHtml} <h2>${p.title}</h2>
 
-            <div class="price-section">
-                <span id="product-price" class="current-price">${p.currency} ${currentPrice.toLocaleString()}</span>
-                ${hasDiscount ? `<span class="old-price">${p.currency} ${p.originalPrice.toLocaleString()}</span>` : ""}
-                ${hasDiscount ? `<span class="discount-tag">${saveText}</span>` : ""}
-            </div>
+                <div class="price-section">
+                    <span id="product-price" class="current-price">${p.currency} ${currentPrice.toLocaleString()}</span>
+                    ${hasDiscount ? `<span class="old-price">${p.currency} ${p.originalPrice.toLocaleString()}</span>` : ""}
+                    ${hasDiscount ? `<span class="discount-tag">${saveText}</span>` : ""}
+                </div>
 
-            <div id="product-description-container" class="long-description">
-                <p><em>${p.description}</em></p>
-            </div>
+                <div id="product-description-container" class="long-description">
+                    <p><em>${p.description}</em></p>
+                </div>
 
 
-            ${p.colors && p.colors.length > 0 ? `
-            <div id="color-selector">
-                <div class="color-options">
-                    ${p.colors.map((c, idx) => `
-                        <div class="color-item">
-                            <div class="color-name">${c.name}</div>
-                            <div class="color-option ${idx === 0 ? 'selected' : ''}" data-img="${c.img}" data-name="${c.name}">
-                                <img src="${c.img}" alt="${c.name}">
+                ${p.colors && p.colors.length > 0 ? `
+                <div id="color-selector">
+                    <div class="color-options">
+                        ${p.colors.map((c, idx) => `
+                            <div class="color-item">
+                                <div class="color-name">${c.name}</div>
+                                <div class="color-option ${idx === 0 ? 'selected' : ''}" data-img="${c.img}" data-name="${c.name}">
+                                    <img src="${c.img}" alt="${c.name}">
+                                </div>
                             </div>
-                        </div>
-                    `).join('')}
+                        `).join('')}
+                    </div>
                 </div>
+                ` : ''}
+
+                ${p.sizes && p.sizes.length > 0 ? `
+                <div class="size-options-container">
+                    <label>Choose size:</label>
+                    <div class="size-buttons" id="size-buttons-group">
+                        ${p.sizes.map((s, idx) => `
+                            <button class="size-button ${idx === 0 ? 'selected' : ''}" 
+                                    data-size="${s.label}" 
+                                    data-price="${s.price}">
+                                ${s.label}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>` : ''}
+                
+                ${p.models && p.models.length > 0 ? `
+                <div class="model-options-container">
+                    <label for="model-selector">Choose Model:</label>
+                    <select id="model-selector" class="product-option-select">
+                        ${p.models.map((model, idx) => `
+                            <option value="${model}" ${idx === 0 ? 'selected' : ''}>
+                                ${model}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>` : ''}
+
+                <label>Quantity:
+                    <input id="qty" type="number" value="1" min="1" max="${p.stock}" />
+                </label>
+
+                <button id="add-cart" class="primary">Add to Cart</button>
             </div>
-            ` : ''}
-
-            ${p.sizes && p.sizes.length > 0 ? `
-            <div class="size-options-container">
-                <label>Choose size:</label>
-                <div class="size-buttons" id="size-buttons-group">
-                    ${p.sizes.map((s, idx) => `
-                        <button class="size-button ${idx === 0 ? 'selected' : ''}" 
-                                data-size="${s.label}" 
-                                data-price="${s.price}">
-                            ${s.label}
-                        </button>
-                    `).join('')}
-                </div>
-            </div>` : ''}
             
-            ${p.models && p.models.length > 0 ? `
-            <div class="model-options-container">
-                <label for="model-selector">Choose Model:</label>
-                <select id="model-selector" class="product-option-select">
-                    ${p.models.map((model, idx) => `
-                        <option value="${model}" ${idx === 0 ? 'selected' : ''}>
-                            ${model}
-                        </option>
-                    `).join('')}
-                </select>
-            </div>` : ''}
-
-            <label>Quantity:
-                <input id="qty" type="number" value="1" min="1" max="${p.stock}" />
-            </label>
-
-            <button id="add-cart" class="primary">Add to Cart</button>
+            ${specsHtml} 
         </div>
     `;
 
@@ -126,6 +166,7 @@
     
     // 🟢 NEW FUNCTION: Consolidate all listeners here 🟢
     function setupProductInteractions() {
+        // ... (Listener setup code remains the same as your original script) ...
         
         // --- Description Collapse Logic (Your new feature) ---
         const descriptionContainer = document.getElementById('product-description-container');
@@ -134,7 +175,7 @@
         if (colorSelector && descriptionContainer) {
             
             const collapseDescription = () => {
-                 // Add the 'collapsed' class (defined in styles.css)
+                // Add the 'collapsed' class (defined in styles.css)
                 descriptionContainer.classList.add('collapsed');
             }
             
@@ -149,7 +190,7 @@
 
             // OPTIONAL: Allow the user to click the description to expand it again
             descriptionContainer.addEventListener('click', () => {
-                 descriptionContainer.classList.remove('collapsed');
+                descriptionContainer.classList.remove('collapsed');
             });
         }
         
@@ -188,13 +229,13 @@
             });
         }
         // 🟢 NEW: Model selection logic 🟢
-        const modelSelector = document.getElementById('model-selector');
-        if (modelSelector) {
-            modelSelector.addEventListener('change', (e) => {
-                selectedModel = e.target.value;
-                console.log('Selected Model:', selectedModel);
-            });
-        }
+        const modelSelector = document.getElementById('model-selector');
+        if (modelSelector) {
+            modelSelector.addEventListener('change', (e) => {
+                selectedModel = e.target.value;
+                console.log('Selected Model:', selectedModel);
+            });
+        }
 
         // --- Add to Cart (Existing Logic) ---
         document.getElementById('add-cart').addEventListener('click', () => {
@@ -211,8 +252,7 @@
                 qty,
                 color,
                 size: selectedSize || 'Standard',
-                // 🟢 NEW: Add the selected model 🟢
-                model: selectedModel || 'Standard',
+                model: selectedModel || 'Standard',
                 img: p.images[0]
             });
 
