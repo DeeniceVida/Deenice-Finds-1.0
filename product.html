@@ -1,61 +1,67 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
-  <title>Product — Deenice Finds</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
+  <title>Product — Deenice Finds</title>
 
-    <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css" />
 
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXX');
-  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXX');
+  </script>
 
-    <script>
-    !(function(f,b,e,v,n,t,s){
-      if(f.fbq)return;
-      n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;
-      n.push=n;
-      n.loaded=!0;
-      n.version='2.0';
-      n.queue=[];
-      t=b.createElement(e);
-      t.async=!0;
-      t.src=v;
-      s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)
-    })(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', 'PIXEL_ID');
-    fbq('track', 'PageView');
-  </script>
+  <script>
+    !(function(f,b,e,v,n,t,s){
+      if(f.fbq)return;
+      n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;
+      n.push=n;
+      n.loaded=!0;
+      n.version='2.0';
+      n.queue=[];
+      t=b.createElement(e);
+      t.async=!0;
+      t.src=v;
+      s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    })(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', 'PIXEL_ID');
+    fbq('track', 'PageView');
+  </script>
 </head>
 
 <body>
-    <header class="site-header">
-    <a href="index.html" class="logo">Deenice Finds</a>
-    <nav>
-      <a href="products.html">Products</a>
-      <a href="cart.html">Cart <span id="cart-count"></span></a>
-    </nav>
-  </header>
+  <header class="site-header">
+    <a href="index.html" class="logo">Deenice Finds</a>
+    <nav>
+      <a href="products.html">Products</a>
+      <a href="cart.html">Cart <span id="cart-count"></span></a>
+    </nav>
+  </header>
 
-    <main class="page-content">
-    <div id="product-page">
-        <p>Loading product details...</p> 
-    </div>
+  <main class="page-content">
+    <div id="product-page">
+        <p>Loading product details...</p>
+    </div>
 </main>
 
-    <footer class="site-footer">
-    <p>&copy; 2025 Deenice Finds. All rights reserved.</p>
-  </footer>
+  <footer class="site-footer">
+    <p>&copy; 2025 Deenice Finds. All rights reserved.</p>
+  </footer>
 
-    <script src="js/config.js"></script>
-  <script src="js/product-page.js"></script>
+  <script>
+    const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
+    const badge = document.getElementById('cart-count');
+    if (badge) badge.textContent = cart.length;
+  </script>
+
+  <script src="js/config.js"></script>
+  <script src="js/product-page.js"></script>
 </body>
 </html>
