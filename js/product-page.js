@@ -75,7 +75,7 @@
     }
 
     // ***********************************************
-    // 5. Build and Render the Product Page HTML (Now with Swiper Structure)
+    // 5. Build and Render the Product Page HTML (Swiper Structure Remains)
     // ***********************************************
     container.innerHTML = `
         <div class="product-page-card">
@@ -84,8 +84,8 @@
                 
                 <div id="product-main-swiper" class="swiper">
                     <div class="swiper-wrapper">
-                        ${p.images.map((im) => `
-                            <div class="swiper-slide product-main-image-wrapper">
+                        ${p.images.map((im, idx) => `
+                            <div class="swiper-slide product-main-image-wrapper" data-index="${idx}">
                                 <img src="${im}" 
                                      alt="${p.title}" 
                                      onerror="this.onerror=null;this.src='images/placeholder.png';"/>
@@ -172,60 +172,85 @@
 
     // 6. Add Event Listeners for User Interactions
     
-    // 🟢 NEW FUNCTION: Initialize Swiper instances
-    function initializeSwipers() {
-        
-        // 1. Initialize the Thumbnail Swiper
-        const thumbsSwiper = new Swiper('#product-thumb-swiper', {
-            spaceBetween: 10,
-            slidesPerView: 4,
-            freeMode: true,
-            watchSlidesProgress: true,
-        });
+    // 🟢 UPDATED FUNCTION: Initialize Swiper only on Mobile 🟢
+    let mainSwiper = null; // Declare swiper instances globally so setupProductInteractions can access them
+    let thumbsSwiper = null;
 
-        // 2. Initialize the Main Product Image Swiper (now with swipe support!)
-        const mainSwiper = new Swiper('#product-main-swiper', {
-            spaceBetween: 10,
-            pagination: { // Adds dots at the bottom for image count
-                el: ".swiper-pagination",
-                clickable: true,
-            },
-            thumbs: {
-                swiper: thumbsSwiper, // Links the main slider to the thumbnail slider
-            },
-            // Enable touch/swipe sensitivity for mobile
-            touchEventsTarget: 'wrapper',
-            longSwipes: true, 
-        });
-        
-        // 3. Handle Thumbnail Clicks to update swiper
+    function initializeSwipers() {
+        // Use a 768px breakpoint for mobile vs desktop
+        const isMobile = window.innerWidth < 768; 
+
+        if (isMobile) {
+            // --- MOBILE: INITIALIZE SWIPER ---
+            thumbsSwiper = new Swiper('#product-thumb-swiper', {
+                spaceBetween: 10,
+                slidesPerView: 4,
+                freeMode: true,
+                watchSlidesProgress: true,
+            });
+
+            mainSwiper = new Swiper('#product-main-swiper', {
+                spaceBetween: 10,
+                pagination: {
+                    el: ".swiper-pagination",
+                    clickable: true,
+                },
+                thumbs: {
+                    swiper: thumbsSwiper, 
+                },
+                touchEventsTarget: 'wrapper',
+                longSwipes: true, 
+            });
+            
+            // Sync Thumbnail selection with main swipe action (MOBILE ONLY)
+            mainSwiper.on('slideChange', function() {
+                const activeIndex = this.activeIndex;
+                document.querySelectorAll('.thumb-img').forEach(i => i.classList.remove('selected'));
+                
+                const activeThumb = document.querySelector(`.thumb-img[data-index="${activeIndex}"]`);
+                if (activeThumb) {
+                    activeThumb.classList.add('selected');
+                    thumbsSwiper.slideTo(activeIndex);
+                }
+            });
+
+        } else {
+            // --- DESKTOP: STATIC DISPLAY LOGIC ---
+
+            // 1. Manually hide all main slides except the first one (since Swiper isn't doing it)
+            document.querySelectorAll('.product-main-image-wrapper').forEach((w, idx) => {
+                w.style.display = (idx === 0) ? 'block' : 'none';
+            });
+            
+            // 2. Hide the pagination dots on desktop
+            const pagination = document.querySelector('.swiper-pagination');
+            if (pagination) {
+                pagination.style.display = 'none';
+            }
+        }
+
+        // --- COMMON THUMBNAIL CLICK HANDLER (Works for both Mobile Swiper and Desktop Static) ---
         document.querySelectorAll('.thumb-img').forEach(img => {
             img.addEventListener('click', (e) => {
                 const index = parseInt(e.target.dataset.index);
-                mainSwiper.slideTo(index);
                 
-                // Manually handle the 'selected' class on thumbnails for visual feedback
+                // Update the selected class on thumbnails
                 document.querySelectorAll('.thumb-img').forEach(i => i.classList.remove('selected'));
                 e.target.classList.add('selected');
+
+                if (isMobile && mainSwiper) {
+                    // Mobile: Use Swiper's slideTo method
+                    mainSwiper.slideTo(index);
+                } else {
+                    // Desktop: Manually toggle the main image display
+                    document.querySelectorAll('.product-main-image-wrapper').forEach((w, idx) => {
+                        w.style.display = (idx === index) ? 'block' : 'none';
+                    });
+                }
             });
         });
-        
-        // 4. Sync Thumbnail selection with main swipe action
-        mainSwiper.on('slideChange', function() {
-            const activeIndex = this.activeIndex;
-            
-            // Remove 'selected' from all thumbnails
-            document.querySelectorAll('.thumb-img').forEach(i => i.classList.remove('selected'));
-            
-            // Add 'selected' to the active thumbnail
-            const activeThumb = document.querySelector(`.thumb-img[data-index="${activeIndex}"]`);
-            if (activeThumb) {
-                 activeThumb.classList.add('selected');
-                 // Scroll the thumbnail slider to keep the active thumbnail in view
-                 thumbsSwiper.slideTo(activeIndex);
-            }
-        });
     }
+
 
     // This function manages everything else that's not related to swiping
     function setupProductInteractions() {
@@ -250,21 +275,28 @@
             });
         }
         
-        // --- Color selection (Existing Logic) ---
+        // --- Color selection (UPDATED LOGIC) ---
         document.querySelectorAll('.color-option').forEach(opt => {
             opt.addEventListener('click', () => {
                 document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
                 opt.classList.add('selected');
                 
-                // NOTE: Swiper is not directly compatible with changing the single image element's source.
-                // To display the color-specific image:
-                // 1. You could add it to the 'p.images' array temporarily.
-                // 2. Or, for simplicity and assuming color images are outside the main gallery:
-                // We'll keep the direct image change logic for color selection for now.
-                // This will REPLACE the current image in the active swiper slide.
-                const activeSlideImg = document.querySelector('#product-main-swiper .swiper-slide-active img');
-                if (activeSlideImg) {
-                    activeSlideImg.src = opt.dataset.img; 
+                // Get the image source of the selected color option
+                const newImgSrc = opt.dataset.img;
+
+                if (mainSwiper) {
+                    // MOBILE (Swiper is active): Replace the image source of the CURRENT active slide.
+                    // NOTE: This assumes color images are not part of the main gallery array (p.images).
+                    const activeSlideImg = mainSwiper.slides[mainSwiper.activeIndex].querySelector('img');
+                    if (activeSlideImg) {
+                        activeSlideImg.src = newImgSrc; 
+                    }
+                } else {
+                    // DESKTOP (Static Image): Replace the image source of the CURRENTLY VISIBLE slide.
+                    const visibleSlideImg = document.querySelector('.product-main-image-wrapper:not([style*="display: none"]) img');
+                    if (visibleSlideImg) {
+                        visibleSlideImg.src = newImgSrc; 
+                    }
                 }
             });
         });
@@ -285,7 +317,7 @@
                 });
             });
         }
-        // 🟢 NEW: Model selection logic 🟢
+        // 🟢 Model selection logic 🟢
         const modelSelector = document.getElementById('model-selector');
         if (modelSelector) {
             modelSelector.addEventListener('change', (e) => {
