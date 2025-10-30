@@ -2069,7 +2069,7 @@ h1 {
     width: 40%; /* Ensures the label column isn't too wide */
     font-weight: 600;
 }
-/* --- Desktop Two-Column Layout (FIXED FOR VERTICAL THUMBS) --- */
+/* --- Desktop Two-Column Layout (FINAL CORRECTED VERSION) --- */
 @media (min-width: 769px) {
     .product-page-card {
         display: grid;
@@ -2092,23 +2092,22 @@ h1 {
     .product-slideshow {
         grid-area: slideshow; /* Left column */
         
-        /* CRITICAL CHANGE: The main image wrapper and thumbs container are side-by-side */
+        /* CRITICAL FIX: Stacks the main image wrapper and the thumbnails row vertically */
         display: flex;
-        flex-direction: row; /* Main image and thumbs container are in a ROW */
-        align-items: flex-start; /* Aligns content to the top */
-        gap: 15px; /* Space between the thumb column and the main image */
+        flex-direction: column; /* Main image and thumbs container are in a COLUMN */
+        align-items: center; /* Centers the image/thumbs in the left column */
+        gap: 15px; /* Add some space between the main image and the thumbs */
     }
 
-    /* CRITICAL CHANGE: This ensures the individual thumbnails stack vertically */
-    .product-thumbs {
-        display: flex;
-        flex-direction: column; /* Thumbs are in a COLUMN */
-        gap: 10px; 
-        width: 80px; /* Give the thumbnail column a fixed width */
-    }
-    
+    /* Ensure the main image wrapper can take full width */
     .product-main-image-wrapper {
-        flex-grow: 1; /* Allows the main image to take up the remaining space */
+        width: 100%; 
+    }
+
+    /* Ensure the thumbnail container and its images are centered horizontally (globally defined) */
+    .product-thumbs {
+        width: 100%; /* Ensure it spans the width */
+        /* Flex properties for the horizontal row are set in the global CSS (outside this block) */
     }
 
     #product-details {
