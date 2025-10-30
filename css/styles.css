@@ -2069,3 +2069,57 @@ h1 {
     width: 40%; /* Ensures the label column isn't too wide */
     font-weight: 600;
 }
+/* --- SWIPER.JS SPECIFIC STYLES --- */
+
+/* Ensures the main image container has a height for swiping */
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+/* Ensure the wrapper displays slides horizontally */
+.swiper-wrapper {
+  display: flex;
+}
+
+/* Style for the main image slide */
+#product-main-swiper {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+#product-main-swiper img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain; /* Ensures the image fits without cropping */
+}
+
+/* Style for the thumbnail area */
+#product-thumb-swiper {
+  height: 80px; /* Define height for thumbnails */
+  box-sizing: border-box;
+  padding: 10px 0;
+}
+
+/* Set width for each thumbnail slide */
+#product-thumb-swiper .swiper-slide {
+  width: 25% !important; /* Forces 4 thumbs per view */
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+/* Highlight the active thumbnail */
+#product-thumb-swiper .thumb-img.selected {
+  opacity: 1; 
+  border: 2px solid var(--primary-color, #007bff); /* Use a default color if primary is not defined */
+}
+
+.thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+/* End Swiper Styles */
