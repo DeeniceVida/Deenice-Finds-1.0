@@ -1,4 +1,3 @@
-
 :root{
   --bg:#F8F9FC;
   --muted:#9aa4b2;
@@ -272,9 +271,9 @@ a, button {
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* Keep the gap style from earlier */
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Keep the gap style from earlier */
 }
 
 /* Style for the search and cart buttons container */
@@ -492,55 +491,63 @@ html, body {
     background: transparent;
 }
 
-/* --- Product Slideshow (Desktop/Base Layout: Main Image + Thumbnails SIDE-BY-SIDE) --- */
+/* --- Product Slideshow - Horizontal Thumbnails Below Main Image --- */
 .product-slideshow {
     display: flex;
+    flex-direction: column; /* Stack main image above thumbnails */
     gap: 12px;
     margin-bottom: 20px;
+    align-items: center;
 }
 
 /* Container for the main image */
 .product-main-image-wrapper {
-    flex: 2; 
+    width: 100%;
+    max-width: 100%;
     border-radius: 12px;
     overflow: hidden;
 }
 
-/* Make the main image responsive inside its wrapper */
+/* Make the main image responsive */
 #main-image {
-    max-width: 100%; 
+    max-width: 100%;
     height: auto;
     display: block;
-    border-radius: 12px; 
+    border-radius: 12px;
 }
 
-/* --- Thumbnail Container - Desktop/Vertical Layout (YOUR ORIGINAL CODE BLOCK) --- */
+/* --- Thumbnail Container - ALWAYS HORIZONTAL BELOW MAIN IMAGE --- */
 .product-thumbs {
-    width: 120px; 
+    width: 100%;
+    max-width: 100%;
     display: flex;
-    flex-direction: column; /* Vertical stack on desktop */
+    flex-direction: row; /* Force horizontal layout */
+    justify-content: center; /* Center the thumbnails */
     gap: 8px;
-    flex-shrink: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto; /* Enable horizontal scrolling if needed */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    padding: 10px 0;
 }
 
 /* Thumbnail images */
 .product-thumbs img {
-    width: 100%; 
-    height: 64px;
+    width: 60px;
+    height: 60px;
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid transparent;
     cursor: pointer;
     transition: border-color 0.2s, outline 0.2s;
+    flex-shrink: 0; /* Prevent thumbnails from shrinking */
 }
 
 /* Selected Thumbnail */
 .product-thumbs img.selected {
-    outline: 2px solid #7aa0ff; 
+    outline: 2px solid #7aa0ff;
     border-color: #7aa0ff;
     background: var(--focus);
 }
-
 
 /* --- Description Collapse Logic (Essential for the UX feature) --- */
 #product-description-container {
@@ -553,60 +560,6 @@ html, body {
     max-height: 50px; /* Collapsed state */
 }
 
-
-/* --- Mobile Layout: Thumbnails BELOW Main Image (MAX 768px) --- */
-@media (max-width: 768px) {
-    .product-slideshow {
-        flex-direction: column; 
-        align-items: center; /* Ensures the whole block is centered */
-        width: 100%;
-        gap: 12px;
-    }
-
-    /* 2. MAIN IMAGE WRAPPER */
-    .product-main-image-wrapper {
-        width: 100%; 
-        max-width: 450px;
-        flex: unset;
-        /* ✅ CORRECT: Centers the image container */
-        margin: 0 auto; 
-    }
-
-    /* 3. THUMBNAIL CONTAINER (.product-thumbs) */
-    .product-thumbs {
-        width: 100%;
-        max-width: 450px;
-        flex-direction: row;
-        margin: 0 auto;
-        
-        /* 🛑 CRITICAL: Force one row and enable scrolling 🛑 */
-        flex-wrap: nowrap; /* Forces all items onto one line */
-        overflow-x: auto; /* Enables horizontal swiping/scrolling */
-        -webkit-overflow-scrolling: touch; /* Smoother scrolling on iOS */
-        
-        /* Ensure items start from the left */
-        justify-content: flex-start;
-        gap: 0; 
-        
-        /* Add padding so the first/last images aren't cut off */
-        padding: 0 10px 10px 10px; /* Top, Right, Bottom, Left */
-    }
-    
-    /* 4. THUMBNAIL IMAGES (.product-thumbs img) */
-    .product-thumbs img {
-        width: 60px; 
-        height: 60px;
-        
-        /* 🛑 CRITICAL: Prevent shrinking when scrolling 🛑 */
-        flex-shrink: 0; 
-
-        /* Use margin-right for separation between images */
-        margin-right: 16px; 
-        
-        /* Remove vertical margin, as it's one row */
-        margin-bottom: 0; 
-    }
-}
 /* --- Color Selector and Swatch Styles --- */
 .select-colors{display:flex;gap:12px;margin-top:12px}
 .color-swatch{width:56px;height:56px;border-radius:10px;border:1px solid rgba(15,20,30,0.06);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:visible}
@@ -2109,8 +2062,13 @@ h1 {
         width: 100%; /* Ensure it spans the width */
         
         display: flex; /* Makes the images line up horizontally */
+        flex-direction: row; /* Force horizontal layout */
         justify-content: center; /* CENTERS the horizontal row */
         gap: 10px; /* Adds space between the thumbnails */
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px 0;
     }
 
     #product-details {
@@ -2139,6 +2097,7 @@ h1 {
     border: 2px solid #ddd;
     border-radius: 4px;
     transition: border-color 0.2s;
+    flex-shrink: 0; /* Prevent thumbnails from shrinking */
 }
 
 .product-thumbs img.selected {
