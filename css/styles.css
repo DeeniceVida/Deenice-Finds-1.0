@@ -2071,21 +2071,19 @@ h1 {
 }
 /* --- BASE PRODUCT PAGE LAYOUT (Mobile First) --- */
 
-/* Default Stacked Layout for Mobile (Screens < 768px) */
+/* Default Stacked Layout for Mobile (< 768px) */
 .product-page-card {
-    /* Ensures stacking and proper spacing on mobile */
     display: flex;
     flex-direction: column;
     gap: 20px;
     padding: 10px;
 }
 
-/* --- SWIPER.JS SPECIFIC STYLES --- */
+/* --- MOBILE SWIPER.JS STYLES (Applies to all screens by default) --- */
 
-/* 1. MAIN IMAGE SWIPER (Fixes height collapse) */
+/* 1. MAIN IMAGE SWIPER - Ensures mobile swipe functionality */
 #product-main-swiper {
     width: 100%;
-    /* Sets a square container, preventing height collapse on all devices */
     aspect-ratio: 1 / 1; 
     overflow: hidden;
 }
@@ -2099,7 +2097,7 @@ h1 {
 #product-main-swiper img {
     width: 100%;
     height: 100%; 
-    object-fit: contain; /* Scales image without cropping */
+    object-fit: contain; 
 }
 
 /* 2. THUMBNAIL SWIPER STYLES */
@@ -2110,7 +2108,7 @@ h1 {
 }
 
 #product-thumb-swiper .swiper-slide {
-    width: 25% !important; /* Forces 4 thumbs per view on all screens */
+    width: 25% !important; 
     opacity: 0.5;
     cursor: pointer;
     transition: opacity 0.3s;
@@ -2120,55 +2118,70 @@ h1 {
 #product-thumb-swiper .thumb-img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Cleaner look for thumbnails */
+    object-fit: cover; 
     border-radius: 4px;
 }
 
-/* 3. SWIPER PAGINATION DOTS (To make them visible) */
+/* 3. SWIPER PAGINATION DOTS (Visible only on mobile) */
 .swiper-pagination {
-    position: relative; /* Ensure it doesn't float below content */
+    position: relative; 
     margin-top: 10px;
 }
 
-.swiper-pagination-bullet {
-    width: 8px; /* Slightly larger dot */
-    height: 8px;
-}
 
-.swiper-pagination-bullet-active {
-    background: var(--primary-color, #007bff);
-}
-
-/* --- MEDIA QUERY FOR DESKTOP LAYOUT (The Desktop Grid Fix) --- */
+/* --- DESKTOP OVERRIDES (Screens >= 768px) --- */
 @media (min-width: 768px) {
+    /* 1. Revert Layout to Grid */
     .product-page-card {
-        /* Overrides mobile flex for the two-column grid on desktop */
         display: grid;
-        /* Defines 3 areas: Image | Details | Specs (Specs span both columns) */
         grid-template-columns: minmax(350px, 1fr) minmax(350px, 1.2fr); 
         gap: 40px;
         grid-template-areas: 
             "slideshow details"
             "specs specs";
-        padding: 20px; /* More padding on desktop */
+        padding: 20px;
     }
 
-    /* Assign elements to grid areas */
+    /* Assign grid areas */
     .product-slideshow {
         grid-area: slideshow;
+        /* Ensure the slideshow container itself doesn't have swiper properties */
+        display: block; 
     }
+    #product-details { grid-area: details; }
+    #product-specs-container { grid-area: specs; }
 
-    #product-details {
-        grid-area: details;
-    }
-
-    #product-specs-container {
-        /* Ensures the specifications table spans the full width below the image and details */
-        grid-area: specs;
-    }
-
-    /* Adjust the main image ratio for a standard desktop product image look */
+    /* 2. Revert Main Image Area to Static Display */
     #product-main-swiper {
-        aspect-ratio: 4 / 3; /* Slightly wider than square on desktop */
+        /* Remove swiper structure properties */
+        aspect-ratio: 4 / 3; /* Set preferred desktop image ratio */
+        height: auto;
+    }
+    
+    /* 3. Revert Thumbnails to Static Grid (No Swiper) */
+    #product-thumb-swiper {
+        height: auto;
+        display: flex; /* Display as a simple flex row */
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    #product-thumb-swiper .swiper-wrapper {
+        display: contents; /* Allows slides to behave as children of the flex container */
+    }
+
+    #product-thumb-swiper .swiper-slide {
+        /* Set explicit thumbnail size for desktop grid */
+        width: calc(25% - 8px) !important; 
+    }
+
+    /* 4. Hide Mobile-Only Swiper Elements */
+    .swiper-pagination {
+        display: none;
+    }
+
+    /* 5. Desktop-specific: Only show the currently selected main image wrapper */
+    .product-main-image-wrapper {
+        width: 100%;
     }
 }
