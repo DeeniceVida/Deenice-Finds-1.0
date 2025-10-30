@@ -2065,18 +2065,23 @@ h1 {
 
     /* ✅ THE FIX: Thumbnail container is now a centered horizontal flex row */
     .product-thumbs {
-        width: 100%; /* Ensure it spans the width */
-        
-        display: flex; /* Makes the images line up horizontally */
-        flex-direction: row; /* Force horizontal layout */
-        justify-content: center; /* CENTERS the horizontal row */
-        gap: 10px; /* Adds space between the thumbnails */
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: 10px 0;
-    }
+    width: 100%; /* Ensure it spans the width */
+    
+    display: flex; /* Makes the images line up horizontally */
+    flex-direction: row; /* Force horizontal layout */
+    gap: 10px; /* Adds space between the thumbnails */
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 15px 10px;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+}
 
+/* Hide scrollbar for Chrome/Safari in desktop too */
+.product-thumbs::-webkit-scrollbar {
+    display: none;
+}
     #product-details {
         grid-area: details; /* Right column */
     }
