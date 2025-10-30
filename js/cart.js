@@ -23,7 +23,7 @@ function removeItemFromCart(itemTitle) {
     }
 }
 
-// 🚀 NEW FUNCTION: WhatsApp Order Sender 🚀
+// 🚀 CORRECTED FUNCTION: WhatsApp Order Sender 🚀
 function sendOrderViaWhatsApp() {
     const cart = getCart();
     
@@ -36,7 +36,7 @@ function sendOrderViaWhatsApp() {
         return;
     }
 
-    // 2. Build the order message
+    // 2. Build the order message (same as before)
     let total = 0;
     let message = `*✨ New Order from Deenice Finds!*
 
@@ -54,7 +54,6 @@ City: ${city}
         let details = [];
         if (item.color) details.push(`Color: ${item.color}`);
         if (item.size) details.push(`Size: ${item.size}`);
-        // 🟢 Include Model option if available
         if (item.model && item.model !== 'Standard') details.push(`Model: ${item.model}`);
 
         message += `${index + 1}. ${item.title}
@@ -70,16 +69,24 @@ City: ${city}
 *Total Amount: ${cart[0].currency} ${total.toLocaleString()}*
 `;
 
-    // 3. Get WhatsApp Number (Ensure config.js has a 'whatsappNumber' variable)
-    // NOTE: I am using 'whatsappNumber' which should be defined in your config.js
-    if (typeof whatsappNumber === 'undefined') {
+    // 3. 🔑 FIXED: Get WhatsApp Number from the global configuration object 🔑
+    // (We removed the old 'if (typeof whatsappNumber === 'undefined')' block)
+    const config = window.DEENICE_CONFIG || {};
+    let whatsappNumber = config.whatsappNumber; // Get the number from the config object
+
+    if (!whatsappNumber) {
         alert("Error: WhatsApp number is not configured (check js/config.js).");
-        console.error("WhatsApp number (whatsappNumber) is missing from config.js");
+        console.error("WhatsApp number is missing from DEENICE_CONFIG.");
         return;
     }
     
-    // 4. Encode the message and open the link
+    // 4. Clean the number (removes '+' sign) and Encode the message
+    // CRITICAL FIX: Ensure the number is clean for the URL
+    whatsappNumber = whatsappNumber.replace('+', ''); 
+
     const encodedMessage = encodeURIComponent(message);
+    
+    // 5. 🔑 FIXED: Use the 'whatsappNumber' VARIABLE instead of hardcoding 🔑
     const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
     
     window.open(whatsappURL, '_blank');
