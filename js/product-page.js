@@ -1,20 +1,31 @@
+// product-page.js
+
+/**
+ * Self-executing async function to load and render the product page.
+ */
 (async () => {
+    // 1. Initial Setup and Parameter Retrieval
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
     const container = document.getElementById('product-page');
+
+    // The 'product-details' element will be dynamically rendered inside 'product-page',
+    // but the variable is not strictly needed since we re-select elements in setupProductInteractions.
+    // const productDetailsContainer = document.getElementById('product-details'); // Retained for context, though not used in the final render
+
     let data = [];
     let p = null;
 
-    // --- ENHANCED ERROR HANDLING FOR JSON FETCH ---
+    // 2. Fetch Data and Enhanced Error Handling
     try {
         const res = await fetch('data/products.json');
         if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
         }
         data = await res.json();
-        
+
         // Find the product by ID, fallback to the first product if not found
-        p = data.find(x => x.id === id) || data[0]; 
+        p = data.find(x => x.id === id) || data[0];
 
     } catch (error) {
         console.error("Critical Error: Failed to fetch or parse products.json. Check JSON syntax!", error);
@@ -31,7 +42,8 @@
         return;
     }
 
-    // 3. Initialize Price and Size Variables
+
+    // 3. Initialize Price, Size, and Model Variables
     let currentPrice = p.sizes && p.sizes.length > 0 ? p.sizes[0].price : p.price;
     let selectedSize = p.sizes && p.sizes.length > 0 ? p.sizes[0].label : null;
     let selectedModel = p.models && p.models.length > 0 ? p.models[0] : null;
@@ -61,7 +73,7 @@
         specsHtml = '<section id="product-specs-container">';
         specsHtml += '<h3 class="specs-heading">Technical Specifications</h3>';
         specsHtml += '<table class="specs-table">';
-        
+
         p.specs.forEach(spec => {
             specsHtml += `
                 <tr>
@@ -70,30 +82,29 @@
                 </tr>
             `;
         });
-        
+
         specsHtml += '</table></section>';
     }
 
     // ***********************************************
-    // 5. Build and Render the Product Page HTML (REVERTED TO STATIC GALLERY STRUCTURE)
+    // 5. Build and Render the Product Page HTML
     // ***********************************************
     container.innerHTML = `
         <div class="product-page-card">
-            
-            <div class="product-gallery">
-                <div id="product-main-image-container">
-                    <img id="product-main-image" 
-                         src="${p.images[0]}" 
-                         alt="${p.title}" 
-                         onerror="this.onerror=null;this.src='images/placeholder.png';"/>
+            <div class="product-slideshow">
+                <div class="product-main-image-wrapper">
+                    <img id="main-image"
+                        src="${p.images[0]}"
+                        alt="${p.title}"
+                        onerror="this.onerror=null;this.src='images/placeholder.png';"/>
                 </div>
-
-                <div id="product-thumbnails">
+                <div class="product-thumbs">
                     ${p.images.map((im, idx) => `
-                        <img data-index="${idx}" src="${im}" class="thumb-img ${idx === 0 ? 'selected' : ''}" />
+                        <img data-src="${im}" ${idx === 0 ? 'class="selected"' : ''} src="${im}" />
                     `).join('')}
                 </div>
             </div>
+
             <div id="product-details">
                 ${alertHtml} <h2>${p.title}</h2>
 
@@ -106,6 +117,7 @@
                 <div id="product-description-container" class="long-description">
                     <p><em>${p.description}</em></p>
                 </div>
+
 
                 ${p.colors && p.colors.length > 0 ? `
                 <div id="color-selector">
@@ -127,15 +139,15 @@
                     <label>Choose size:</label>
                     <div class="size-buttons" id="size-buttons-group">
                         ${p.sizes.map((s, idx) => `
-                            <button class="size-button ${idx === 0 ? 'selected' : ''}" 
-                                        data-size="${s.label}" 
+                            <button class="size-button ${idx === 0 ? 'selected' : ''}"
+                                        data-size="${s.label}"
                                         data-price="${s.price}">
                                 ${s.label}
                             </button>
                         `).join('')}
                     </div>
                 </div>` : ''}
-                
+
                 ${p.models && p.models.length > 0 ? `
                 <div class="model-options-container">
                     <label for="model-selector">Choose Model:</label>
@@ -154,64 +166,54 @@
 
                 <button id="add-cart" class="primary">Add to Cart</button>
             </div>
-            
-            ${specsHtml} 
+
+            ${specsHtml}
         </div>
     `;
 
     // 6. Add Event Listeners for User Interactions
-    
-    // 🟢 REVERTED IMAGE GALLERY LOGIC 🟢
-    function setupImageGallery() {
-        const mainImage = document.getElementById('product-main-image');
-        const thumbnails = document.querySelectorAll('#product-thumbnails .thumb-img');
 
-        thumbnails.forEach(thumb => {
-            thumb.addEventListener('click', (e) => {
-                // Change the main image source
-                mainImage.src = e.target.src;
-
-                // Update 'selected' class
-                thumbnails.forEach(i => i.classList.remove('selected'));
-                e.target.classList.add('selected');
-            });
-        });
-    }
-
-    // This function manages everything else
     function setupProductInteractions() {
-        
-        // --- Description Collapse Logic ---
+        // --- Description Collapse Logic (New Feature) ---
         const descriptionContainer = document.getElementById('product-description-container');
-        const colorSelector = document.getElementById('color-selector'); 
+        const colorSelector = document.getElementById('color-selector');
 
         if (colorSelector && descriptionContainer) {
+
             const collapseDescription = () => {
+                // Add the 'collapsed' class (defined in styles.css)
                 descriptionContainer.classList.add('collapsed');
             }
-            
+
+            // Listen for clicks on the color selector container
             colorSelector.addEventListener('click', (event) => {
+                // Check if the click was on a color option (using the class .color-option)
                 if (event.target.closest('.color-option')) {
                     collapseDescription();
                 }
             });
 
+            // OPTIONAL: Allow the user to click the description to expand it again
             descriptionContainer.addEventListener('click', () => {
                 descriptionContainer.classList.remove('collapsed');
             });
         }
-        
-        // --- Color selection (REVERTED LOGIC) ---
+
+        // --- Thumbnail switching (Existing Logic) ---
+        document.querySelectorAll('.product-thumbs img').forEach(img => {
+            img.addEventListener('click', () => {
+                document.getElementById('main-image').src = img.dataset.src;
+                document.querySelectorAll('.product-thumbs img').forEach(i => i.classList.remove('selected'));
+                img.classList.add('selected');
+            });
+        });
+
+        // --- Color selection (Existing Logic) ---
         document.querySelectorAll('.color-option').forEach(opt => {
             opt.addEventListener('click', () => {
                 document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
                 opt.classList.add('selected');
-                
-                // Directly change the main image source to the color image
-                const mainImage = document.getElementById('product-main-image');
-                if (mainImage) {
-                    mainImage.src = opt.dataset.img; 
-                }
+                document.getElementById('main-image').src = opt.dataset.img;
             });
         });
 
@@ -220,7 +222,7 @@
         if (sizeButtons.length > 0) {
             sizeButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
-                    e.preventDefault(); 
+                    e.preventDefault();
                     sizeButtons.forEach(b => b.classList.remove('selected'));
                     button.classList.add('selected');
 
@@ -231,7 +233,7 @@
                 });
             });
         }
-        // 🟢 Model selection logic 🟢
+        // 🟢 NEW: Model selection logic 🟢
         const modelSelector = document.getElementById('model-selector');
         if (modelSelector) {
             modelSelector.addEventListener('change', (e) => {
@@ -247,11 +249,6 @@
             const color = colorEl ? colorEl.dataset.name : 'Default';
             const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
 
-            // Determine which image URL to use for the cart item
-            // Since we reverted, we assume the main image is the cart image
-            const mainImageUrl = document.getElementById('product-main-image')?.src || p.images[0];
-
-
             cart.push({
                 id: p.id,
                 title: p.title,
@@ -261,19 +258,18 @@
                 color,
                 size: selectedSize || 'Standard',
                 model: selectedModel || 'Standard',
-                img: mainImageUrl
+                img: p.images[0]
             });
 
             localStorage.setItem('de_cart', JSON.stringify(cart));
             alert('Added to cart');
-            
+
             const badge = document.getElementById('cart-count');
             if (badge) badge.textContent = cart.length;
         });
     }
 
-    // 🟢 FINAL STEP: Call the functions
-    setupImageGallery();
+    // 🟢 FINAL STEP: Call the function after all HTML has been injected 🟢
     setupProductInteractions();
 
 })();
