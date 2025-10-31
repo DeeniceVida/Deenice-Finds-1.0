@@ -237,37 +237,41 @@
     "category": "Comp"
   },
   {
-    "id": "p7",
-    "title": "Demo Product 6",
-    "price": 2900,
+    "id": "Ambient Floor Lamp",
+    "title": "Colorful Ambient Floor Lamp",
+    "price": 2200,
     "currency": "KES",
-    "description": "Demo product 6 \u2014 premium placeholder description.",
+    "description": "Transform your space with the minimalist, high-tech Smart RGB LED Corner Floor Lamp.This sleek, space-saving LED standing light is the perfect modern addition to your gaming room, bedroom, or living room. It delivers vibrant, customizable ambient lighting without taking up valuable floor space.",
+    "specs": [
+    {"label": "Dimensions (Height)", "value": "103 cm / 40.55 inch"},
+    {"label": "Dimensions (Width)", "value": "3 cm / 1.18 inch"},
+    {"label": "Stand Base (Adjustable)", "value": "10-19 cm / 3.94-7.48 inch"},
+    {"label": "Voltage", "value": "6V / 500mA-1A"},
+    {"label": "Power", "value": "5W"},
+    {"label": "Power Supply Mode", "value": "USB"},
+    {"label": "Cable Length", "value": "2m"},
+    {"label": "LED QTY / Type", "value": "60PCS / 5050"},
+    {"label": "Color/Temperature", "value": "RGB + Warm Light + White Light"},
+    {"label": "Material", "value": "PC (Polycarbonate)"},
+    {"label": "Control Method 1", "value": "Mobile APP (Smartphone Control)"},
+    {"label": "Control Method 2", "value": "Remote Control"}
+]
     "images": [
-      "https://i.postimg.cc/xT35t3WK/image.png",
-      "https://i.postimg.cc/k4tGgwxc/image.png",
-      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01uCPSjQ1lwSmTAyWhs__3371944883-0-cib_bwgfzv.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01cdT4GP1lwSmQaImOL__3371944883-0-cib_fvr0gz.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915418/O1CN01ejEp5v1lwSmORHiTB__3371944883-0-cib_unos2e.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915405/O1CN01n7gy0K1lwSn8EtCM8__3371944883-0-cib_hmnoee.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915405/O1CN01rtlT6I1lwSmHtm8EQ__3371944883-0-cib_xn11x5.jpg"
     ],
     "colors": [
       {
         "name": "Black",
-        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
-      },
-      {
-        "name": "White",
-        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
-      },
-      {
-        "name": "Blue",
-        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
-      },
-      {
-        "name": "Red",
-        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01uCPSjQ1lwSmTAyWhs__3371944883-0-cib_bwgfzv.jpg"
       }
     ],
-    "sku": "DEMO-6",
-    "stock": 16,
-    "category": "phones"
+    "sku": "ambient",
+    "stock": 15,
+    "category": "Comp"
   },
   {
     "id": "p8",
