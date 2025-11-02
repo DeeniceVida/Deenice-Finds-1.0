@@ -236,7 +236,7 @@ app.put('/api/orders/:id/status',
     }
 );
 
-// Create new order (from frontend) - UPDATED to accept phone
+// Create new order (from frontend)
 app.post('/api/orders',
     [
         body('customer.name').notEmpty().withMessage('Customer name is required'),
@@ -251,8 +251,14 @@ app.post('/api/orders',
             }
 
             const orderData = req.body;
+            
+            // SHORTER ORDER ID
+            const timestamp = Date.now().toString(36).toUpperCase();
+            const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+            const shortOrderId = `DF${timestamp}${random}`;
+            
             const newOrder = {
-                id: `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                id: shortOrderId, // Use shorter ID
                 orderDate: new Date().toISOString(),
                 status: 'pending',
                 statusUpdated: new Date().toISOString(),
@@ -276,7 +282,6 @@ app.post('/api/orders',
         }
     }
 );
-
 // Admin logout
 app.post('/api/admin/logout', authenticateToken, (req, res) => {
     try {
