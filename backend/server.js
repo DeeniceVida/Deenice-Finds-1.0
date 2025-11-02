@@ -167,7 +167,31 @@ app.post('/api/admin/login',
         }
     }
 );
+// Delete order (protected)
+app.delete('/api/orders/:id', authenticateToken, checkSessionTimeout, (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const orderIndex = orders.findIndex(o => o.id === orderId);
+        
+        if (orderIndex === -1) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
 
+        // Remove the order from the array
+        const deletedOrder = orders.splice(orderIndex, 1)[0];
+        
+        console.log('🗑️ Order deleted:', orderId);
+        
+        res.json({ 
+            message: 'Order deleted successfully',
+            deletedOrder: deletedOrder
+        });
+
+    } catch (error) {
+        console.error('Delete order error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 // Get all orders (protected)
 app.get('/api/orders', authenticateToken, checkSessionTimeout, (req, res) => {
     try {
