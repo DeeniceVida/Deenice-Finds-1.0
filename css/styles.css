@@ -292,15 +292,15 @@ a, button {
   cursor: pointer;
 }
 
-/* 🌅 HERO SLIDER (OFFERS / POSTER) */
+/* 🌅 SMOOTH HERO SLIDER (OFFERS / POSTER) */
 .offers {
   position: relative;
   width: 100%;
   margin: 0 auto 2.5rem; /* spacing below poster */
   overflow: hidden;
-  border-radius: 0;
+  border-radius: 16px; /* Changed from 0 to match your other slider style */
   background: transparent;
-  max-width: 2400px;
+  max-width: 1200px; /* Changed from 2400px to match your other slider */
 }
 
 /* Fix top spacing - ensure no space above */
@@ -315,9 +315,14 @@ a, button {
   aspect-ratio: 3 / 1; /* desktop ratio 2400x800 */
   overflow: hidden;
   background: #000; /* fallback color while image loads */
+  border-radius: 16px; /* Added for consistency */
+  
+  /* Performance optimizations */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
-/* Slides */
+/* Slides with smoother transitions */
 .offers-slider .slide {
   position: absolute;
   inset: 0;
@@ -327,12 +332,19 @@ a, button {
   background-position: center;
   background-repeat: no-repeat;
   opacity: 0;
-  transition: opacity 0.8s ease-in-out;
+  
+  /* Smoother transition with better easing */
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Performance optimizations */
+  will-change: opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .offers-slider .slide.active {
   opacity: 1;
-  z-index: 1;
+  z-index: 2; /* Increased from 1 for better layering */
 }
 
 /* Controls (arrows + dots) */
@@ -343,47 +355,57 @@ a, button {
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px; /* Increased from 10px */
   z-index: 10;
 }
 
-/* Arrows */
+/* Enhanced Arrows */
 .offers-controls button {
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.6); /* Darker for better visibility */
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 40px; /* Slightly larger */
+  height: 40px;
   font-size: 18px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px); /* Glass effect */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .offers-controls button:hover {
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1); /* Subtle scale effect */
 }
 
-/* Dots */
+/* Enhanced Dots */
 .offers-controls .dots {
   display: flex;
-  gap: 6px;
+  gap: 8px; /* Increased from 6px */
 }
 
 .offers-controls .dots button {
   background: #fff;
-  width: 8px;
-  height: 8px;
+  width: 10px; /* Slightly larger */
+  height: 10px;
   border-radius: 50%;
   border: none;
-  opacity: 0.4;
+  opacity: 0.6; /* Better default opacity */
   cursor: pointer;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease; /* Enhanced transition */
 }
 
-.offers-controls .dots button.active,
-.offers-controls .dots button:hover {
+.offers-controls .dots button.active {
   opacity: 1;
+  transform: scale(1.2); /* Scale effect for active dot */
+}
+
+.offers-controls .dots button:hover {
+  opacity: 0.8;
+  transform: scale(1.1);
 }
 
 /* 📱 Mobile adjustments */
@@ -393,12 +415,44 @@ a, button {
     background: #fff; /* no black backdrop */
   }
 
+  /* Show controls on mobile but make them more subtle */
   .offers-controls {
-    display: none !important; /* hide navigation on mobile */
+    display: flex !important; /* Changed from none to flex */
+    bottom: 15px;
+  }
+
+  .offers-controls button {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    background: rgba(0, 0, 0, 0.5); /* More transparent on mobile */
   }
 
   .offers {
     margin-bottom: 1.5rem;
+  }
+  
+  /* Faster transitions on mobile */
+  .offers-slider .slide {
+    transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Very small mobile devices */
+@media (max-width: 480px) {
+  .offers-controls {
+    gap: 8px;
+  }
+  
+  .offers-controls button {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  
+  .offers-controls .dots button {
+    width: 8px;
+    height: 8px;
   }
 }
 
@@ -412,6 +466,8 @@ a, button {
 .offers-slider .slide {
   background-color: transparent;
 }
+
+/* Remove duplicate styles below - they're conflicting with the ones above */
 
 /* search */
 .search-box{position:relative}
@@ -448,15 +504,6 @@ a, button {
   outline: none;
   box-shadow: 0 0 8px rgba(179, 200, 239, 0.5);
 }
-
-/* offers slider */
-.offers{max-width:1200px;margin:18px auto;padding:0 16px;position:relative;z-index:1}
-.offers-slider{height:220px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(90deg,#fff,#f7f9fc);z-index:1}
-.offers-slider .slide{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity 0.8s ease;opacity:0}
-.offers-slider .slide.active{opacity:1}
-.offers-controls{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px}
-.dots{display:flex;gap:6px}
-.dots button{width:8px;height:8px;border-radius:999px;border:0;background:rgba(10,15,20,0.12)}
 
 /* hero */
 .hero-copy{max-width:1000px;margin:26px auto;padding:0 16px}
