@@ -77,43 +77,34 @@ const checkSessionTimeout = (req, res, next) => {
     next();
 };
 
-// WhatsApp notification function
+// WhatsApp notification function - UPDATED
 async function sendWhatsAppNotification(order, newStatus) {
     try {
-        const config = {
-            whatsappNumber: process.env.WHATSAPP_NUMBER || '254712345678' // Your business number
-        };
-
         const statusMessages = {
-            'processing': `🔄 Your order #${order.id} is now being processed! We're preparing your items for ${order.delivery?.method === 'pickup' ? 'pickup' : 'delivery'}.`,
-            'completed': `✅ Order completed! Your order #${order.id} has been ${order.delivery?.method === 'pickup' ? 'ready for pickup at our store' : 'delivered to your address'}.`,
-            'cancelled': `❌ Order #${order.id} has been cancelled. Please contact us for more information.`
+            'processing': `🔄 Your order #${order.id} is now being processed! We're preparing your items for ${order.delivery?.method === 'pickup' ? 'pickup' : 'delivery'}. Thank you for your patience!`,
+            'completed': `✅ Order completed! Your order #${order.id} has been ${order.delivery?.method === 'pickup' ? 'ready for pickup at our store. Please bring your ID.' : 'delivered to your address. Thank you for shopping with us!'}`,
+            'cancelled': `❌ Order #${order.id} has been cancelled. Please contact us for more information or to resolve any issues.`
         };
 
         const message = statusMessages[newStatus];
-        if (!message) return; // No notification for 'pending' status
+        if (!message) return null;
 
         const customerMessage = `Hello ${order.customer?.name || 'there'}! ${message}`;
         
-        // Encode the message for WhatsApp URL
-        const encodedMessage = encodeURIComponent(customerMessage);
-        const whatsappURL = `https://wa.me/${order.customer?.phone || config.whatsappNumber}?text=${encodedMessage}`;
+        if (order.customer?.phone) {
+            const cleanPhone = order.customer.phone.replace(/\D/g, '');
+            const encodedMessage = encodeURIComponent(customerMessage);
+            const whatsappURL = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+            
+            console.log('📱 WhatsApp Notification Ready:', whatsappURL);
+            return whatsappURL;
+        }
         
-        // In a real app, you'd use a WhatsApp API service
-        // For now, we'll log the notification
-        console.log('📱 WhatsApp Notification:', {
-            orderId: order.id,
-            customer: order.customer?.name,
-            status: newStatus,
-            message: customerMessage,
-            whatsappURL: whatsappURL
-        });
-
-        // You can integrate with WhatsApp Business API here
-        // Or use services like Twilio, MessageBird, etc.
-
+        console.log('📱 No phone number for customer:', order.customer?.name);
+        return null;
     } catch (error) {
         console.error('❌ WhatsApp notification failed:', error);
+        return null;
     }
 }
 
@@ -196,14 +187,14 @@ app.get('/api/orders', authenticateToken, checkSessionTimeout, (req, res) => {
     }
 });
 
-// Update order status (protected)
+// Update order status (protected) - UPDATED
 app.put('/api/orders/:id/status', 
     authenticateToken, 
     checkSessionTimeout,
     [
         body('status').isIn(['pending', 'processing', 'completed', 'cancelled']).withMessage('Invalid status')
     ],
-    async (req, res) => {  // Make this async
+    async (req, res) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -226,14 +217,16 @@ app.put('/api/orders/:id/status',
                 orders[orderIndex].completedDate = new Date().toISOString();
             }
 
-            // Send WhatsApp notification if status changed to processing, completed, or cancelled
+            let whatsappURL = null;
+            // Send WhatsApp notification if status changed
             if (oldStatus !== status && ['processing', 'completed', 'cancelled'].includes(status)) {
-                await sendWhatsAppNotification(orders[orderIndex], status);
+                whatsappURL = await sendWhatsAppNotification(orders[orderIndex], status);
             }
 
             res.json({ 
                 message: 'Order status updated successfully',
-                order: orders[orderIndex]
+                order: orders[orderIndex],
+                whatsappURL: whatsappURL // Send this back to admin
             });
 
         } catch (error) {
@@ -243,7 +236,7 @@ app.put('/api/orders/:id/status',
     }
 );
 
-// Create new order (from frontend)
+// Create new order (from frontend) - UPDATED to accept phone
 app.post('/api/orders',
     [
         body('customer.name').notEmpty().withMessage('Customer name is required'),
@@ -269,6 +262,8 @@ app.post('/api/orders',
             orders.unshift(newOrder);
             
             console.log('📦 New order created:', newOrder.id);
+            console.log('👤 Customer:', newOrder.customer?.name);
+            console.log('📞 Phone:', newOrder.customer?.phone || 'No phone provided');
             
             res.status(201).json({
                 message: 'Order created successfully',
