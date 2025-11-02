@@ -137,8 +137,8 @@ class AdminOrderManager {
             `Are you sure you want to delete this order?\n\n` +
             `This will remove the order from:\n` +
             `• Admin panel\n` +
-            `• Customer's order history\n` +
-            `• Backend database\n\n` +
+            `• Backend server memory\n` +
+            `• Customer's order history\n\n` +
             `This action cannot be undone!`
         );
         
@@ -146,14 +146,14 @@ class AdminOrderManager {
 
         console.log('🗑️ Deleting order from backend:', orderId);
         
-        // 1. FIRST call backend API to delete from database
+        // 1. Call backend API to delete from server memory
         await this.makeRequest(`/orders/${orderId}`, {
             method: 'DELETE'
         });
         
-        console.log('✅ Order deleted from backend database');
+        console.log('✅ Order deleted from backend');
 
-        // 2. THEN remove from frontend memory
+        // 2. Remove from frontend memory
         const orderIndex = this.orders.findIndex(o => o.id === orderId);
         if (orderIndex > -1) {
             this.orders.splice(orderIndex, 1);
@@ -167,11 +167,11 @@ class AdminOrderManager {
         this.renderStats();
         this.renderOrders();
         
-        alert(`✅ Order #${orderId} has been deleted successfully from:\n\n• Backend database\n• Admin panel\n• All client devices`);
+        alert(`✅ Order #${orderId} has been deleted successfully!`);
         
     } catch (error) {
         console.error('Failed to delete order:', error);
-        alert('Failed to delete order from backend: ' + error.message);
+        alert('Failed to delete order: ' + error.message);
     }
 }
 
