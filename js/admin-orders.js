@@ -6,20 +6,113 @@ class AdminOrderManager {
     }
 
     init() {
+        console.log('🔄 AdminOrderManager initializing...');
         this.loadOrders();
         this.renderStats();
         this.renderOrders();
         this.setupEventListeners();
+        this.debugOrders(); // Add debug function
+    }
+
+    debugOrders() {
+        console.log('=== DEBUG ORDERS ===');
+        console.log('📦 Total orders found:', this.orders.length);
+        console.log('📁 Raw localStorage data:', localStorage.getItem('de_order_history'));
+        
+        if (this.orders.length > 0) {
+            console.log('📋 Orders details:');
+            this.orders.forEach((order, index) => {
+                console.log(`Order ${index + 1}:`, {
+                    id: order.id,
+                    status: order.status,
+                    customer: order.customer,
+                    items: order.items?.length,
+                    total: order.totalAmount,
+                    delivery: order.delivery
+                });
+            });
+        } else {
+            console.log('❌ No orders found in localStorage');
+            
+            // Check if there are orders under different keys
+            console.log('🔍 Checking all localStorage keys:');
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.includes('order') || key.includes('cart')) {
+                    console.log(`Key: ${key}`, localStorage.getItem(key));
+                }
+            }
+        }
+        console.log('=== END DEBUG ===');
     }
 
     loadOrders() {
-        const savedOrders = localStorage.getItem('de_order_history');
-        this.orders = savedOrders ? JSON.parse(savedOrders) : [];
-        this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+        try {
+            console.log('📥 Loading orders from localStorage...');
+            const savedOrders = localStorage.getItem('de_order_history');
+            
+            if (!savedOrders) {
+                console.log('❌ No orders found in de_order_history');
+                this.orders = [];
+                return;
+            }
+
+            this.orders = JSON.parse(savedOrders);
+            console.log('✅ Parsed orders:', this.orders);
+
+            // Ensure orders have proper structure
+            this.orders = this.orders.map((order, index) => {
+                // Fix common data issues
+                const fixedOrder = {
+                    id: order.id || `UNKNOWN_${Date.now()}_${index}`,
+                    orderDate: order.orderDate || new Date().toISOString(),
+                    status: order.status || 'pending',
+                    customer: order.customer || { name: 'Unknown Customer', city: 'Unknown City' },
+                    delivery: order.delivery || { method: 'delivery', city: 'Unknown City' },
+                    items: order.items || [],
+                    totalAmount: order.totalAmount || 0,
+                    currency: order.currency || 'KES',
+                    statusUpdated: order.statusUpdated,
+                    completedDate: order.completedDate,
+                    ...order
+                };
+
+                // Ensure items array is properly formatted
+                if (fixedOrder.items && Array.isArray(fixedOrder.items)) {
+                    fixedOrder.items = fixedOrder.items.map(item => ({
+                        title: item.title || 'Unknown Item',
+                        price: item.price || 0,
+                        qty: item.qty || 1,
+                        currency: item.currency || 'KES',
+                        color: item.color,
+                        size: item.size,
+                        model: item.model,
+                        img: item.img || 'https://via.placeholder.com/50',
+                        ...item
+                    }));
+                }
+
+                return fixedOrder;
+            });
+
+            // Sort by date (newest first)
+            this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+            console.log('✅ Final processed orders:', this.orders);
+
+        } catch (error) {
+            console.error('❌ Error loading orders:', error);
+            console.error('Error details:', error.message);
+            this.orders = [];
+        }
     }
 
     saveOrders() {
-        localStorage.setItem('de_order_history', JSON.stringify(this.orders));
+        try {
+            localStorage.setItem('de_order_history', JSON.stringify(this.orders));
+            console.log('💾 Orders saved to localStorage:', this.orders.length);
+        } catch (error) {
+            console.error('❌ Error saving orders:', error);
+        }
     }
 
     setupEventListeners() {
@@ -29,6 +122,17 @@ class AdminOrderManager {
                 this.setFilter(e.target.dataset.filter);
             });
         });
+
+        // Add refresh button listener
+        const refreshBtn = document.getElementById('refreshOrders');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.loadOrders();
+                this.renderStats();
+                this.renderOrders();
+                alert('Orders refreshed!');
+            });
+        }
     }
 
     setFilter(filter) {
@@ -49,6 +153,8 @@ class AdminOrderManager {
             completed: this.orders.filter(o => o.status === 'completed').length,
             cancelled: this.orders.filter(o => o.status === 'cancelled').length
         };
+
+        console.log('📊 Rendering stats:', stats);
 
         const statsGrid = document.getElementById('statsGrid');
         if (statsGrid) {
@@ -76,19 +182,28 @@ class AdminOrderManager {
     renderOrders() {
         const container = document.getElementById('ordersList') || document.getElementById('orders-list');
         
+        console.log('🎨 Rendering orders to container:', container);
+        console.log('🔍 Current filter:', this.currentFilter);
+        console.log('📋 Orders to render:', this.orders.length);
+
         if (this.orders.length === 0) {
+            console.log('🔄 Showing empty state');
             container.innerHTML = this.getEmptyState();
             return;
         }
 
         const filteredOrders = this.filterOrders();
+        console.log('✅ Filtered orders:', filteredOrders.length);
         
         if (filteredOrders.length === 0) {
+            console.log('🔄 Showing no results state');
             container.innerHTML = this.getNoResultsState();
             return;
         }
 
+        console.log('🖼️ Creating order cards...');
         container.innerHTML = filteredOrders.map(order => this.createOrderCard(order)).join('');
+        console.log('✅ Orders rendered successfully');
     }
 
     filterOrders() {
@@ -99,6 +214,8 @@ class AdminOrderManager {
     }
 
     createOrderCard(order) {
+        console.log('🛠️ Creating card for order:', order.id);
+        
         const orderDate = new Date(order.orderDate).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -133,7 +250,7 @@ class AdminOrderManager {
                 </div>
                 
                 <div class="order-items">
-                    ${order.items.map(item => this.createOrderItem(item)).join('')}
+                    ${(order.items || []).map(item => this.createOrderItem(item)).join('')}
                 </div>
                 
                 <div class="order-footer">
@@ -168,12 +285,12 @@ class AdminOrderManager {
                      alt="${item.title}" 
                      class="item-image">
                 <div class="item-details">
-                    <h4>${item.title}</h4>
+                    <h4>${item.title || 'Unknown Item'}</h4>
                     ${specs.length > 0 ? `
                         <div class="item-specs">${specs.join(' • ')}</div>
                     ` : ''}
                     <div class="item-price">
-                        ${item.qty} × ${item.currency} ${item.price?.toLocaleString() || '0'}
+                        ${item.qty || 1} × ${item.currency || 'KES'} ${(item.price || 0).toLocaleString()}
                     </div>
                 </div>
             </div>
@@ -181,7 +298,7 @@ class AdminOrderManager {
     }
 
     getDeliveryText(delivery) {
-        if (!delivery) return 'Delivery info missing';
+        if (!delivery || !delivery.method) return 'Delivery info missing';
         return delivery.method === 'pickup' ? 'Store Pickup' : 'Home Delivery';
     }
 
@@ -285,6 +402,12 @@ TOTAL: ${order.currency} ${order.totalAmount?.toLocaleString() || '0'}
             <div class="empty-state">
                 <h3>No orders found</h3>
                 <p>There are no orders in the system yet.</p>
+                <button class="btn btn-primary" onclick="adminManager.debugOrders()">
+                    Debug Orders
+                </button>
+                <button class="btn btn-secondary" onclick="adminManager.loadOrders(); adminManager.renderOrders();">
+                    Refresh
+                </button>
             </div>
         `;
     }
@@ -294,6 +417,9 @@ TOTAL: ${order.currency} ${order.totalAmount?.toLocaleString() || '0'}
             <div class="empty-state">
                 <h3>No orders match this filter</h3>
                 <p>Try selecting a different filter to see more orders.</p>
+                <button class="btn btn-primary" onclick="adminManager.setFilter('all')">
+                    Show All Orders
+                </button>
             </div>
         `;
     }
