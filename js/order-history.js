@@ -1,73 +1,26 @@
-// Order History Management - UPDATED with backend sync
+// Order History Management - SIMPLIFIED VERSION (No Syncing)
 class OrderHistory {
     constructor() {
         this.orders = [];
         this.currentFilter = 'all';
-        this.baseURL = 'https://deenice-finds-1-0-1.onrender.com/api';
         this.init();
     }
 
-    async init() {
-        await this.loadOrders();
+    init() {
+        this.loadOrders();
         this.renderOrders();
         this.setupEventListeners();
     }
 
-    async loadOrders() {
-        try {
-            // Try to get orders from backend first (for status updates)
-            await this.syncWithBackend();
-        } catch (error) {
-            console.log('❌ Backend sync failed, using localStorage');
-            this.loadOrdersFromLocalStorage();
-        }
-    }
-
-    async syncWithBackend() {
-    try {
-        console.log('🔄 Loading orders...');
-        
-        // Simply load from localStorage - no complex sync needed
-        const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-        this.orders = localOrders;
-        
-        // Sort by date (newest first)
-        this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-        
-        console.log('✅ Orders loaded:', this.orders.length);
-        
-    } catch (error) {
-        console.error('Load error:', error);
-        throw error;
-    }
-}
-    loadOrdersFromLocalStorage() {
-        // Fallback: Load from localStorage
+    loadOrders() {
+        // Simply load from localStorage - no complex sync
         const savedOrders = localStorage.getItem('de_order_history');
         this.orders = savedOrders ? JSON.parse(savedOrders) : [];
+        
+        // Sort orders by date (newest first)
         this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-    }
-
-    // Manual sync function
-    async manualSync() {
-        try {
-            await this.syncWithBackend();
-            this.renderOrders();
-            alert('✅ Orders synced! Statuses updated from backend.');
-        } catch (error) {
-            alert('❌ Sync failed. Using local order data.');
-        }
-    }
-
-    // Auto-sync every 2 minutes
-    startAutoSync() {
-        setInterval(() => {
-            this.syncWithBackend().then(() => {
-                this.renderOrders();
-            }).catch(error => {
-                console.log('Auto-sync failed:', error);
-            });
-        }, 120000); // 2 minutes
+        
+        console.log('📥 Orders loaded from localStorage:', this.orders.length);
     }
 
     setupEventListeners() {
@@ -77,14 +30,6 @@ class OrderHistory {
                 this.setFilter(e.target.dataset.filter);
             });
         });
-
-        // Add sync button if it exists
-        const syncBtn = document.getElementById('syncOrders');
-        if (syncBtn) {
-            syncBtn.addEventListener('click', () => {
-                this.manualSync();
-            });
-        }
     }
 
     setFilter(filter) {
@@ -149,12 +94,11 @@ class OrderHistory {
                             <span>📅 ${orderDate}</span>
                             <span>📍 ${order.customer?.city || order.delivery?.city || 'N/A'}</span>
                             <span>🚚 ${this.getDeliveryText(order)}</span>
-                            ${statusUpdated ? `<span>🔄 Updated: ${statusUpdated}</span>` : ''}
+                            ${statusUpdated ? `<span>📝 ${statusUpdated}</span>` : ''}
                         </div>
                     </div>
                     <div class="order-status ${this.getStatusClass(order.status)}">
                         ${this.getStatusText(order.status)}
-                        ${this.getSyncIndicator(order)}
                     </div>
                 </div>
                 
@@ -188,44 +132,38 @@ class OrderHistory {
         `;
     }
 
-    getSyncIndicator(order) {
-        if (order.status === 'pending' || order.status === 'processing') {
-            return `<div class="sync-indicator">🔄 Syncing...</div>`;
-        }
-        return '';
+    getStatusMessage(order) {
+        const messages = {
+            'pending': `
+                <div class="status-message pending">
+                    <p>📝 <strong>Your order is being reviewed.</strong> We'll start processing it shortly.</p>
+                    <small>You'll receive a WhatsApp notification when we start processing your order</small>
+                </div>
+            `,
+            'processing': `
+                <div class="status-message processing">
+                    <p>🔄 <strong>Your order is being processed.</strong> We're preparing your items for ${this.getDeliveryText(order) === 'Store Pickup' ? 'pickup' : 'delivery'}.</p>
+                    <small>You'll receive a WhatsApp notification when your order is ready</small>
+                </div>
+            `,
+            'completed': `
+                <div class="status-message completed">
+                    <p>✅ <strong>Order completed!</strong> ${this.getDeliveryText(order) === 'Store Pickup' ? 
+                        'Ready for pickup at our store.' : 
+                        'Delivered to your address.'}
+                    ${order.completedDate ? `Completed on ${new Date(order.completedDate).toLocaleDateString()}` : ''}</p>
+                </div>
+            `,
+            'cancelled': `
+                <div class="status-message cancelled">
+                    <p>❌ <strong>Order cancelled.</strong> Contact support for more information.</p>
+                </div>
+            `
+        };
+        
+        return messages[order.status] || '';
     }
 
-   getStatusMessage(order) {
-    const messages = {
-        'pending': `
-            <div class="status-message pending">
-                <p>📝 <strong>Your order is being reviewed.</strong> We'll start processing it shortly.</p>
-                <small>You'll receive a WhatsApp notification when your order status updates</small>
-            </div>
-        `,
-        'processing': `
-            <div class="status-message processing">
-                <p>🔄 <strong>Your order is being processed.</strong> We're preparing your items for ${this.getDeliveryText(order) === 'Store Pickup' ? 'pickup' : 'delivery'}.</p>
-                <small>You'll receive a WhatsApp notification when your order is ready</small>
-            </div>
-        `,
-        'completed': `
-            <div class="status-message completed">
-                <p>✅ <strong>Order completed!</strong> ${this.getDeliveryText(order) === 'Store Pickup' ? 
-                    'Ready for pickup at our store.' : 
-                    'Delivered to your address.'}
-                ${order.completedDate ? `Completed on ${new Date(order.completedDate).toLocaleDateString()}` : ''}</p>
-            </div>
-        `,
-        'cancelled': `
-            <div class="status-message cancelled">
-                <p>❌ <strong>Order cancelled.</strong> Contact support for more information.</p>
-            </div>
-        `
-    };
-    
-    return messages[order.status] || '';
-}
     createOrderItem(item) {
         const specs = [];
         if (item.color) specs.push(`Color: ${item.color}`);
@@ -281,9 +219,6 @@ class OrderHistory {
                 <h3>No orders yet</h3>
                 <p>You haven't placed any orders yet. Start shopping to see your order history here!</p>
                 <a href="index.html" class="btn btn-primary">Start Shopping</a>
-                <button class="btn btn-secondary" onclick="orderHistory.manualSync()" style="margin-top: 10px;">
-                    🔄 Check for Updates
-                </button>
             </div>
         `;
     }
@@ -295,9 +230,6 @@ class OrderHistory {
                 <p>No orders match the current filter. Try selecting a different filter.</p>
                 <button class="btn btn-primary" onclick="orderHistory.setFilter('all')">
                     Show All Orders
-                </button>
-                <button class="btn btn-secondary" onclick="orderHistory.manualSync()" style="margin-top: 10px;">
-                    🔄 Check for Updates
                 </button>
             </div>
         `;
