@@ -60,75 +60,107 @@ class AdminOrderManager {
     }
 
     async updateStatus(orderId, newStatus) {
-    try {
-        console.log('🔄 Updating order status:', orderId, newStatus);
-        const response = await this.makeRequest(`/orders/${orderId}/status`, {
-            method: 'PUT',
-            body: JSON.stringify({ status: newStatus })
-        });
-        
-        await this.loadOrdersFromBackend();
-        this.renderStats();
-        this.renderOrders();
-        
-        console.log('📱 Full server response:', response);
-        console.log('📞 Customer phone:', response.order.customer?.phone);
-        console.log('🔗 WhatsApp URL:', response.whatsappURL);
-        
-        // Show WhatsApp notification option
-        if (response.whatsappURL) {
-            console.log('✅ WhatsApp URL available, showing confirm dialog');
-            const sendMsg = confirm(
-                `✅ Order #${orderId} updated to ${newStatus}!\n\n` +
-                `Customer: ${response.order.customer?.name || 'N/A'}\n` +
-                `Phone: ${response.order.customer?.phone || 'No phone'}\n\n` +
-                `Send WhatsApp notification to customer?`
-            );
+        try {
+            console.log('🔄 Updating order status:', orderId, newStatus);
+            const response = await this.makeRequest(`/orders/${orderId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: newStatus })
+            });
             
-            if (sendMsg) {
-                console.log('🔄 Opening WhatsApp URL:', response.whatsappURL);
+            await this.loadOrdersFromBackend();
+            this.renderStats();
+            this.renderOrders();
+            
+            console.log('📱 Full server response:', response);
+            console.log('📞 Customer phone:', response.order.customer?.phone);
+            console.log('🔗 WhatsApp URL:', response.whatsappURL);
+            
+            // Show WhatsApp notification option
+            if (response.whatsappURL) {
+                console.log('✅ WhatsApp URL available, showing confirm dialog');
+                const sendMsg = confirm(
+                    `✅ Order #${orderId} updated to ${newStatus}!\n\n` +
+                    `Customer: ${response.order.customer?.name || 'N/A'}\n` +
+                    `Phone: ${response.order.customer?.phone || 'No phone'}\n\n` +
+                    `Send WhatsApp notification to customer?`
+                );
                 
-                // iOS-Compatible WhatsApp Opening
-                setTimeout(() => {
-                    // Use window.location for better iOS compatibility
-                    window.location.href = response.whatsappURL;
-                }, 100);
-                
-                // Fallback for blocked popups
-                setTimeout(() => {
-                    if (window.location.href.indexOf('whatsapp') === -1) {
-                        const manualOpen = confirm(
-                            "WhatsApp didn't open automatically.\n\n" +
-                            "Click OK to copy the WhatsApp link and open it manually."
-                        );
-                        if (manualOpen) {
-                            navigator.clipboard.writeText(response.whatsappURL).then(() => {
-                                alert("📱 WhatsApp link copied! Please paste it in your browser to send the notification.");
-                            });
+                if (sendMsg) {
+                    console.log('🔄 Opening WhatsApp URL:', response.whatsappURL);
+                    
+                    // iOS-Compatible WhatsApp Opening
+                    setTimeout(() => {
+                        // Use window.location for better iOS compatibility
+                        window.location.href = response.whatsappURL;
+                    }, 100);
+                    
+                    // Fallback for blocked popups
+                    setTimeout(() => {
+                        if (window.location.href.indexOf('whatsapp') === -1) {
+                            const manualOpen = confirm(
+                                "WhatsApp didn't open automatically.\n\n" +
+                                "Click OK to copy the WhatsApp link and open it manually."
+                            );
+                            if (manualOpen) {
+                                navigator.clipboard.writeText(response.whatsappURL).then(() => {
+                                    alert("📱 WhatsApp link copied! Please paste it in your browser to send the notification.");
+                                });
+                            }
                         }
-                    }
-                }, 2000);
-            }
-        } else {
-            console.log('❌ No WhatsApp URL in response');
-            let alertMessage = `✅ Order #${orderId} updated to ${newStatus}!`;
-            
-            if (response.order.customer?.phone) {
-                alertMessage += `\n\n📞 Customer phone: ${response.order.customer.phone}`;
-                alertMessage += `\n❓ Phone available but no WhatsApp link was generated.`;
-                alertMessage += `\n🔍 Check server logs for details.`;
+                    }, 2000);
+                }
             } else {
-                alertMessage += `\n\n📞 No customer phone number provided.`;
-                alertMessage += `\n💡 Customers need to enter their WhatsApp number during checkout.`;
+                console.log('❌ No WhatsApp URL in response');
+                let alertMessage = `✅ Order #${orderId} updated to ${newStatus}!`;
+                
+                if (response.order.customer?.phone) {
+                    alertMessage += `\n\n📞 Customer phone: ${response.order.customer.phone}`;
+                    alertMessage += `\n❓ Phone available but no WhatsApp link was generated.`;
+                    alertMessage += `\n🔍 Check server logs for details.`;
+                } else {
+                    alertMessage += `\n\n📞 No customer phone number provided.`;
+                    alertMessage += `\n💡 Customers need to enter their WhatsApp number during checkout.`;
+                }
+                
+                alert(alertMessage);
             }
-            
-            alert(alertMessage);
+        } catch (error) {
+            console.error('Failed to update status:', error);
+            alert('Failed to update order status: ' + error.message);
         }
-    } catch (error) {
-        console.error('Failed to update status:', error);
-        alert('Failed to update order status: ' + error.message);
     }
-}
+
+    async deleteOrder(orderId) {
+        try {
+            const confirmDelete = confirm(`Are you sure you want to delete order #${orderId}? This action cannot be undone.`);
+            
+            if (!confirmDelete) return;
+
+            console.log('🗑️ Deleting order:', orderId);
+            
+            // Since your backend doesn't have a delete endpoint yet, we'll handle it locally
+            // First remove from backend memory (in a real app, you'd call a DELETE endpoint)
+            const orderIndex = this.orders.findIndex(o => o.id === orderId);
+            if (orderIndex > -1) {
+                this.orders.splice(orderIndex, 1);
+            }
+
+            // Also remove from localStorage for client-side consistency
+            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            const updatedLocalOrders = localOrders.filter(order => order.id !== orderId);
+            localStorage.setItem('de_order_history', JSON.stringify(updatedLocalOrders));
+
+            await this.loadOrdersFromBackend(); // Reload from backend
+            this.renderStats();
+            this.renderOrders();
+            
+            alert(`✅ Order #${orderId} has been deleted successfully.`);
+            
+        } catch (error) {
+            console.error('Failed to delete order:', error);
+            alert('Failed to delete order. Please try again.');
+        }
+    }
 
     logout() {
         localStorage.removeItem('admin_token');
@@ -284,6 +316,9 @@ class AdminOrderManager {
                         </button>
                         <button class="btn btn-primary" onclick="adminManager.contactCustomer('${order.id}')">
                             Contact Customer
+                        </button>
+                        <button class="btn btn-danger" onclick="adminManager.deleteOrder('${order.id}')" style="background-color: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
+                            🗑️ Delete
                         </button>
                     </div>
                 </div>
