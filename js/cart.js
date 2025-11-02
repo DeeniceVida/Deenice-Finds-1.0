@@ -63,7 +63,7 @@ function removeItemFromCart(itemTitle) {
 }
 
 // 🚀 UPDATED FUNCTION: WhatsApp Order Sender with Delivery Options 🚀
-function sendOrderViaWhatsApp() {
+async function sendOrderViaWhatsApp() {
     const cart = getCart();
     
     // 1. Get user details
@@ -81,11 +81,11 @@ function sendOrderViaWhatsApp() {
     }
 
     // 2. Create order first to get order ID
-    const orderId = saveOrderToHistory(cart, {
-        method: window.selectedDeliveryOption,
-        city: city,
-        customer: { name, city }
-    });
+    const orderId = await saveOrderToHistory(cart, {
+    method: window.selectedDeliveryOption,
+    city: city,
+    customer: { name, city }
+});
 
     // 3. Build message with order ID
     let total = 0;
