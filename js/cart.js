@@ -166,7 +166,6 @@ function renderCart() {
     const btn = document.getElementById('cart-send');
     const cart = getCart();
     const summaryContainer = document.getElementById('cart-summary');
-    const deliveryOptions = document.getElementById('delivery-options');
 
     // Find the existing form container by its first input element
     const existingForm = document.getElementById('user-name') ? document.getElementById('user-name').closest('div') : null;
@@ -182,6 +181,9 @@ function renderCart() {
         list.innerHTML = '<p>Your cart is empty.</p>';
         summaryContainer.innerHTML = '';
         if (btn) btn.style.display = 'none';
+        
+        // Hide delivery options if they exist
+        const deliveryOptions = document.getElementById('delivery-options');
         if (deliveryOptions) deliveryOptions.style.display = 'none';
         
         if (existingForm) {
@@ -244,18 +246,20 @@ function renderCart() {
     list.innerHTML = html;
     if (btn) btn.style.display = 'block';
 
-    // Hide delivery options initially
-    if (deliveryOptions) {
-        deliveryOptions.style.display = 'none';
-    }
-
     if (existingForm) {
         existingForm.style.display = 'block';
         // Check if form is already filled to show delivery options
         const nameValue = document.getElementById('user-name').value.trim();
         const cityValue = document.getElementById('user-city').value.trim();
+        const deliveryOptions = document.getElementById('delivery-options');
         if (nameValue && cityValue && deliveryOptions) {
             deliveryOptions.style.display = 'block';
+            if (!window.deliveryOptionsInitialized) {
+                setTimeout(() => {
+                    selectDeliveryOption('delivery');
+                    window.deliveryOptionsInitialized = true;
+                }, 100);
+            }
         }
     }
 
@@ -284,6 +288,70 @@ function renderCart() {
         `;
         list.insertAdjacentElement('afterend', form);
         
+        // Now create and insert the delivery options AFTER the form
+        const deliveryOptions = document.createElement('div');
+        deliveryOptions.id = 'delivery-options';
+        deliveryOptions.className = 'delivery-options';
+        deliveryOptions.style.display = 'none'; // Hidden initially
+        deliveryOptions.innerHTML = `
+            <h3>🛒 Delivery Options</h3>
+            
+            <div class="delivery-option" onclick="selectDeliveryOption('delivery')">
+                <input type="radio" id="delivery-home" name="delivery" value="delivery">
+                <div class="delivery-label">
+                    <label for="delivery-home">
+                        <strong>🚚 Home Delivery</strong><br>
+                        <small>Get your order delivered to your address</small>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="delivery-option" onclick="selectDeliveryOption('pickup')">
+                <input type="radio" id="pickup-shop" name="delivery" value="pickup">
+                <div class="delivery-label">
+                    <label for="pickup-shop">
+                        <strong>🏪 Pick Up in Shop</strong><br>
+                        <small>Collect your order from our store</small>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Pickup Information (shown when pickup is selected) -->
+            <div id="pickup-info" class="pickup-info">
+                <h4>📍 Store Pickup Information</h4>
+                
+                <div class="pickup-code" id="pickup-code">
+                    <!-- Unique code will be generated here -->
+                </div>
+                
+                <div class="shop-address">
+                    <strong>🏬 Our Store Location:</strong><br>
+                    Dynamic Mall, Shop ML 135, 3rd Floor<br>
+                    Along Tom Mboya Street<br>
+                    Behind The National Archives<br>
+                    Opposite AMBASSADEUR<br>
+                    Nairobi, Kenya
+                </div>
+                
+                <a href="https://maps.google.com/maps?q=Dynamic+Mall+Tom+Mboya+Street+Nairobi" 
+                   target="_blank" class="map-link">
+                   📍 Open in Google Maps
+                </a>
+                
+                <div class="instructions">
+                    <strong>📋 Pickup Instructions:</strong><br>
+                    1. Save or screenshot your unique pickup code above<br>
+                    2. Visit our store during business hours (Mon-Sat, 9AM-6PM)<br>
+                    3. Show your pickup code to our staff<br>
+                    4. Collect your order - no waiting!<br>
+                    <em>Please bring valid ID for verification</em>
+                </div>
+            </div>
+        `;
+        
+        // Insert delivery options after the form
+        form.insertAdjacentElement('afterend', deliveryOptions);
+        
         // Add real-time validation to show delivery options when both fields are filled
         const nameInput = document.getElementById('user-name');
         const cityInput = document.getElementById('user-city');
@@ -291,9 +359,11 @@ function renderCart() {
         function checkFormCompletion() {
             const nameValue = nameInput.value.trim();
             const cityValue = cityInput.value.trim();
+            const deliveryOptions = document.getElementById('delivery-options');
             
             if (nameValue && cityValue && deliveryOptions) {
                 deliveryOptions.style.display = 'block';
+                deliveryOptions.classList.add('show');
                 // Auto-select home delivery by default
                 if (!window.deliveryOptionsInitialized) {
                     setTimeout(() => {
@@ -303,6 +373,7 @@ function renderCart() {
                 }
             } else if (deliveryOptions) {
                 deliveryOptions.style.display = 'none';
+                deliveryOptions.classList.remove('show');
             }
         }
         
@@ -321,8 +392,13 @@ function renderCart() {
                 } else {
                     this.style.borderColor = 'rgba(15, 20, 30, 0.1)';
                 }
+                // Also check form completion on each input
+                checkFormCompletion();
             });
         });
+        
+        // Initial check in case there are existing values
+        setTimeout(checkFormCompletion, 100);
     }
     
     // --- Attach Event Listeners ---
