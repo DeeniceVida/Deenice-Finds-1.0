@@ -11,7 +11,6 @@ class OrderHistory {
         await this.loadOrders();
         this.renderOrders();
         this.setupEventListeners();
-        this.startAutoSync(); // Start automatic sync with backend
     }
 
     async loadOrders() {
@@ -25,36 +24,23 @@ class OrderHistory {
     }
 
     async syncWithBackend() {
-        try {
-            console.log('🔄 Syncing orders with backend...');
-            
-            // In a real app, you'd call your backend with customer ID
-            // For now, we'll simulate by checking if any localStorage orders need status updates
-            
-            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-            
-            // Check if we have any pending/processing orders that might be updated
-            const needsUpdate = localOrders.some(order => 
-                order.status === 'pending' || order.status === 'processing'
-            );
-            
-            if (needsUpdate) {
-                console.log('📱 Some orders might have status updates on backend');
-                // In a real app, you'd fetch the actual orders from backend
-                // For now, we'll just use localStorage
-                this.orders = localOrders;
-            } else {
-                this.orders = localOrders;
-            }
-            
-            this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-            console.log('✅ Orders loaded:', this.orders.length);
-            
-        } catch (error) {
-            throw error; // Re-throw to trigger fallback
-        }
+    try {
+        console.log('🔄 Loading orders...');
+        
+        // Simply load from localStorage - no complex sync needed
+        const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        this.orders = localOrders;
+        
+        // Sort by date (newest first)
+        this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+        
+        console.log('✅ Orders loaded:', this.orders.length);
+        
+    } catch (error) {
+        console.error('Load error:', error);
+        throw error;
     }
-
+}
     loadOrdersFromLocalStorage() {
         // Fallback: Load from localStorage
         const savedOrders = localStorage.getItem('de_order_history');
@@ -209,38 +195,37 @@ class OrderHistory {
         return '';
     }
 
-    getStatusMessage(order) {
-        const messages = {
-            'pending': `
-                <div class="status-message pending">
-                    <p>📝 <strong>Your order is being reviewed.</strong> We'll start processing it shortly.</p>
-                    <small>Status updates automatically every 2 minutes</small>
-                </div>
-            `,
-            'processing': `
-                <div class="status-message processing">
-                    <p>🔄 <strong>Your order is being processed.</strong> We're preparing your items for ${this.getDeliveryText(order) === 'Store Pickup' ? 'pickup' : 'delivery'}.</p>
-                    <small>Status updates automatically every 2 minutes</small>
-                </div>
-            `,
-            'completed': `
-                <div class="status-message completed">
-                    <p>✅ <strong>Order completed!</strong> ${this.getDeliveryText(order) === 'Store Pickup' ? 
-                        'Ready for pickup at our store.' : 
-                        'Delivered to your address.'}
-                    ${order.completedDate ? `Completed on ${new Date(order.completedDate).toLocaleDateString()}` : ''}</p>
-                </div>
-            `,
-            'cancelled': `
-                <div class="status-message cancelled">
-                    <p>❌ <strong>Order cancelled.</strong> Contact support for more information.</p>
-                </div>
-            `
-        };
-        
-        return messages[order.status] || '';
-    }
-
+   getStatusMessage(order) {
+    const messages = {
+        'pending': `
+            <div class="status-message pending">
+                <p>📝 <strong>Your order is being reviewed.</strong> We'll start processing it shortly.</p>
+                <small>You'll receive a WhatsApp notification when your order status updates</small>
+            </div>
+        `,
+        'processing': `
+            <div class="status-message processing">
+                <p>🔄 <strong>Your order is being processed.</strong> We're preparing your items for ${this.getDeliveryText(order) === 'Store Pickup' ? 'pickup' : 'delivery'}.</p>
+                <small>You'll receive a WhatsApp notification when your order is ready</small>
+            </div>
+        `,
+        'completed': `
+            <div class="status-message completed">
+                <p>✅ <strong>Order completed!</strong> ${this.getDeliveryText(order) === 'Store Pickup' ? 
+                    'Ready for pickup at our store.' : 
+                    'Delivered to your address.'}
+                ${order.completedDate ? `Completed on ${new Date(order.completedDate).toLocaleDateString()}` : ''}</p>
+            </div>
+        `,
+        'cancelled': `
+            <div class="status-message cancelled">
+                <p>❌ <strong>Order cancelled.</strong> Contact support for more information.</p>
+            </div>
+        `
+    };
+    
+    return messages[order.status] || '';
+}
     createOrderItem(item) {
         const specs = [];
         if (item.color) specs.push(`Color: ${item.color}`);
