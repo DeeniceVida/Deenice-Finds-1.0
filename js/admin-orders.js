@@ -60,31 +60,66 @@ class AdminOrderManager {
     }
 
     async updateStatus(orderId, newStatus) {
-    try {
-        console.log('🔄 Updating order status:', orderId, newStatus);
-        const response = await this.makeRequest(`/orders/${orderId}/status`, {
-            method: 'PUT',
-            body: JSON.stringify({ status: newStatus })
-        });
-        
-        await this.loadOrdersFromBackend();
-        this.renderStats();
-        this.renderOrders();
-        
-        // Show WhatsApp notification option
-        if (response.whatsappURL) {
-            const sendMsg = confirm(`✅ Order #${orderId} updated to ${newStatus}!\n\nSend WhatsApp notification to customer?`);
-            if (sendMsg) {
-                window.open(response.whatsappURL, '_blank');
+        try {
+            console.log('🔄 Updating order status:', orderId, newStatus);
+            const response = await this.makeRequest(`/orders/${orderId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: newStatus })
+            });
+            
+            await this.loadOrdersFromBackend();
+            this.renderStats();
+            this.renderOrders();
+            
+            console.log('📱 Full server response:', response);
+            console.log('📞 Customer phone:', response.order.customer?.phone);
+            console.log('🔗 WhatsApp URL:', response.whatsappURL);
+            
+            // Show WhatsApp notification option
+            if (response.whatsappURL) {
+                console.log('✅ WhatsApp URL available, showing confirm dialog');
+                const sendMsg = confirm(
+                    `✅ Order #${orderId} updated to ${newStatus}!\n\n` +
+                    `Customer: ${response.order.customer?.name || 'N/A'}\n` +
+                    `Phone: ${response.order.customer?.phone || 'No phone'}\n\n` +
+                    `Send WhatsApp notification to customer?`
+                );
+                
+                if (sendMsg) {
+                    console.log('🔄 Opening WhatsApp URL:', response.whatsappURL);
+                    // Test if window.open works
+                    const newWindow = window.open(response.whatsappURL, '_blank');
+                    if (!newWindow) {
+                        console.log('❌ Popup blocked by browser');
+                        alert(
+                            '⚠️ Popup blocked! Please allow popups for this site.\n\n' +
+                            'Alternatively, manually copy this link:\n' + 
+                            response.whatsappURL
+                        );
+                    } else {
+                        console.log('✅ WhatsApp opened successfully');
+                    }
+                }
+            } else {
+                console.log('❌ No WhatsApp URL in response');
+                let alertMessage = `✅ Order #${orderId} updated to ${newStatus}!`;
+                
+                if (response.order.customer?.phone) {
+                    alertMessage += `\n\n📞 Customer phone: ${response.order.customer.phone}`;
+                    alertMessage += `\n❓ Phone available but no WhatsApp link was generated.`;
+                    alertMessage += `\n🔍 Check server logs for details.`;
+                } else {
+                    alertMessage += `\n\n📞 No customer phone number provided.`;
+                    alertMessage += `\n💡 Customers need to enter their WhatsApp number during checkout.`;
+                }
+                
+                alert(alertMessage);
             }
-        } else {
-            alert(`✅ Order #${orderId} updated to ${newStatus}!${response.order.customer?.phone ? '\n\n📞 Customer has phone number but WhatsApp link not generated.' : '\n\n📞 No customer phone number available.'}`);
+        } catch (error) {
+            console.error('Failed to update status:', error);
+            alert('Failed to update order status: ' + error.message);
         }
-    } catch (error) {
-        console.error('Failed to update status:', error);
-        alert('Failed to update order status.');
     }
-}
 
     logout() {
         localStorage.removeItem('admin_token');
@@ -210,6 +245,7 @@ class AdminOrderManager {
                             <span>📅 ${orderDate}</span>
                             <span>👤 ${order.customer?.name || 'N/A'}</span>
                             <span>📍 ${order.customer?.city || 'N/A'}</span>
+                            <span>📞 ${order.customer?.phone || 'No phone'}</span>
                             <span>🚚 ${this.getDeliveryText(order)}</span>
                         </div>
                     </div>
@@ -294,12 +330,17 @@ Order #${order.id} - Details
 CUSTOMER INFORMATION:
 Name: ${order.customer?.name || 'N/A'}
 City: ${order.customer?.city || 'N/A'}
+Phone: ${order.customer?.phone || 'Not provided'}
 
 ORDER INFORMATION:
 Status: ${order.status}
 Order Date: ${new Date(order.orderDate).toLocaleString()}
 Last Updated: ${order.statusUpdated ? new Date(order.statusUpdated).toLocaleString() : 'N/A'}
 ${order.completedDate ? `Completed: ${new Date(order.completedDate).toLocaleString()}` : ''}
+
+DELIVERY:
+Method: ${this.getDeliveryText(order)}
+${order.delivery?.pickupCode ? `Pickup Code: ${order.delivery.pickupCode}` : ''}
 
 ITEMS (${order.items?.length || 0}):
 ${order.items ? order.items.map((item, index) => 
