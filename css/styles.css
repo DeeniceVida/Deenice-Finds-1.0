@@ -2401,3 +2401,35 @@ h1 {
 .primary:active {
     transform: translateY(0);
 }
+/* Smooth transition for delivery options */
+.delivery-options {
+    background: var(--glass-bg, rgba(255, 255, 255, 0.6));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius, 14px);
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: var(--card-shadow, 0 6px 18px rgba(15, 20, 30, 0.06));
+    display: none; /* Hidden by default */
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.delivery-options.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Add a subtle indicator that more options are coming */
+.premium-form::after {
+    content: "👇 Fill in your details to see delivery options";
+    display: block;
+    text-align: center;
+    color: var(--muted, #9aa4b2);
+    font-size: 0.9rem;
+    margin-top: 10px;
+    font-style: italic;
+    opacity: 0.7;
+}
