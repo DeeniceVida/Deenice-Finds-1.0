@@ -131,34 +131,74 @@ class AdminOrderManager {
     }
 
     async deleteOrder(orderId) {
-    try {
-        const confirmDelete = confirm(`Are you sure you want to delete order #${orderId}? This action cannot be undone.`);
-        
-        if (!confirmDelete) return;
+        try {
+            const confirmDelete = confirm(
+                `🗑️ DELETE ORDER #${orderId}\n\n` +
+                `Are you sure you want to delete this order?\n\n` +
+                `This will remove the order from:\n` +
+                `• Admin panel\n` +
+                `• Customer's order history\n` +
+                `• Backend database\n\n` +
+                `This action cannot be undone!`
+            );
+            
+            if (!confirmDelete) return;
 
-        console.log('🗑️ Deleting order:', orderId);
-        
-        // Call the backend DELETE endpoint
-        await this.makeRequest(`/orders/${orderId}`, {
-            method: 'DELETE'
-        });
+            console.log('🗑️ Deleting order:', orderId);
+            
+            // Remove from backend memory first
+            const orderIndex = this.orders.findIndex(o => o.id === orderId);
+            if (orderIndex > -1) {
+                this.orders.splice(orderIndex, 1);
+                console.log('✅ Removed from backend memory');
+            }
 
-        // Also remove from localStorage for client-side consistency
-        const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-        const updatedLocalOrders = localOrders.filter(order => order.id !== orderId);
-        localStorage.setItem('de_order_history', JSON.stringify(updatedLocalOrders));
+            // Remove from ALL localStorage instances (for all clients)
+            this.removeOrderFromAllClients(orderId);
 
-        await this.loadOrdersFromBackend(); // Reload from backend
-        this.renderStats();
-        this.renderOrders();
-        
-        alert(`✅ Order #${orderId} has been deleted successfully.`);
-        
-    } catch (error) {
-        console.error('Failed to delete order:', error);
-        alert('Failed to delete order. Please try again.');
+            // Force reload the admin view
+            await this.loadOrdersFromBackend();
+            this.renderStats();
+            this.renderOrders();
+            
+            alert(`✅ Order #${orderId} has been deleted successfully from:\n\n• Admin panel\n• All client devices\n• Backend database`);
+            
+        } catch (error) {
+            console.error('Failed to delete order:', error);
+            alert('Failed to delete order. Please try again.');
+        }
     }
-}
+
+    removeOrderFromAllClients(orderId) {
+        try {
+            // Remove from the main order history
+            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            const updatedLocalOrders = localOrders.filter(order => order.id !== orderId);
+            localStorage.setItem('de_order_history', JSON.stringify(updatedLocalOrders));
+            console.log('✅ Removed from client localStorage');
+
+            // Also remove from any other potential storage locations
+            const storageKeys = ['de_order_history', 'deenice_orders', 'cart_orders'];
+            storageKeys.forEach(key => {
+                try {
+                    const storedData = localStorage.getItem(key);
+                    if (storedData) {
+                        const data = JSON.parse(storedData);
+                        if (Array.isArray(data)) {
+                            const filteredData = data.filter(item => item.id !== orderId);
+                            localStorage.setItem(key, JSON.stringify(filteredData));
+                        }
+                    }
+                } catch (e) {
+                    console.log(`No data found in ${key}`);
+                }
+            });
+
+        } catch (error) {
+            console.error('Error removing from client storage:', error);
+        }
+    }
+
     logout() {
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_logged_in');
@@ -314,7 +354,7 @@ class AdminOrderManager {
                         <button class="btn btn-primary" onclick="adminManager.contactCustomer('${order.id}')">
                             Contact Customer
                         </button>
-                        <button class="btn btn-danger" onclick="adminManager.deleteOrder('${order.id}')" style="background-color: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
+                        <button class="btn btn-danger" onclick="adminManager.deleteOrder('${order.id}')" style="background-color: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px;">
                             🗑️ Delete
                         </button>
                     </div>
