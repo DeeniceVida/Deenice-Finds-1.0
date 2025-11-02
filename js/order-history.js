@@ -1,43 +1,23 @@
-// Order History Management
+// Order History Management - CLIENT VERSION
 class OrderHistory {
     constructor() {
         this.orders = [];
         this.currentFilter = 'all';
-        this.baseURL = 'https://deenice-finds-1-0-1.onrender.com/api';
         this.init();
     }
 
-    async init() {
-        await this.loadOrdersFromBackend();
+    init() {
+        this.loadOrders();
         this.renderOrders();
         this.setupEventListeners();
     }
 
-    async loadOrdersFromBackend() {
-        try {
-            console.log('📥 Loading orders from backend...');
-            // Note: This would normally require authentication
-            // For now, we'll simulate loading orders
-            // In a real app, you'd have user authentication
-            this.orders = await this.getOrdersForCustomer();
-            console.log('✅ Backend orders loaded:', this.orders.length);
-        } catch (error) {
-            console.error('❌ Failed to load orders from backend:', error);
-            // Fallback to localStorage for existing orders
-            this.loadOrdersFromLocalStorage();
-        }
-    }
-
-    async getOrdersForCustomer() {
-        // In a real app, this would call your backend with customer ID
-        // For now, we'll return an empty array since we don't have customer auth
-        return [];
-    }
-
-    loadOrdersFromLocalStorage() {
-        // Fallback: Load from localStorage
+    loadOrders() {
+        // Load orders from localStorage (for client-side)
         const savedOrders = localStorage.getItem('de_order_history');
         this.orders = savedOrders ? JSON.parse(savedOrders) : [];
+        
+        // Sort orders by date (newest first)
         this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
     }
 
@@ -331,3 +311,24 @@ Customer: ${order.customer?.name || 'N/A'}
 
 // Initialize order history when page loads
 const orderHistory = new OrderHistory();
+
+// Export function to add orders from other pages
+window.addOrderToHistory = function(orderData) {
+    const existingOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+    const newOrder = {
+        id: orderData.id || 'ORD-' + Date.now().toString(36).toUpperCase(),
+        orderDate: new Date().toISOString(),
+        status: 'pending',
+        ...orderData
+    };
+    existingOrders.unshift(newOrder);
+    localStorage.setItem('de_order_history', JSON.stringify(existingOrders));
+    
+    // Refresh the order history display if on the page
+    if (typeof orderHistory !== 'undefined') {
+        orderHistory.loadOrders();
+        orderHistory.renderOrders();
+    }
+    
+    return newOrder.id;
+};
