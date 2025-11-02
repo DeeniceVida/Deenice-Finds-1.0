@@ -1,4 +1,4 @@
-// Order History Management - SIMPLIFIED VERSION (No Syncing)
+// Order History Management - WITH SERVER SYNC
 class OrderHistory {
     constructor() {
         this.orders = [];
@@ -6,21 +6,51 @@ class OrderHistory {
         this.init();
     }
 
-    init() {
-        this.loadOrders();
+    async init() {
+        await this.loadOrders();
         this.renderOrders();
         this.setupEventListeners();
+        this.startAutoRefresh();
     }
 
-    loadOrders() {
-        // Simply load from localStorage - no complex sync
-        const savedOrders = localStorage.getItem('de_order_history');
-        this.orders = savedOrders ? JSON.parse(savedOrders) : [];
-        
+    async loadOrders() {
+        try {
+            console.log('📥 Loading orders from server...');
+            
+            // Try to get from server first
+            const response = await fetch('https://deenice-finds-1-0-1.onrender.com/api/orders/user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    // Send localStorage orders for matching
+                    localOrders: JSON.parse(localStorage.getItem('de_order_history') || '[]')
+                })
+            });
+
+            if (response.ok) {
+                const serverData = await response.json();
+                this.orders = serverData.orders || [];
+                console.log('✅ Loaded orders from server:', this.orders.length);
+                
+                // Update localStorage with server data
+                localStorage.setItem('de_order_history', JSON.stringify(this.orders));
+            } else {
+                // Fallback to localStorage
+                this.orders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+                console.log('⚠️ Using localStorage orders:', this.orders.length);
+            }
+            
+        } catch (error) {
+            console.error('Error loading orders from server:', error);
+            // Fallback to localStorage
+            this.orders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            console.log('🔄 Using localStorage due to error:', this.orders.length);
+        }
+
         // Sort orders by date (newest first)
         this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-        
-        console.log('📥 Orders loaded from localStorage:', this.orders.length);
     }
 
     setupEventListeners() {
@@ -29,6 +59,31 @@ class OrderHistory {
             btn.addEventListener('click', (e) => {
                 this.setFilter(e.target.dataset.filter);
             });
+        });
+
+        // Refresh button
+        const refreshBtn = document.getElementById('refreshOrders');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', async () => {
+                await this.loadOrders();
+                this.renderOrders();
+                alert('Orders refreshed from server!');
+            });
+        }
+    }
+
+    startAutoRefresh() {
+        // Refresh orders every 30 seconds
+        setInterval(async () => {
+            await this.loadOrders();
+            this.renderOrders();
+        }, 30000);
+
+        // Also refresh when page becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                this.loadOrders().then(() => this.renderOrders());
+            }
         });
     }
 
@@ -124,6 +179,9 @@ class OrderHistory {
                                 Contact Support
                             </button>
                         ` : ''}
+                        <button class="btn btn-secondary" onclick="orderHistory.refreshOrder('${order.id}')">
+                            🔄 Refresh
+                        </button>
                     </div>
                 </div>
                 
@@ -219,6 +277,9 @@ class OrderHistory {
                 <h3>No orders yet</h3>
                 <p>You haven't placed any orders yet. Start shopping to see your order history here!</p>
                 <a href="index.html" class="btn btn-primary">Start Shopping</a>
+                <button class="btn btn-secondary" onclick="orderHistory.loadOrders().then(() => orderHistory.renderOrders())">
+                    🔄 Refresh from Server
+                </button>
             </div>
         `;
     }
@@ -254,8 +315,47 @@ Items: ${order.items?.length || 0} item(s)
 Total: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
 
 Customer: ${order.customer?.name || 'N/A'}
+Phone: ${order.customer?.phone || 'Not provided'}
             `;
             alert(details);
+        }
+    }
+
+    async refreshOrder(orderId) {
+        try {
+            const response = await fetch('https://deenice-finds-1-0-1.onrender.com/api/orders/user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    localOrders: JSON.parse(localStorage.getItem('de_order_history') || '[]')
+                })
+            });
+
+            if (response.ok) {
+                const serverData = await response.json();
+                const serverOrder = serverData.orders.find(o => o.id === orderId);
+                
+                if (serverOrder) {
+                    // Update local order
+                    const localIndex = this.orders.findIndex(o => o.id === orderId);
+                    if (localIndex > -1) {
+                        this.orders[localIndex] = serverOrder;
+                    }
+                    
+                    // Update localStorage
+                    localStorage.setItem('de_order_history', JSON.stringify(this.orders));
+                    
+                    this.renderOrders();
+                    alert(`✅ Order #${orderId} refreshed from server!`);
+                } else {
+                    alert('Order not found on server.');
+                }
+            }
+        } catch (error) {
+            console.error('Error refreshing order:', error);
+            alert('Error refreshing order from server.');
         }
     }
 
