@@ -131,37 +131,34 @@ class AdminOrderManager {
     }
 
     async deleteOrder(orderId) {
-        try {
-            const confirmDelete = confirm(`Are you sure you want to delete order #${orderId}? This action cannot be undone.`);
-            
-            if (!confirmDelete) return;
+    try {
+        const confirmDelete = confirm(`Are you sure you want to delete order #${orderId}? This action cannot be undone.`);
+        
+        if (!confirmDelete) return;
 
-            console.log('🗑️ Deleting order:', orderId);
-            
-            // Since your backend doesn't have a delete endpoint yet, we'll handle it locally
-            // First remove from backend memory (in a real app, you'd call a DELETE endpoint)
-            const orderIndex = this.orders.findIndex(o => o.id === orderId);
-            if (orderIndex > -1) {
-                this.orders.splice(orderIndex, 1);
-            }
+        console.log('🗑️ Deleting order:', orderId);
+        
+        // Call the backend DELETE endpoint
+        await this.makeRequest(`/orders/${orderId}`, {
+            method: 'DELETE'
+        });
 
-            // Also remove from localStorage for client-side consistency
-            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-            const updatedLocalOrders = localOrders.filter(order => order.id !== orderId);
-            localStorage.setItem('de_order_history', JSON.stringify(updatedLocalOrders));
+        // Also remove from localStorage for client-side consistency
+        const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        const updatedLocalOrders = localOrders.filter(order => order.id !== orderId);
+        localStorage.setItem('de_order_history', JSON.stringify(updatedLocalOrders));
 
-            await this.loadOrdersFromBackend(); // Reload from backend
-            this.renderStats();
-            this.renderOrders();
-            
-            alert(`✅ Order #${orderId} has been deleted successfully.`);
-            
-        } catch (error) {
-            console.error('Failed to delete order:', error);
-            alert('Failed to delete order. Please try again.');
-        }
+        await this.loadOrdersFromBackend(); // Reload from backend
+        this.renderStats();
+        this.renderOrders();
+        
+        alert(`✅ Order #${orderId} has been deleted successfully.`);
+        
+    } catch (error) {
+        console.error('Failed to delete order:', error);
+        alert('Failed to delete order. Please try again.');
     }
-
+}
     logout() {
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_logged_in');
