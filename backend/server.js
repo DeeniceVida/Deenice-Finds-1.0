@@ -77,6 +77,46 @@ const checkSessionTimeout = (req, res, next) => {
     next();
 };
 
+// WhatsApp notification function
+async function sendWhatsAppNotification(order, newStatus) {
+    try {
+        const config = {
+            whatsappNumber: process.env.WHATSAPP_NUMBER || '254712345678' // Your business number
+        };
+
+        const statusMessages = {
+            'processing': `🔄 Your order #${order.id} is now being processed! We're preparing your items for ${order.delivery?.method === 'pickup' ? 'pickup' : 'delivery'}.`,
+            'completed': `✅ Order completed! Your order #${order.id} has been ${order.delivery?.method === 'pickup' ? 'ready for pickup at our store' : 'delivered to your address'}.`,
+            'cancelled': `❌ Order #${order.id} has been cancelled. Please contact us for more information.`
+        };
+
+        const message = statusMessages[newStatus];
+        if (!message) return; // No notification for 'pending' status
+
+        const customerMessage = `Hello ${order.customer?.name || 'there'}! ${message}`;
+        
+        // Encode the message for WhatsApp URL
+        const encodedMessage = encodeURIComponent(customerMessage);
+        const whatsappURL = `https://wa.me/${order.customer?.phone || config.whatsappNumber}?text=${encodedMessage}`;
+        
+        // In a real app, you'd use a WhatsApp API service
+        // For now, we'll log the notification
+        console.log('📱 WhatsApp Notification:', {
+            orderId: order.id,
+            customer: order.customer?.name,
+            status: newStatus,
+            message: customerMessage,
+            whatsappURL: whatsappURL
+        });
+
+        // You can integrate with WhatsApp Business API here
+        // Or use services like Twilio, MessageBird, etc.
+
+    } catch (error) {
+        console.error('❌ WhatsApp notification failed:', error);
+    }
+}
+
 // Routes
 
 // Health check
@@ -163,7 +203,7 @@ app.put('/api/orders/:id/status',
     [
         body('status').isIn(['pending', 'processing', 'completed', 'cancelled']).withMessage('Invalid status')
     ],
-    (req, res) => {
+    async (req, res) => {  // Make this async
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -178,11 +218,17 @@ app.put('/api/orders/:id/status',
                 return res.status(404).json({ error: 'Order not found' });
             }
 
+            const oldStatus = orders[orderIndex].status;
             orders[orderIndex].status = status;
             orders[orderIndex].statusUpdated = new Date().toISOString();
             
             if (status === 'completed') {
                 orders[orderIndex].completedDate = new Date().toISOString();
+            }
+
+            // Send WhatsApp notification if status changed to processing, completed, or cancelled
+            if (oldStatus !== status && ['processing', 'completed', 'cancelled'].includes(status)) {
+                await sendWhatsAppNotification(orders[orderIndex], status);
             }
 
             res.json({ 
