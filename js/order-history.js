@@ -264,6 +264,73 @@ class OrderHistory {
     }
 }
 
+// Order Status Management
+class OrderHistory {
+    constructor() {
+        this.orders = [];
+        this.currentFilter = 'all';
+        this.init();
+    }
+
+    init() {
+        this.loadOrders();
+        this.renderOrders();
+        this.setupEventListeners();
+        this.startStatusUpdates(); // Start checking for status updates
+    }
+
+    // Add this method to simulate status progression
+    startStatusUpdates() {
+        // Simulate automatic status updates (in real app, this would come from backend)
+        setInterval(() => {
+            this.updateOrderStatuses();
+        }, 30000); // Check every 30 seconds
+    }
+
+    updateOrderStatuses() {
+        let updated = false;
+        
+        this.orders.forEach(order => {
+            const orderAge = Date.now() - new Date(order.orderDate).getTime();
+            const hoursSinceOrder = orderAge / (1000 * 60 * 60);
+
+            // Simulate status progression based on time
+            if (order.status === 'pending' && hoursSinceOrder > 1) {
+                order.status = 'processing';
+                order.statusUpdated = new Date().toISOString();
+                updated = true;
+            } else if (order.status === 'processing' && hoursSinceOrder > 24) {
+                order.status = 'completed';
+                order.statusUpdated = new Date().toISOString();
+                order.completedDate = new Date().toISOString();
+                updated = true;
+            }
+        });
+
+        if (updated) {
+            this.saveOrders();
+            this.renderOrders();
+        }
+    }
+
+    // Update the addOrder method to include initial status
+    addOrder(orderData) {
+        const newOrder = {
+            id: this.generateOrderId(),
+            orderDate: new Date().toISOString(),
+            status: 'pending', // Start as pending
+            statusUpdated: new Date().toISOString(),
+            ...orderData
+        };
+
+        this.orders.unshift(newOrder);
+        this.saveOrders();
+        this.renderOrders();
+        
+        return newOrder.id;
+    }
+}
+
 // Initialize order history when page loads
 const orderHistory = new OrderHistory();
 
