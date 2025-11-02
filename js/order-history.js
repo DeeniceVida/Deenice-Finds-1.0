@@ -3,30 +3,42 @@ class OrderHistory {
     constructor() {
         this.orders = [];
         this.currentFilter = 'all';
+        this.baseURL = 'https://deenice-finds-1-0-1.onrender.com/api';
         this.init();
     }
 
-    init() {
-        this.loadOrders();
+    async init() {
+        await this.loadOrdersFromBackend();
         this.renderOrders();
         this.setupEventListeners();
-        this.startStatusUpdates(); // Start automatic status updates
     }
 
-    loadOrders() {
-        // Load orders from localStorage
+    async loadOrdersFromBackend() {
+        try {
+            console.log('📥 Loading orders from backend...');
+            // Note: This would normally require authentication
+            // For now, we'll simulate loading orders
+            // In a real app, you'd have user authentication
+            this.orders = await this.getOrdersForCustomer();
+            console.log('✅ Backend orders loaded:', this.orders.length);
+        } catch (error) {
+            console.error('❌ Failed to load orders from backend:', error);
+            // Fallback to localStorage for existing orders
+            this.loadOrdersFromLocalStorage();
+        }
+    }
+
+    async getOrdersForCustomer() {
+        // In a real app, this would call your backend with customer ID
+        // For now, we'll return an empty array since we don't have customer auth
+        return [];
+    }
+
+    loadOrdersFromLocalStorage() {
+        // Fallback: Load from localStorage
         const savedOrders = localStorage.getItem('de_order_history');
         this.orders = savedOrders ? JSON.parse(savedOrders) : [];
-        
-        // Sort orders by date (newest first)
         this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-        
-        // Update statuses based on time when loading
-        this.updateOrderStatuses();
-    }
-
-    saveOrders() {
-        localStorage.setItem('de_order_history', JSON.stringify(this.orders));
     }
 
     setupEventListeners() {
@@ -98,8 +110,8 @@ class OrderHistory {
                         <h3>Order #${order.id}</h3>
                         <div class="order-meta">
                             <span>📅 ${orderDate}</span>
-                            <span>📍 ${order.delivery?.city || 'N/A'}</span>
-                            <span>🚚 ${this.getDeliveryText(order.delivery)}</span>
+                            <span>📍 ${order.customer?.city || order.delivery?.city || 'N/A'}</span>
+                            <span>🚚 ${this.getDeliveryText(order)}</span>
                             ${statusUpdated ? `<span>🔄 Updated: ${statusUpdated}</span>` : ''}
                         </div>
                     </div>
@@ -109,12 +121,12 @@ class OrderHistory {
                 </div>
                 
                 <div class="order-items">
-                    ${order.items.map(item => this.createOrderItem(item)).join('')}
+                    ${(order.items || []).map(item => this.createOrderItem(item)).join('')}
                 </div>
                 
                 <div class="order-footer">
                     <div class="order-total">
-                        Total: ${order.currency} ${order.totalAmount.toLocaleString()}
+                        Total: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
                     </div>
                     <div class="order-actions">
                         <button class="btn btn-secondary" onclick="orderHistory.viewOrderDetails('${order.id}')">
@@ -147,12 +159,12 @@ class OrderHistory {
             `,
             'processing': `
                 <div class="status-message processing">
-                    <p>🔄 <strong>Your order is being processed.</strong> We're preparing your items for ${order.delivery?.method === 'pickup' ? 'pickup' : 'delivery'}.</p>
+                    <p>🔄 <strong>Your order is being processed.</strong> We're preparing your items for ${this.getDeliveryText(order) === 'Store Pickup' ? 'pickup' : 'delivery'}.</p>
                 </div>
             `,
             'completed': `
                 <div class="status-message completed">
-                    <p>✅ <strong>Order completed!</strong> ${order.delivery?.method === 'pickup' ? 
+                    <p>✅ <strong>Order completed!</strong> ${this.getDeliveryText(order) === 'Store Pickup' ? 
                         'Ready for pickup at our store.' : 
                         'Delivered to your address.'}
                     ${order.completedDate ? `Completed on ${new Date(order.completedDate).toLocaleDateString()}` : ''}</p>
@@ -180,21 +192,21 @@ class OrderHistory {
                      alt="${item.title}" 
                      class="item-image">
                 <div class="item-details">
-                    <h4>${item.title}</h4>
+                    <h4>${item.title || 'Unknown Item'}</h4>
                     ${specs.length > 0 ? `
                         <div class="item-specs">${specs.join(' • ')}</div>
                     ` : ''}
                     <div class="item-price">
-                        ${item.qty} × ${item.currency} ${item.price.toLocaleString()}
+                        ${item.qty || 1} × ${item.currency || 'KES'} ${(item.price || 0).toLocaleString()}
                     </div>
                 </div>
             </div>
         `;
     }
 
-    getDeliveryText(delivery) {
-        if (!delivery) return 'Delivery info missing';
-        return delivery.method === 'pickup' ? 'Store Pickup' : 'Home Delivery';
+    getDeliveryText(order) {
+        if (!order.delivery) return 'Delivery';
+        return order.delivery.method === 'pickup' ? 'Store Pickup' : 'Home Delivery';
     }
 
     getStatusClass(status) {
@@ -250,12 +262,12 @@ Order Date: ${new Date(order.orderDate).toLocaleString()}
 ${order.statusUpdated ? `Last Updated: ${new Date(order.statusUpdated).toLocaleString()}` : ''}
 ${order.completedDate ? `Completed: ${new Date(order.completedDate).toLocaleString()}` : ''}
 
-Delivery: ${this.getDeliveryText(order.delivery)}
-${order.delivery?.city ? `City: ${order.delivery.city}` : ''}
+Delivery: ${this.getDeliveryText(order)}
+${order.customer?.city ? `City: ${order.customer.city}` : ''}
 ${order.delivery?.pickupCode ? `Pickup Code: ${order.delivery.pickupCode}` : ''}
 
-Items: ${order.items.length} item(s)
-Total: ${order.currency} ${order.totalAmount.toLocaleString()}
+Items: ${order.items?.length || 0} item(s)
+Total: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
 
 Customer: ${order.customer?.name || 'N/A'}
             `;
@@ -315,97 +327,7 @@ Customer: ${order.customer?.name || 'N/A'}
             }
         }
     }
-
-    // Method to add a new order (call this when an order is placed)
-    addOrder(orderData) {
-        const newOrder = {
-            id: this.generateOrderId(),
-            orderDate: new Date().toISOString(),
-            status: 'pending', // Start as pending
-            statusUpdated: new Date().toISOString(),
-            ...orderData
-        };
-
-        this.orders.unshift(newOrder);
-        this.saveOrders();
-        this.renderOrders();
-        
-        return newOrder.id;
-    }
-
-    generateOrderId() {
-        const timestamp = Date.now().toString(36).toUpperCase();
-        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-        return `ORD-${timestamp}-${random}`;
-    }
-
-    // Method to update order status (for admin use)
-    updateOrderStatus(orderId, newStatus) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            order.status = newStatus;
-            order.statusUpdated = new Date().toISOString();
-            
-            if (newStatus === 'completed') {
-                order.completedDate = new Date().toISOString();
-            }
-            
-            this.saveOrders();
-            this.renderOrders();
-        }
-    }
-
-    // Automatic status updates based on time
-    startStatusUpdates() {
-        // Check status every minute
-        setInterval(() => {
-            this.updateOrderStatuses();
-        }, 60000); // Check every 60 seconds
-    }
-
-    updateOrderStatuses() {
-        let updated = false;
-        
-        this.orders.forEach(order => {
-            if (order.status === 'cancelled' || order.status === 'completed') {
-                return; // Don't update completed or cancelled orders
-            }
-
-            const orderAge = Date.now() - new Date(order.orderDate).getTime();
-            const minutesSinceOrder = orderAge / (1000 * 60);
-            const hoursSinceOrder = orderAge / (1000 * 60 * 60);
-
-            // Simulate status progression based on time
-            if (order.status === 'pending' && minutesSinceOrder > 5) {
-                // After 5 minutes, move to processing
-                order.status = 'processing';
-                order.statusUpdated = new Date().toISOString();
-                updated = true;
-            } else if (order.status === 'processing' && hoursSinceOrder > 2) {
-                // After 2 hours, move to completed
-                order.status = 'completed';
-                order.statusUpdated = new Date().toISOString();
-                order.completedDate = new Date().toISOString();
-                updated = true;
-            }
-        });
-
-        if (updated) {
-            this.saveOrders();
-            this.renderOrders();
-        }
-    }
 }
 
 // Initialize order history when page loads
 const orderHistory = new OrderHistory();
-
-// Export function to add orders from other pages
-window.addOrderToHistory = function(orderData) {
-    return orderHistory.addOrder(orderData);
-};
-
-// Export function to update order status
-window.updateOrderStatus = function(orderId, newStatus) {
-    orderHistory.updateOrderStatus(orderId, newStatus);
-};
