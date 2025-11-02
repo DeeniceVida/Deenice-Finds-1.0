@@ -25,7 +25,10 @@ function selectDeliveryOption(option) {
     document.querySelectorAll('.delivery-option').forEach(el => {
         el.classList.remove('selected');
     });
-    event.currentTarget.classList.add('selected');
+    
+    // Add selected class to the clicked option
+    const clickedOption = event.currentTarget;
+    clickedOption.classList.add('selected');
     
     // Show/hide pickup info
     const pickupInfo = document.getElementById('pickup-info');
@@ -184,7 +187,10 @@ function renderCart() {
         
         // Hide delivery options if they exist
         const deliveryOptions = document.getElementById('delivery-options');
-        if (deliveryOptions) deliveryOptions.style.display = 'none';
+        if (deliveryOptions) {
+            deliveryOptions.style.display = 'none';
+            deliveryOptions.classList.remove('show');
+        }
         
         if (existingForm) {
             existingForm.style.display = 'none';
@@ -246,6 +252,13 @@ function renderCart() {
     list.innerHTML = html;
     if (btn) btn.style.display = 'block';
 
+    // Hide delivery options initially
+    const deliveryOptions = document.getElementById('delivery-options');
+    if (deliveryOptions) {
+        deliveryOptions.style.display = 'none';
+        deliveryOptions.classList.remove('show');
+    }
+
     if (existingForm) {
         existingForm.style.display = 'block';
         // Check if form is already filled to show delivery options
@@ -254,6 +267,8 @@ function renderCart() {
         const deliveryOptions = document.getElementById('delivery-options');
         if (nameValue && cityValue && deliveryOptions) {
             deliveryOptions.style.display = 'block';
+            deliveryOptions.classList.add('show');
+            // Auto-select home delivery by default
             if (!window.deliveryOptionsInitialized) {
                 setTimeout(() => {
                     selectDeliveryOption('delivery');
