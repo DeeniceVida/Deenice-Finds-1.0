@@ -29,13 +29,6 @@ app.use(limiter);
 // IP restriction middleware - TEMPORARILY DISABLED
 const allowedIPs = process.env.ALLOWED_IPS ? process.env.ALLOWED_IPS.split(',') : [];
 const ipRestriction = (req, res, next) => {
-    // TEMPORARILY DISABLE IP RESTRICTION FOR TESTING
-    // if (process.env.NODE_ENV === 'production' && allowedIPs.length > 0) {
-    //     const clientIP = req.ip || req.connection.remoteAddress;
-    //     if (!allowedIPs.includes(clientIP)) {
-    //         return res.status(403).json({ error: 'Access denied' });
-    //     }
-    // }
     next(); // Always allow for now
 };
 
@@ -115,13 +108,44 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Get orders for specific user (NEW ENDPOINT)
+app.post('/api/orders/user', (req, res) => {
+    try {
+        const { localOrders } = req.body;
+        
+        if (!localOrders || !Array.isArray(localOrders)) {
+            return res.status(400).json({ error: 'Local orders array required' });
+        }
+
+        // Get all orders that match the user's local orders by ID
+        const userOrderIds = localOrders.map(order => order.id);
+        const serverOrders = orders.filter(order => userOrderIds.includes(order.id));
+        
+        console.log('👤 User orders request:', {
+            localOrdersCount: localOrders.length,
+            serverOrdersCount: serverOrders.length,
+            matchingOrders: serverOrders.map(o => ({ id: o.id, status: o.status }))
+        });
+
+        // Return server orders (these have the latest status from admin)
+        res.json({
+            orders: serverOrders,
+            message: `Found ${serverOrders.length} orders on server`
+        });
+
+    } catch (error) {
+        console.error('Get user orders error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Admin login
 app.post('/api/admin/login', 
     [
         body('username').notEmpty().withMessage('Username is required'),
         body('password').notEmpty().withMessage('Password is required')
     ],
-    ipRestriction, // Now disabled - will allow all IPs
+    ipRestriction,
     async (req, res) => {
         try {
             const errors = validationResult(req);
@@ -167,6 +191,7 @@ app.post('/api/admin/login',
         }
     }
 );
+
 // Delete order (protected)
 app.delete('/api/orders/:id', authenticateToken, checkSessionTimeout, (req, res) => {
     try {
@@ -193,6 +218,7 @@ app.delete('/api/orders/:id', authenticateToken, checkSessionTimeout, (req, res)
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 // Get all orders (protected)
 app.get('/api/orders', authenticateToken, checkSessionTimeout, (req, res) => {
     try {
@@ -248,10 +274,18 @@ app.put('/api/orders/:id/status',
                 whatsappURL = await sendWhatsAppNotification(orders[orderIndex], status);
             }
 
+            console.log('✅ Order status updated:', {
+                orderId: orderId,
+                oldStatus: oldStatus,
+                newStatus: status,
+                customer: orders[orderIndex].customer?.name,
+                phone: orders[orderIndex].customer?.phone
+            });
+
             res.json({ 
                 message: 'Order status updated successfully',
                 order: orders[orderIndex],
-                whatsappURL: whatsappURL // Send this back to admin
+                whatsappURL: whatsappURL
             });
 
         } catch (error) {
@@ -283,7 +317,7 @@ app.post('/api/orders',
             const shortOrderId = `DF${timestamp}${random}`;
             
             const newOrder = {
-                id: shortOrderId, // Use shorter ID
+                id: shortOrderId,
                 orderDate: new Date().toISOString(),
                 status: 'pending',
                 statusUpdated: new Date().toISOString(),
@@ -292,9 +326,13 @@ app.post('/api/orders',
 
             orders.unshift(newOrder);
             
-            console.log('📦 New order created:', newOrder.id);
-            console.log('👤 Customer:', newOrder.customer?.name);
-            console.log('📞 Phone:', newOrder.customer?.phone || 'No phone provided');
+            console.log('📦 New order created:', {
+                id: newOrder.id,
+                customer: newOrder.customer?.name,
+                phone: newOrder.customer?.phone || 'No phone',
+                items: newOrder.items?.length || 0,
+                total: newOrder.totalAmount
+            });
             
             res.status(201).json({
                 message: 'Order created successfully',
@@ -307,6 +345,7 @@ app.post('/api/orders',
         }
     }
 );
+
 // Admin logout
 app.post('/api/admin/logout', authenticateToken, (req, res) => {
     try {
@@ -334,4 +373,5 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`🔒 Environment: ${process.env.NODE_ENV}`);
     console.log(`🌐 CORS Origin: ${process.env.CORS_ORIGIN}`);
+    console.log(`📊 Orders in memory: ${orders.length}`);
 });
