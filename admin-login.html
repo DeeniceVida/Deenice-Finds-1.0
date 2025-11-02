@@ -1,13 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Admin Login</title>
-    <!-- FAVICON -->
-    <link rel="icon" type="image/x-icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg">
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Deenice Finds</title>
+    <!-- FAVICON -->
+    <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg">
+    <link rel="shortcut icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -37,6 +36,7 @@
         .login-header h1 {
             color: #333;
             margin-bottom: 10px;
+            font-size: 24px;
         }
 
         .login-header p {
@@ -62,6 +62,7 @@
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s ease;
+            box-sizing: border-box;
         }
 
         .form-group input:focus {
@@ -87,11 +88,21 @@
             box-shadow: 0 8px 25px rgba(142, 219, 209, 0.4);
         }
 
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .error-message {
             color: #dc2626;
             text-align: center;
             margin-top: 15px;
             display: none;
+            background: #fef2f2;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #fecaca;
         }
 
         .back-link {
@@ -100,16 +111,32 @@
             margin-top: 20px;
             color: #8EDBD1;
             text-decoration: none;
+            font-weight: 500;
         }
 
         .back-link:hover {
             text-decoration: underline;
+        }
+
+        .logo-preview {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .logo-preview img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-header">
+            <div class="logo-preview">
+                <img src="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" alt="Deenice Finds Logo">
+            </div>
             <h1>🔐 Admin Login</h1>
             <p>Deenice Finds Order Management</p>
         </div>
@@ -136,6 +163,11 @@
     </div>
 
     <script>
+    // Clear any existing session when loading login page
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_logged_in');
+    localStorage.removeItem('admin_user');
+
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -144,9 +176,17 @@
         const errorMessage = document.getElementById('errorMessage');
         const loginBtn = document.querySelector('.login-btn');
         
+        // Basic validation
+        if (!username.trim() || !password.trim()) {
+            errorMessage.textContent = 'Please enter both username and password';
+            errorMessage.style.display = 'block';
+            return;
+        }
+        
         // Show loading state
         loginBtn.textContent = 'Logging in...';
         loginBtn.disabled = true;
+        errorMessage.style.display = 'none';
         
         try {
             // Call your backend API
@@ -154,9 +194,10 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    username: username,
+                    username: username.trim(),
                     password: password
                 })
             });
@@ -167,27 +208,27 @@
                 // Login successful - store token and redirect
                 localStorage.setItem('admin_token', data.token);
                 localStorage.setItem('admin_logged_in', 'true');
-                localStorage.setItem('admin_user', JSON.stringify(data.user));
+                localStorage.setItem('admin_user', JSON.stringify(data.user || { username: username }));
                 
                 window.location.href = 'admin-orders.html';
             } else {
                 // Login failed
-                errorMessage.textContent = data.error || 'Invalid username or password';
+                errorMessage.textContent = data.error || data.message || 'Invalid username or password';
                 errorMessage.style.display = 'block';
                 
                 setTimeout(() => {
                     errorMessage.style.display = 'none';
-                }, 3000);
+                }, 5000);
             }
             
         } catch (error) {
             console.error('Login error:', error);
-            errorMessage.textContent = 'Network error. Please try again.';
+            errorMessage.textContent = 'Network error. Please check your connection and try again.';
             errorMessage.style.display = 'block';
             
             setTimeout(() => {
                 errorMessage.style.display = 'none';
-            }, 3000);
+            }, 5000);
         } finally {
             // Reset button
             loginBtn.textContent = 'Login to Admin Portal';
@@ -195,10 +236,8 @@
         }
     });
 
-    // Clear any existing session when loading login page
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_logged_in');
-    localStorage.removeItem('admin_user');
-</script>
+    // Focus on username field when page loads
+    document.getElementById('username').focus();
+    </script>
 </body>
 </html>
