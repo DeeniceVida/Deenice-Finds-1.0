@@ -432,6 +432,42 @@ function renderCart() {
         btn.addEventListener('click', sendOrderViaWhatsApp);
     }
 }
+// Add this function to your cart.js file
+function saveOrderToHistory(cart, deliveryInfo) {
+    const orderData = {
+        items: [...cart], // Copy cart items
+        totalAmount: cart.reduce((total, item) => total + (item.price * item.qty), 0),
+        currency: cart[0]?.currency || 'KES',
+        delivery: {
+            method: window.selectedDeliveryOption || 'delivery',
+            city: document.getElementById('user-city')?.value || '',
+            pickupCode: window.currentPickupCode || null
+        },
+        customer: {
+            name: document.getElementById('user-name')?.value || '',
+            city: document.getElementById('user-city')?.value || ''
+        }
+    };
+
+    // Save to order history
+    if (typeof addOrderToHistory === 'function') {
+        addOrderToHistory(orderData);
+    } else {
+        // Fallback: save directly to localStorage
+        const existingOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        const newOrder = {
+            id: 'ORD-' + Date.now().toString(36).toUpperCase(),
+            orderDate: new Date().toISOString(),
+            status: 'pending',
+            ...orderData
+        };
+        existingOrders.unshift(newOrder);
+        localStorage.setItem('de_order_history', JSON.stringify(existingOrders));
+    }
+
+    // Clear cart after successful order
+    localStorage.removeItem('de_cart');
+}
 
 // Ensure the rendering starts when the page is fully loaded
 document.addEventListener('DOMContentLoaded', renderCart);
