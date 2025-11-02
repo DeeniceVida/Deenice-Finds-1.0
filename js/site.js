@@ -182,20 +182,20 @@ const bottomSlides = [
 ];
 
 /* -------------------------------------------------------------------------- */
-/* REFACTORED: Single Function to Setup ANY Slider — REPLACES setupOffers()   */
+/* ✅ SMOOTH SLIDER FUNCTION - FIXED TRANSITIONS & TIMING                     */
 /* -------------------------------------------------------------------------- */
 function initializeSlider(slidesData, sliderId, prevId, nextId, dotsId) {
     const container = document.getElementById(sliderId);
     const dots = document.getElementById(dotsId);
     if (!container || !dots) return;
 
-    // CRITICAL: Clears existing content to prevent duplicates on resize/re-initialization
+    // Clear existing content
     container.innerHTML = "";
-    dots.innerHTML = ""; 
+    dots.innerHTML = "";
 
     const isMobile = window.innerWidth <= 900;
     
-    // Build Slides using slidesData parameter
+    // Build Slides
     slidesData.forEach((s, i) => {
         const slide = document.createElement("div");
         slide.className = "slide";
@@ -205,37 +205,71 @@ function initializeSlider(slidesData, sliderId, prevId, nextId, dotsId) {
 
         const dot = document.createElement("button");
         dot.addEventListener("click", () => showSlide(i));
+        if (i === 0) dot.classList.add("active");
         dots.appendChild(dot);
     });
 
     let idx = 0;
-    const slideInterval = 7000;
+    const slideInterval = 5000; // Increased to 5 seconds for better UX
+    const transitionDuration = 800; // Match CSS transition duration
     let autoSlide;
+    let isTransitioning = false; // CRITICAL: Prevent overlapping transitions
 
     function showSlide(n) {
-        // NOTE: ss now uses container element, not global
-        const ss = container.querySelectorAll(".slide"); 
-        ss.forEach((s, ii) => s.classList.toggle("active", ii === n));
-        idx = n;
-        refreshDots();
+        // Prevent rapid clicking/overlapping transitions
+        if (isTransitioning) return;
+        isTransitioning = true;
+        
+        const ss = container.querySelectorAll(".slide");
+        const currentSlide = ss[idx];
+        const nextSlide = ss[n];
+        
+        // Remove active class from current slide
+        currentSlide.classList.remove("active");
+        
+        // Add active class to new slide
+        setTimeout(() => {
+            nextSlide.classList.add("active");
+            idx = n;
+            refreshDots();
+            
+            // Reset transition flag after transition completes
+            setTimeout(() => {
+                isTransitioning = false;
+            }, transitionDuration);
+        }, 50); // Small delay to ensure CSS transition works properly
     }
 
     function refreshDots() {
         const btns = dots.querySelectorAll("button");
-        btns.forEach((b, i) => (b.style.opacity = i === idx ? 1 : 0.45));
+        btns.forEach((b, i) => {
+            if (i === idx) {
+                b.classList.add("active");
+                b.style.opacity = "1";
+            } else {
+                b.classList.remove("active");
+                b.style.opacity = "0.45";
+            }
+        });
     }
 
     function next() {
+        if (isTransitioning) return;
         showSlide((idx + 1) % slidesData.length);
     }
 
     function prev() {
+        if (isTransitioning) return;
         showSlide((idx - 1 + slidesData.length) % slidesData.length);
     }
 
     function startAutoSlide() {
         stopAutoSlide();
-        autoSlide = setInterval(next, slideInterval);
+        autoSlide = setInterval(() => {
+            if (!isTransitioning) {
+                next();
+            }
+        }, slideInterval);
     }
 
     function stopAutoSlide() {
@@ -245,38 +279,90 @@ function initializeSlider(slidesData, sliderId, prevId, nextId, dotsId) {
     // Start automatic slideshow
     startAutoSlide();
 
-    // Setup Controls using unique IDs (passed as parameters)
-    document.getElementById(prevId)?.addEventListener("click", () => {
-        prev();
-        startAutoSlide();
+    // Setup Controls
+    document.getElementById(prevId)?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!isTransitioning) {
+            prev();
+            startAutoSlide();
+        }
     });
-    document.getElementById(nextId)?.addEventListener("click", () => {
-        next();
-        startAutoSlide();
-    });
-
-    // Swipe gestures (mobile)
-    let startX = 0;
-    container.addEventListener("touchstart", (e) => {
-        startX = e.touches[0].clientX;
-    });
-    container.addEventListener("touchend", (e) => {
-        const diff = e.changedTouches[0].clientX - startX;
-        if (Math.abs(diff) > 50) {
-            diff > 0 ? prev() : next();
+    
+    document.getElementById(nextId)?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (!isTransitioning) {
+            next();
             startAutoSlide();
         }
     });
 
-    // Pause on hover (desktop only)
+    // Enhanced swipe gestures with better timing
+    let startX = 0;
+    let startTime = 0;
+    
+    container.addEventListener("touchstart", (e) => {
+        startX = e.touches[0].clientX;
+        startTime = Date.now();
+        stopAutoSlide(); // Pause autoplay during interaction
+    });
+    
+    container.addEventListener("touchend", (e) => {
+        const endX = e.changedTouches[0].clientX;
+        const endTime = Date.now();
+        const diff = endX - startX;
+        const timeDiff = endTime - startTime;
+        
+        // Only register as swipe if movement is significant and quick
+        if (Math.abs(diff) > 50 && timeDiff < 300 && !isTransitioning) {
+            if (diff > 0) {
+                prev();
+            } else {
+                next();
+            }
+        }
+        
+        // Restart autoplay after a delay
+        setTimeout(startAutoSlide, 3000);
+    });
+
+    // Pause on hover (desktop only) with better timing
     if (!isMobile) {
-        container.addEventListener("mouseenter", stopAutoSlide);
-        container.addEventListener("mouseleave", startAutoSlide);
+        container.addEventListener("mouseenter", () => {
+            stopAutoSlide();
+        });
+        
+        container.addEventListener("mouseleave", () => {
+            // Wait a bit before restarting to avoid immediate transition
+            setTimeout(startAutoSlide, 1000);
+        });
     }
+
+    // Handle tab visibility changes
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            stopAutoSlide();
+        } else {
+            // Don't restart immediately when tab becomes visible
+            setTimeout(startAutoSlide, 2000);
+        }
+    });
+
+    // Preload images for smoother transitions
+    preloadSliderImages(slidesData, isMobile);
 }
 
 /* -------------------------------------------------------------------------- */
-/* GLOBAL SLIDER SETUP FUNCTION - Calls both sliders                          */
+/* ✅ IMAGE PRELOADING FOR SMOOTHER TRANSITIONS                               */
+/* -------------------------------------------------------------------------- */
+function preloadSliderImages(slidesData, isMobile) {
+    slidesData.forEach(slide => {
+        const img = new Image();
+        img.src = isMobile ? slide.mobile : slide.desktop;
+    });
+}
+
+/* -------------------------------------------------------------------------- */
+/* ✅ GLOBAL SLIDER SETUP FUNCTION - Calls both sliders                       */
 /* -------------------------------------------------------------------------- */
 function setupAllOffers() {
     // 1. Initialize the TOP Slider (using original IDs)
@@ -298,10 +384,15 @@ function setupAllOffers() {
     );
 }
 
-/* ✅ Reload correct images on resize (UPDATED) */
+/* -------------------------------------------------------------------------- */
+/* ✅ OPTIMIZED RESIZE HANDLER                                                */
+/* -------------------------------------------------------------------------- */
+let resizeTimeout;
 window.addEventListener("resize", () => {
-  clearTimeout(window._resizeTimer);
-  window._resizeTimer = setTimeout(setupAllOffers, 400); // Calls the unified function
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        setupAllOffers();
+    }, 250); // Reduced from 400ms for faster response
 });
 
 /* -------------------------------------------------------------------------- */
