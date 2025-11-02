@@ -262,24 +262,32 @@ function renderCart() {
         const form = document.createElement('div');
         form.className = 'premium-form';
         form.innerHTML = `
-            <h3>👤 Your Details</h3>
-            <div class="form-group input-icon name">
-                <input type="text" 
-                       id="user-name" 
-                       class="premium-input" 
-                       placeholder="Enter your full name" 
-                       required 
-                       pattern="[A-Za-z\\s]{2,}">
-            </div>
-            <div class="form-group input-icon city">
-                <input type="text" 
-                       id="user-city" 
-                       class="premium-input" 
-                       placeholder="Enter your city/town" 
-                       required 
-                       pattern="[A-Za-z\\s]{2,}">
-            </div>
-        `;
+    <h3>👤 Your Details</h3>
+    <div class="form-group input-icon name">
+        <input type="text" 
+               id="user-name" 
+               class="premium-input" 
+               placeholder="Enter your full name" 
+               required 
+               pattern="[A-Za-z\\s]{2,}">
+    </div>
+    <div class="form-group input-icon city">
+        <input type="text" 
+               id="user-city" 
+               class="premium-input" 
+               placeholder="Enter your city/town" 
+               required 
+               pattern="[A-Za-z\\s]{2,}">
+    </div>
+    <div class="form-group input-icon phone">
+        <input type="tel" 
+               id="user-phone" 
+               class="premium-input" 
+               placeholder="Enter your WhatsApp number" 
+               required 
+               pattern="[0-9+\\s]{10,}">
+    </div>
+`;
         list.insertAdjacentElement('afterend', form);
         
         // Now create and insert the delivery options AFTER the form
@@ -414,20 +422,20 @@ function renderCart() {
 // Add this function to your cart.js file
 async function saveOrderToHistory(cart, deliveryInfo) {
     const orderData = {
-        items: [...cart], // Copy cart items
-        totalAmount: cart.reduce((total, item) => total + (item.price * item.qty), 0),
-        currency: cart[0]?.currency || 'KES',
-        delivery: {
-            method: window.selectedDeliveryOption || 'delivery',
-            city: document.getElementById('user-city')?.value || '',
-            pickupCode: window.currentPickupCode || null
-        },
-        customer: {
-            name: document.getElementById('user-name')?.value || '',
-            city: document.getElementById('user-city')?.value || ''
-        }
-    };
-
+    items: [...cart],
+    totalAmount: cart.reduce((total, item) => total + (item.price * item.qty), 0),
+    currency: cart[0]?.currency || 'KES',
+    delivery: {
+        method: window.selectedDeliveryOption || 'delivery',
+        city: document.getElementById('user-city')?.value || '',
+        pickupCode: window.currentPickupCode || null
+    },
+    customer: {
+        name: document.getElementById('user-name')?.value || '',
+        city: document.getElementById('user-city')?.value || '',
+        phone: document.getElementById('user-phone')?.value || '' // Add this
+    }
+};
     let orderId;
 
     try {
