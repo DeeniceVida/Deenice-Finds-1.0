@@ -412,7 +412,7 @@ function renderCart() {
     }
 }
 // Add this function to your cart.js file
-function saveOrderToHistory(cart, deliveryInfo) {
+async function saveOrderToHistory(cart, deliveryInfo) {
     const orderData = {
         items: [...cart], // Copy cart items
         totalAmount: cart.reduce((total, item) => total + (item.price * item.qty), 0),
@@ -428,24 +428,54 @@ function saveOrderToHistory(cart, deliveryInfo) {
         }
     };
 
-    // Save to order history
+    let orderId;
+
+    try {
+        // 1. FIRST: Save to Backend
+        console.log('📦 Saving order to backend...');
+        const response = await fetch('https://deenice-finds-1-0-1.onrender.com/api/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+            const backendData = await response.json();
+            orderId = backendData.order.id;
+            console.log('✅ Order saved to backend:', orderId);
+        } else {
+            throw new Error('Backend save failed');
+        }
+    } catch (error) {
+        console.error('❌ Backend save failed, using fallback:', error);
+        // Fallback: Generate local order ID
+        orderId = 'ORD-' + Date.now().toString(36).toUpperCase();
+    }
+
+    // 2. ALSO save to localStorage (for compatibility)
+    const newOrder = {
+        id: orderId,
+        orderDate: new Date().toISOString(),
+        status: 'pending',
+        ...orderData
+    };
+
+    // Save to order history (localStorage)
     if (typeof addOrderToHistory === 'function') {
-        addOrderToHistory(orderData);
+        addOrderToHistory(newOrder);
     } else {
         // Fallback: save directly to localStorage
         const existingOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-        const newOrder = {
-            id: 'ORD-' + Date.now().toString(36).toUpperCase(),
-            orderDate: new Date().toISOString(),
-            status: 'pending',
-            ...orderData
-        };
         existingOrders.unshift(newOrder);
         localStorage.setItem('de_order_history', JSON.stringify(existingOrders));
     }
 
     // Clear cart after successful order
     localStorage.removeItem('de_cart');
+
+    return orderId;
 }
 
 // Ensure the rendering starts when the page is fully loaded
