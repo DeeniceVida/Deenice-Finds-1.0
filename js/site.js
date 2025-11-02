@@ -28,66 +28,99 @@ async function renderGrid() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* ✅ FIXED: MOBILE NAVIGATION — works on Android & iPhone                     */
+/* ✅ FIXED: MOBILE NAVIGATION — with proper submenu closing                  */
 /* -------------------------------------------------------------------------- */
 function setupMobileNav() {
-  const hamburger = document.querySelector('.hamburger');
-  const nav = document.querySelector('.main-nav');
-  const hasSubs = document.querySelectorAll('.main-nav .has-sub');
+  const hamburger = document.querySelector('.hamburger');
+  const nav = document.querySelector('.main-nav');
+  const hasSubs = document.querySelectorAll('.main-nav .has-sub');
 
-  if (!hamburger || !nav) return;
+  if (!hamburger || !nav) return;
 
-  // Toggle main menu
-  hamburger.addEventListener('click', e => {
-    e.stopPropagation();
-    nav.classList.toggle('open');
-    hamburger.classList.toggle('open');
-  });
+  // Toggle main menu
+  hamburger.addEventListener('click', e => {
+    e.stopPropagation();
+    nav.classList.toggle('open');
+    hamburger.classList.toggle('open');
+    
+    // Close all submenus when hamburger closes
+    if (!nav.classList.contains('open')) {
+      closeAllSubmenus();
+    }
+  });
 
-  // Handle parent submenu toggling (for mobile)
-  document.querySelectorAll('.main-nav .has-sub > a').forEach(link => {
-    link.addEventListener('click', e => {
-      const parent = link.parentElement;
+  // Handle parent submenu toggling (for mobile)
+  document.querySelectorAll('.main-nav .has-sub > a').forEach(link => {
+    link.addEventListener('click', e => {
+      const parent = link.parentElement;
 
-      // Mobile only
-      if (window.innerWidth <= 900) {
-        const subMenu = parent.querySelector('.sub');
+      // Mobile only
+      if (window.innerWidth <= 900) {
+        const subMenu = parent.querySelector('.sub');
 
-        // If submenu is not open yet, just open it (don’t navigate)
-        if (!parent.classList.contains('open')) {
-          e.preventDefault();
-          e.stopPropagation();
+        // If submenu is not open yet, just open it (don't navigate)
+        if (!parent.classList.contains('open')) {
+          e.preventDefault();
+          e.stopPropagation();
 
-          document.querySelectorAll('.main-nav .has-sub').forEach(i => i.classList.remove('open'));
-          parent.classList.add('open');
-        } 
-        // If already open and user taps again, go to link
-        else {
-          window.location.href = link.getAttribute('href');
-        }
-      }
-    });
-  });
+          // Close all other submenus first
+          closeAllSubmenus();
+          
+          // Open this submenu
+          parent.classList.add('open');
+        } 
+        // If already open and user taps again, go to link
+        else {
+          window.location.href = link.getAttribute('href');
+        }
+      }
+    });
+  });
 
-  // Allow submenu items to navigate normally
-  document.querySelectorAll('.main-nav .has-sub .sub a').forEach(subLink => {
-    subLink.addEventListener('click', e => {
-      e.stopPropagation(); // keep nav stable
-      nav.classList.remove('open');
-      hamburger.classList.remove('open');
-    });
-  });
+  // Allow submenu items to navigate normally
+  document.querySelectorAll('.main-nav .has-sub .sub a').forEach(subLink => {
+    subLink.addEventListener('click', e => {
+      e.stopPropagation(); // keep nav stable
+      nav.classList.remove('open');
+      hamburger.classList.remove('open');
+      closeAllSubmenus();
+    });
+  });
 
-  // Close everything when tapping outside
-  document.addEventListener('click', e => {
-    if (!e.target.closest('.main-nav') && !e.target.closest('.hamburger')) {
-      nav.classList.remove('open');
-      hamburger.classList.remove('open');
-      hasSubs.forEach(i => i.classList.remove('open'));
-    }
-  });
+  // Close everything when tapping outside
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.main-nav') && !e.target.closest('.hamburger')) {
+      nav.classList.remove('open');
+      hamburger.classList.remove('open');
+      closeAllSubmenus();
+    }
+  });
+
+  // Close submenus when clicking on any non-submenu link in main nav
+  document.querySelectorAll('.main-nav > ul > li:not(.has-sub) > a').forEach(link => {
+    link.addEventListener('click', () => {
+      nav.classList.remove('open');
+      hamburger.classList.remove('open');
+      closeAllSubmenus();
+    });
+  });
+
+  // Close submenus when pressing Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeAllSubmenus();
+      nav.classList.remove('open');
+      hamburger.classList.remove('open');
+    }
+  });
 }
 
+// Function to close all submenus
+function closeAllSubmenus() {
+  document.querySelectorAll('.main-nav .has-sub').forEach(item => {
+    item.classList.remove('open');
+  });
+}
 
 /* -------------------------------------------------------------------------- */
 /* SEARCH LOGIC                                                               */
