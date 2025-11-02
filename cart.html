@@ -22,13 +22,151 @@
     </script>
     <title>Cart — Deenice Finds</title>
     <link rel='stylesheet' href='css/styles.css' />
+    <style>
+        .delivery-options {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .delivery-option {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .delivery-option.selected {
+            border-color: #007bff;
+            background: #e7f3ff;
+        }
+        
+        .delivery-option input {
+            margin-right: 10px;
+        }
+        
+        .pickup-info {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .pickup-info.show {
+            display: block;
+        }
+        
+        .pickup-code {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            letter-spacing: 2px;
+        }
+        
+        .shop-address {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #e9ecef;
+        }
+        
+        .map-link {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+        }
+        
+        .map-link:hover {
+            background: #218838;
+            color: white;
+        }
+        
+        .instructions {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 6px;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
 </head>
 <body class="cart-page"> 
     <a href='index.html'>Home</a>
     <h1>Your Cart</h1>
     <div id='cart-contents'></div>
-
     <div id='cart-summary'></div>
+
+    <!-- Delivery Options Section -->
+    <div id="delivery-options" class="delivery-options">
+        <h3>🛒 Delivery Options</h3>
+        
+        <div class="delivery-option" onclick="selectDeliveryOption('delivery')">
+            <input type="radio" id="delivery-home" name="delivery" value="delivery">
+            <label for="delivery-home">
+                <strong>🚚 Home Delivery</strong><br>
+                <small>Get your order delivered to your address</small>
+            </label>
+        </div>
+        
+        <div class="delivery-option" onclick="selectDeliveryOption('pickup')">
+            <input type="radio" id="pickup-shop" name="delivery" value="pickup">
+            <label for="pickup-shop">
+                <strong>🏪 Pick Up in Shop</strong><br>
+                <small>Collect your order from our store</small>
+            </label>
+        </div>
+        
+        <!-- Pickup Information (shown when pickup is selected) -->
+        <div id="pickup-info" class="pickup-info">
+            <h4>📍 Store Pickup Information</h4>
+            
+            <div class="pickup-code" id="pickup-code">
+                <!-- Unique code will be generated here -->
+            </div>
+            
+            <div class="shop-address">
+                <strong>🏬 Our Store Location:</strong><br>
+                Dynamic Mall, Shop ML 135, 3rd Floor<br>
+                Along Tom Mboya Street<br>
+                Behind The National Archives<br>
+                Opposite AMBASSADEUR<br>
+                Nairobi, Kenya
+            </div>
+            
+            <a href="https://maps.google.com/maps?q=Dynamic+Mall+Tom+Mboya+Street+Nairobi" 
+               target="_blank" class="map-link">
+               📍 Open in Google Maps
+            </a>
+            
+            <div class="instructions">
+                <strong>📋 Pickup Instructions:</strong><br>
+                1. Save or screenshot your unique pickup code above<br>
+                2. Visit our store during business hours (Mon-Sat, 9AM-6PM)<br>
+                3. Show your pickup code to our staff<br>
+                4. Collect your order - no waiting!<br>
+                <em>Please bring valid ID for verification</em>
+            </div>
+        </div>
+    </div>
 
     <button id='cart-send' class='primary'>Send Order via WhatsApp</button>
     
