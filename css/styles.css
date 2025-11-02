@@ -2296,6 +2296,16 @@ h1 {
     padding: 24px;
     margin: 20px 0;
     box-shadow: var(--card-shadow, 0 6px 18px rgba(15, 20, 30, 0.06));
+    display: none; /* Hidden by default */
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.delivery-options.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .delivery-option {
@@ -2347,11 +2357,16 @@ h1 {
 
 /* Enhanced pickup info */
 .pickup-info {
+    display: none;
     background: rgba(255, 255, 255, 0.7);
     border-radius: 10px;
     padding: 20px;
     margin-top: 15px;
     border-left: 4px solid var(--accent, #D9E4FC);
+}
+
+.pickup-info.show {
+    display: block;
 }
 
 .pickup-code {
@@ -2377,6 +2392,88 @@ h1 {
     line-height: 1.5;
 }
 
+/* Add these missing styles for map link and instructions */
+.map-link {
+    display: inline-block;
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-top: 10px;
+    transition: background 0.3s ease;
+    font-weight: 500;
+}
+
+.map-link:hover {
+    background: #218838;
+    color: white;
+}
+
+.instructions {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 15px;
+    padding: 15px;
+    background: #fff3cd;
+    border-radius: 8px;
+    border: 1px solid #ffeaa7;
+    line-height: 1.5;
+}
+
+/* Add a subtle indicator that more options are coming */
+.premium-form::after {
+    content: "👇 Fill in your details to see delivery options";
+    display: block;
+    text-align: center;
+    color: var(--muted, #9aa4b2);
+    font-size: 0.9rem;
+    margin-top: 10px;
+    font-style: italic;
+    opacity: 0.7;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .delivery-options {
+        padding: 20px 16px;
+        margin: 16px 0;
+    }
+    
+    .delivery-option {
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .delivery-option input[type="radio"] {
+        align-self: flex-start;
+    }
+    
+    .pickup-code {
+        font-size: 1.5em;
+        padding: 12px;
+        letter-spacing: 2px;
+    }
+    
+    .shop-address {
+        padding: 16px;
+        font-size: 0.95rem;
+    }
+    
+    .map-link {
+        width: 100%;
+        text-align: center;
+        padding: 14px;
+    }
+    
+    .premium-form::after {
+        font-size: 0.8rem;
+        margin-top: 8px;
+    }
+}
+
 /* Premium button styles to match your theme */
 .primary {
     background: linear-gradient(135deg, var(--accent, #D9E4FC), var(--focus, #ECF0FE));
@@ -2400,36 +2497,4 @@ h1 {
 
 .primary:active {
     transform: translateY(0);
-}
-/* Smooth transition for delivery options */
-.delivery-options {
-    background: var(--glass-bg, rgba(255, 255, 255, 0.6));
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: var(--radius, 14px);
-    padding: 24px;
-    margin: 20px 0;
-    box-shadow: var(--card-shadow, 0 6px 18px rgba(15, 20, 30, 0.06));
-    display: none; /* Hidden by default */
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.delivery-options.show {
-    display: block;
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* Add a subtle indicator that more options are coming */
-.premium-form::after {
-    content: "👇 Fill in your details to see delivery options";
-    display: block;
-    text-align: center;
-    color: var(--muted, #9aa4b2);
-    font-size: 0.9rem;
-    margin-top: 10px;
-    font-style: italic;
-    opacity: 0.7;
 }
