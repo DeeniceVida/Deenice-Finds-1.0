@@ -8,6 +8,42 @@ function saveCart(cart) {
     localStorage.setItem('de_cart', JSON.stringify(cart));
 }
 
+// 🆕 Generate Unique Pickup Code
+function generatePickupCode() {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `DF-${timestamp}-${random}`;
+}
+
+// 🆕 Delivery Option Selection
+function selectDeliveryOption(option) {
+    // Update radio buttons
+    document.getElementById('delivery-home').checked = (option === 'delivery');
+    document.getElementById('pickup-shop').checked = (option === 'pickup');
+    
+    // Update visual selection
+    document.querySelectorAll('.delivery-option').forEach(el => {
+        el.classList.remove('selected');
+    });
+    event.currentTarget.classList.add('selected');
+    
+    // Show/hide pickup info
+    const pickupInfo = document.getElementById('pickup-info');
+    if (option === 'pickup') {
+        pickupInfo.classList.add('show');
+        // Generate unique code if not already generated
+        if (!window.currentPickupCode) {
+            window.currentPickupCode = generatePickupCode();
+            document.getElementById('pickup-code').textContent = window.currentPickupCode;
+        }
+    } else {
+        pickupInfo.classList.remove('show');
+    }
+    
+    // Store delivery option
+    window.selectedDeliveryOption = option;
+}
+
 // 🟢 Item Removal Function
 function removeItemFromCart(itemTitle) {
     let cart = getCart();
@@ -23,7 +59,7 @@ function removeItemFromCart(itemTitle) {
     }
 }
 
-// 🚀 CORRECTED FUNCTION: WhatsApp Order Sender 🚀
+// 🚀 UPDATED FUNCTION: WhatsApp Order Sender with Delivery Options 🚀
 function sendOrderViaWhatsApp() {
     const cart = getCart();
     
@@ -35,15 +71,31 @@ function sendOrderViaWhatsApp() {
         alert("Please enter your Name and City before sending the order.");
         return;
     }
+    
+    // 🆕 Check if delivery option is selected
+    if (!window.selectedDeliveryOption) {
+        alert("Please select a delivery option (Home Delivery or Pick Up in Shop).");
+        return;
+    }
 
-    // 2. Build the order message (same as before)
+    // 2. Build the order message
     let total = 0;
     let message = `*✨ New Order from Deenice Finds!*
 
 *Customer Details:*
 Name: ${name}
 City: ${city}
----
+`;
+
+    // 🆕 Add delivery information
+    if (window.selectedDeliveryOption === 'pickup') {
+        message += `Delivery: 🏪 Pick Up in Shop\n`;
+        message += `Pickup Code: ${window.currentPickupCode}\n`;
+    } else {
+        message += `Delivery: 🚚 Home Delivery\n`;
+    }
+
+    message += `---
 *Order Items:*
 `;
 
@@ -69,10 +121,21 @@ City: ${city}
 *Total Amount: ${cart[0].currency} ${total.toLocaleString()}*
 `;
 
-    // 3. 🔑 FIXED: Get WhatsApp Number from the global configuration object 🔑
-    // (We removed the old 'if (typeof whatsappNumber === 'undefined')' block)
+    // 🆕 Add pickup instructions if applicable
+    if (window.selectedDeliveryOption === 'pickup') {
+        message += `
+*🏪 PICKUP INSTRUCTIONS:*
+• Store: Dynamic Mall, Shop ML 135, 3rd Floor
+• Location: Tom Mboya Street, Behind National Archives
+• Hours: Monday-Saturday, 9AM-6PM
+• Bring: This pickup code and valid ID
+• Code: ${window.currentPickupCode}
+`;
+    }
+
+    // 3. Get WhatsApp Number from the global configuration object
     const config = window.DEENICE_CONFIG || {};
-    let whatsappNumber = config.whatsappNumber; // Get the number from the config object
+    let whatsappNumber = config.whatsappNumber;
 
     if (!whatsappNumber) {
         alert("Error: WhatsApp number is not configured (check js/config.js).");
@@ -80,18 +143,22 @@ City: ${city}
         return;
     }
     
-    // 4. Clean the number (removes '+' sign) and Encode the message
-    // CRITICAL FIX: Ensure the number is clean for the URL
-    whatsappNumber = whatsappNumber.replace('+', ''); 
-
+    // 4. Clean the number and Encode the message
+    whatsappNumber = whatsappNumber.replace('+', '');
     const encodedMessage = encodeURIComponent(message);
     
-    // 5. 🔑 FIXED: Use the 'whatsappNumber' VARIABLE instead of hardcoding 🔑
+    // 5. Create WhatsApp URL
     const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
     
     window.open(whatsappURL, '_blank');
+    
+    // 🆕 Show confirmation message with pickup details
+    if (window.selectedDeliveryOption === 'pickup') {
+        setTimeout(() => {
+            alert(`✅ Order sent successfully!\n\n📋 Your Pickup Code: ${window.currentPickupCode}\n\n📍 Store Location: Dynamic Mall, Shop ML 135, 3rd Floor\n⏰ Hours: Mon-Sat, 9AM-6PM\n\nPlease save your pickup code for collection.`);
+        }, 1000);
+    }
 }
-
 
 // --- Cart Renderer (Modified to attach WhatsApp listener) ---
 function renderCart() {
@@ -99,6 +166,7 @@ function renderCart() {
     const btn = document.getElementById('cart-send');
     const cart = getCart();
     const summaryContainer = document.getElementById('cart-summary');
+    const deliveryOptions = document.getElementById('delivery-options');
 
     // Find the existing form container by its first input element
     const existingForm = document.getElementById('user-name') ? document.getElementById('user-name').closest('div') : null;
@@ -114,11 +182,17 @@ function renderCart() {
         list.innerHTML = '<p>Your cart is empty.</p>';
         summaryContainer.innerHTML = '';
         if (btn) btn.style.display = 'none';
+        if (deliveryOptions) deliveryOptions.style.display = 'none';
         
         if (existingForm) {
             existingForm.style.display = 'none';
         }
         return;
+    }
+
+    // Show delivery options when cart has items
+    if (deliveryOptions) {
+        deliveryOptions.style.display = 'block';
     }
 
     // --- Calculate Total and Display Summary ---
@@ -132,8 +206,7 @@ function renderCart() {
         <h2 style="text-align:right;">Total: ${currency} ${total.toLocaleString()}</h2>
     `;
 
-
-    // Build the cart HTML (same as before)
+    // Build the cart HTML
     let html = `
         <ul style="list-style:none;padding:0;margin:0;">
           ${cart.map(it => `
@@ -156,7 +229,7 @@ function renderCart() {
                 <span>${it.qty} × ${it.price.toLocaleString()} ${it.currency}</span>
               </div>
               <button class="remove-from-cart-btn" data-item-title="${it.title}" style="
-                background-color:#dc3545; /* Red for removal */
+                background-color:#dc3545;
                 color:white;
                 border:none;
                 padding:5px 10px;
@@ -180,14 +253,13 @@ function renderCart() {
         existingForm.style.display = 'block';
     }
 
-
     // Only insert the form if it doesn't already exist in the DOM
     if (!existingForm) {
         const form = document.createElement('div');
         form.innerHTML = `
             <h3>Your Details</h3>
             <label>Name:<br><input id="user-name" type="text" placeholder="Your name" required style="width:100%;padding:8px;margin-bottom:10px;"></label>
-            <label>City:<br><input id="user-city" type="text" placeholder="Your city" required style="width:100%;padding:8px;margin-bottom:20px;"></label>
+            <label>City:<br><input id="user-city" type="text" placeholder="Your city" required style="width:100%;padding:8mmargin-bottom:20px;"></label>
         `;
         list.insertAdjacentElement('afterend', form);
     }
@@ -202,11 +274,21 @@ function renderCart() {
         });
     });
 
-    // 🔑 NEW: Attach the WhatsApp logic to the button 🔑
+    // Attach the WhatsApp logic to the button
     if (btn) {
-        btn.removeEventListener('click', sendOrderViaWhatsApp); // Prevent duplicates
+        btn.removeEventListener('click', sendOrderViaWhatsApp);
         btn.addEventListener('click', sendOrderViaWhatsApp);
     }
+    
+    // 🆕 Initialize delivery options
+    if (deliveryOptions && !window.deliveryOptionsInitialized) {
+        // Auto-select home delivery by default
+        setTimeout(() => {
+            selectDeliveryOption('delivery');
+            window.deliveryOptionsInitialized = true;
+        }, 100);
+    }
 }
+
 // Ensure the rendering starts when the page is fully loaded
 document.addEventListener('DOMContentLoaded', renderCart);
