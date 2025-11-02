@@ -2526,3 +2526,24 @@ h1 {
 .primary:active {
     transform: translateY(0);
 }
+/* Order History Icon Styles */
+.order-history-btn {
+  position: relative;
+}
+
+.order-history-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease;
+}
+
+.order-history-btn:hover .order-history-icon {
+  transform: scale(1.1);
+}
+
+/* Ensure proper spacing in header */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
