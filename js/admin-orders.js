@@ -131,43 +131,49 @@ class AdminOrderManager {
     }
 
     async deleteOrder(orderId) {
-        try {
-            const confirmDelete = confirm(
-                `🗑️ DELETE ORDER #${orderId}\n\n` +
-                `Are you sure you want to delete this order?\n\n` +
-                `This will remove the order from:\n` +
-                `• Admin panel\n` +
-                `• Customer's order history\n` +
-                `• Backend database\n\n` +
-                `This action cannot be undone!`
-            );
-            
-            if (!confirmDelete) return;
+    try {
+        const confirmDelete = confirm(
+            `🗑️ DELETE ORDER #${orderId}\n\n` +
+            `Are you sure you want to delete this order?\n\n` +
+            `This will remove the order from:\n` +
+            `• Admin panel\n` +
+            `• Customer's order history\n` +
+            `• Backend database\n\n` +
+            `This action cannot be undone!`
+        );
+        
+        if (!confirmDelete) return;
 
-            console.log('🗑️ Deleting order:', orderId);
-            
-            // Remove from backend memory first
-            const orderIndex = this.orders.findIndex(o => o.id === orderId);
-            if (orderIndex > -1) {
-                this.orders.splice(orderIndex, 1);
-                console.log('✅ Removed from backend memory');
-            }
+        console.log('🗑️ Deleting order from backend:', orderId);
+        
+        // 1. FIRST call backend API to delete from database
+        await this.makeRequest(`/orders/${orderId}`, {
+            method: 'DELETE'
+        });
+        
+        console.log('✅ Order deleted from backend database');
 
-            // Remove from ALL localStorage instances (for all clients)
-            this.removeOrderFromAllClients(orderId);
-
-            // Force reload the admin view
-            await this.loadOrdersFromBackend();
-            this.renderStats();
-            this.renderOrders();
-            
-            alert(`✅ Order #${orderId} has been deleted successfully from:\n\n• Admin panel\n• All client devices\n• Backend database`);
-            
-        } catch (error) {
-            console.error('Failed to delete order:', error);
-            alert('Failed to delete order. Please try again.');
+        // 2. THEN remove from frontend memory
+        const orderIndex = this.orders.findIndex(o => o.id === orderId);
+        if (orderIndex > -1) {
+            this.orders.splice(orderIndex, 1);
+            console.log('✅ Removed from frontend memory');
         }
+
+        // 3. Remove from ALL localStorage instances
+        this.removeOrderFromAllClients(orderId);
+
+        // 4. Update the UI
+        this.renderStats();
+        this.renderOrders();
+        
+        alert(`✅ Order #${orderId} has been deleted successfully from:\n\n• Backend database\n• Admin panel\n• All client devices`);
+        
+    } catch (error) {
+        console.error('Failed to delete order:', error);
+        alert('Failed to delete order from backend: ' + error.message);
     }
+}
 
     removeOrderFromAllClients(orderId) {
         try {
