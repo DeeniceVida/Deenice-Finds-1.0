@@ -253,15 +253,44 @@ function renderCart() {
         existingForm.style.display = 'block';
     }
 
-    // Only insert the form if it doesn't already exist in the DOM
+    // 🆕 PREMIUM FORM: Only insert the form if it doesn't already exist in the DOM
     if (!existingForm) {
         const form = document.createElement('div');
+        form.className = 'premium-form';
         form.innerHTML = `
-            <h3>Your Details</h3>
-            <label>Name:<br><input id="user-name" type="text" placeholder="Your name" required style="width:100%;padding:8px;margin-bottom:10px;"></label>
-            <label>City:<br><input id="user-city" type="text" placeholder="Your city" required style="width:100%;padding:8mmargin-bottom:20px;"></label>
+            <h3>👤 Your Details</h3>
+            <div class="form-group input-icon name">
+                <input type="text" 
+                       id="user-name" 
+                       class="premium-input" 
+                       placeholder="Enter your full name" 
+                       required 
+                       pattern="[A-Za-z\\s]{2,}">
+            </div>
+            <div class="form-group input-icon city">
+                <input type="text" 
+                       id="user-city" 
+                       class="premium-input" 
+                       placeholder="Enter your city" 
+                       required 
+                       pattern="[A-Za-z\\s]{2,}">
+            </div>
         `;
         list.insertAdjacentElement('afterend', form);
+        
+        // Add real-time validation feedback
+        const inputs = form.querySelectorAll('.premium-input');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.validity.valid) {
+                    this.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+                } else if (this.value.length > 0) {
+                    this.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                } else {
+                    this.style.borderColor = 'rgba(15, 20, 30, 0.1)';
+                }
+            });
+        });
     }
     
     // --- Attach Event Listeners ---
