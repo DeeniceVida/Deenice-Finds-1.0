@@ -62,16 +62,17 @@ function removeItemFromCart(itemTitle) {
     }
 }
 
-// 🚀 UPDATED FUNCTION: WhatsApp Order Sender with Delivery Options 🚀
+// 🚀 UPDATED FUNCTION: iOS-Compatible WhatsApp Order Sender
 async function sendOrderViaWhatsApp() {
     const cart = getCart();
     
     // 1. Get user details
     const name = document.getElementById('user-name')?.value.trim() || '';
     const city = document.getElementById('user-city')?.value.trim() || '';
+    const phone = document.getElementById('user-phone')?.value.trim() || '';
 
-    if (!name || !city) {
-        alert("Please enter your Name and City before sending the order.");
+    if (!name || !city || !phone) {
+        alert("Please enter your Name, City, and WhatsApp number before sending the order.");
         return;
     }
     
@@ -82,10 +83,10 @@ async function sendOrderViaWhatsApp() {
 
     // 2. Create order first to get order ID
     const orderId = await saveOrderToHistory(cart, {
-    method: window.selectedDeliveryOption,
-    city: city,
-    customer: { name, city }
-});
+        method: window.selectedDeliveryOption,
+        city: city,
+        customer: { name, city, phone }
+    });
 
     // 3. Build message with order ID
     let total = 0;
@@ -121,7 +122,7 @@ async function sendOrderViaWhatsApp() {
     message += `*Order Status:* 📝 Pending\n`;
     message += `_We'll update you on WhatsApp when your order status changes._`;
 
-    // 4. Send via WhatsApp
+    // 4. iOS-Compatible WhatsApp Opening
     const config = window.DEENICE_CONFIG || {};
     let whatsappNumber = config.whatsappNumber;
 
@@ -132,14 +133,44 @@ async function sendOrderViaWhatsApp() {
     
     whatsappNumber = whatsappNumber.replace('+', '');
     const encodedMessage = encodeURIComponent(message);
-    const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
     
-    window.open(whatsappURL, '_blank');
+    // iOS-Compatible WhatsApp URL
+    const whatsappURL = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
+    
+    // iOS-Safe Link Opening
+    setTimeout(() => {
+        // Method 1: Try direct window.location (works better on iOS)
+        window.location.href = whatsappURL;
+    }, 100);
+    
+    // Fallback: Show manual instructions if redirect fails
+    setTimeout(() => {
+        // If we're still on the same page after 2 seconds, show manual option
+        if (window.location.href.indexOf('whatsapp') === -1) {
+            const manualSend = confirm(
+                "WhatsApp didn't open automatically.\n\n" +
+                "Click OK to copy the message, then:\n" +
+                "1. Open WhatsApp manually\n" +
+                "2. Paste the message to Deenice Finds\n" +
+                "3. Send the order"
+            );
+            
+            if (manualSend) {
+                // Copy message to clipboard
+                navigator.clipboard.writeText(message).then(() => {
+                    alert("✅ Order message copied to clipboard!\n\n📱 Now open WhatsApp and paste the message to Deenice Finds.");
+                }).catch(() => {
+                    // Fallback if clipboard fails
+                    prompt("📋 Copy this order message and send it to Deenice Finds on WhatsApp:", message);
+                });
+            }
+        }
+    }, 2000);
     
     // 5. Show confirmation
     setTimeout(() => {
-        alert(`✅ Order #${orderId} sent successfully!\n\n📋 Status: Pending\n\nWe'll notify you when your order status updates.`);
-    }, 1000);
+        alert(`✅ Order #${orderId} prepared!\n\n📋 Status: Pending\n\nWe'll notify you when your order status updates.`);
+    }, 500);
 }
 
 // --- Cart Renderer (Modified to attach WhatsApp listener) ---
