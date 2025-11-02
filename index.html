@@ -44,13 +44,17 @@
       <span class="brand-name">Deenice Finds</span>
     </a>
 
-    <!-- Cart + Search -->
-    <div class="header-right">
-  
-    <button id="search-toggle" class="icon-btn search-icon-btn" aria-label="Search">
-        <img src="https://img.icons8.com/?size=100&id=131&format=png&color=000000" alt="Search" class="header-icon search-icon" />
-    </button>
-  
+    <!-- Cart + Search + Order History -->
+<div class="header-right">
+  <!-- 🆕 Order History Button -->
+  <a href="order-history.html" class="icon-btn order-history-btn" aria-label="Order History">
+    <img src="https://img.icons8.com/?size=100&id=82780&format=png&color=000000" alt="Order History" class="header-icon order-history-icon" />
+  </a>
+
+  <button id="search-toggle" class="icon-btn search-icon-btn" aria-label="Search">
+    <img src="https://img.icons8.com/?size=100&id=131&format=png&color=000000" alt="Search" class="header-icon search-icon" />
+  </button>
+
   <div id="search-box" class="search-box hidden">
     <input id="search-input" placeholder="Search products, cases, sunglasses..." autocomplete="off" />
     <div id="search-suggestions" class="suggestions"></div>
@@ -63,7 +67,7 @@
 </div>
 
   <!-- Mobile Dropdown Menu -->
-  <nav class="main-nav">
+<nav class="main-nav">
   <ul>
     <li><a href="index.html">Home</a></li>
     
@@ -87,6 +91,9 @@
     </li>
     
     <li><a href="reviews.html">Reviews</a></li>
+    
+    <!-- 🆕 Add Order History Link -->
+    <li><a href="order-history.html">📦 Order History</a></li>
   </ul>
 </nav>
 </header>
@@ -124,42 +131,43 @@
 <footer>
     </footer>
   <footer class="site-footer">
-    <div class="footer-inner">
-      <div class="col">
-        <h4>About</h4>
-        <ul>
-          <li><a href="about.html">About Us</a></li>
-          <li><a href="reviews.html">Our Impact</a></li>
-        </ul>
-      </div>
-      <div class="col">
-        <h4>Help</h4>
-        <ul>
-          <li><a href="#" id="open-help">Help Center</a></li>
-          <li><a href="mailto:deenicevida@gmail.com">Contact Us</a></li>
-        </ul>
-      </div>
-      <div class="col">
-        <h4>Services</h4>
-        <ul>
-          <li><a href="buy-for-me.html">Buy For Me (US Phone)</a></li>
-          <li><a href="collaborate.html">Collaborate</a></li>
-        </ul>
-      </div>
-      <div class="col social">
-  <h4>Follow</h4>
-  <div class="footer-social">
-   <a href="https://www.instagram.com//" target="_blank" aria-label="Instagram">
-    <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram">
-  </a>
-  <a href="https://www.tiktok.com/@?_t=ZM-90lyVlskdWC&_r=1" target="_blank" aria-label="TikTok">
-    <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok">
-  </a>
-</div>
+  <div class="footer-inner">
+    <div class="col">
+      <h4>About</h4>
+      <ul>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="reviews.html">Our Impact</a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>Help</h4>
+      <ul>
+        <li><a href="#" id="open-help">Help Center</a></li>
+        <li><a href="order-history.html">📦 Order History</a></li> <!-- 🆕 Added here -->
+        <li><a href="mailto:deenicevida@gmail.com">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="buy-for-me.html">Buy For Me (US Phone)</a></li>
+        <li><a href="collaborate.html">Collaborate</a></li>
+      </ul>
+    </div>
+    <div class="col social">
+      <h4>Follow</h4>
+      <div class="footer-social">
+        <a href="https://www.instagram.com//" target="_blank" aria-label="Instagram">
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram">
+        </a>
+        <a href="https://www.tiktok.com/@?_t=ZM-90lyVlskdWC&_r=1" target="_blank" aria-label="TikTok">
+          <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok">
+        </a>
       </div>
     </div>
-    <div class="footer-bottom">© 2025 Deenice Finds — Plugged By the Best</div>
-  </footer>
+  </div>
+  <div class="footer-bottom">© 2025 Deenice Finds — Plugged By the Best</div>
+</footer>
   
   <script src="js/config.js"></script>
   <script src="js/site.js"></script>
