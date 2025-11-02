@@ -190,11 +190,6 @@ function renderCart() {
         return;
     }
 
-    // Show delivery options when cart has items
-    if (deliveryOptions) {
-        deliveryOptions.style.display = 'block';
-    }
-
     // --- Calculate Total and Display Summary ---
     let total = 0;
     const currency = cart[0].currency;
@@ -249,11 +244,22 @@ function renderCart() {
     list.innerHTML = html;
     if (btn) btn.style.display = 'block';
 
-    if (existingForm) {
-        existingForm.style.display = 'block';
+    // Hide delivery options initially
+    if (deliveryOptions) {
+        deliveryOptions.style.display = 'none';
     }
 
-    // 🆕 PREMIUM FORM: Only insert the form if it doesn't already exist in the DOM
+    if (existingForm) {
+        existingForm.style.display = 'block';
+        // Check if form is already filled to show delivery options
+        const nameValue = document.getElementById('user-name').value.trim();
+        const cityValue = document.getElementById('user-city').value.trim();
+        if (nameValue && cityValue && deliveryOptions) {
+            deliveryOptions.style.display = 'block';
+        }
+    }
+
+    // Only insert the form if it doesn't already exist in the DOM
     if (!existingForm) {
         const form = document.createElement('div');
         form.className = 'premium-form';
@@ -271,14 +277,40 @@ function renderCart() {
                 <input type="text" 
                        id="user-city" 
                        class="premium-input" 
-                       placeholder="Enter your city" 
+                       placeholder="Enter your city/town" 
                        required 
                        pattern="[A-Za-z\\s]{2,}">
             </div>
         `;
         list.insertAdjacentElement('afterend', form);
         
-        // Add real-time validation feedback
+        // Add real-time validation to show delivery options when both fields are filled
+        const nameInput = document.getElementById('user-name');
+        const cityInput = document.getElementById('user-city');
+        
+        function checkFormCompletion() {
+            const nameValue = nameInput.value.trim();
+            const cityValue = cityInput.value.trim();
+            
+            if (nameValue && cityValue && deliveryOptions) {
+                deliveryOptions.style.display = 'block';
+                // Auto-select home delivery by default
+                if (!window.deliveryOptionsInitialized) {
+                    setTimeout(() => {
+                        selectDeliveryOption('delivery');
+                        window.deliveryOptionsInitialized = true;
+                    }, 100);
+                }
+            } else if (deliveryOptions) {
+                deliveryOptions.style.display = 'none';
+            }
+        }
+        
+        // Add event listeners to both inputs
+        nameInput.addEventListener('input', checkFormCompletion);
+        cityInput.addEventListener('input', checkFormCompletion);
+        
+        // Also add validation feedback
         const inputs = form.querySelectorAll('.premium-input');
         inputs.forEach(input => {
             input.addEventListener('input', function() {
@@ -307,15 +339,6 @@ function renderCart() {
     if (btn) {
         btn.removeEventListener('click', sendOrderViaWhatsApp);
         btn.addEventListener('click', sendOrderViaWhatsApp);
-    }
-    
-    // 🆕 Initialize delivery options
-    if (deliveryOptions && !window.deliveryOptionsInitialized) {
-        // Auto-select home delivery by default
-        setTimeout(() => {
-            selectDeliveryOption('delivery');
-            window.deliveryOptionsInitialized = true;
-        }, 100);
     }
 }
 
