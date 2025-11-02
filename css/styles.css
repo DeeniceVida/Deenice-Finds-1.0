@@ -2584,3 +2584,34 @@ h1 {
     gap: 4px;
     font-size: 0.85rem;
 }
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-primary {
+    background: #8EDBD1;
+    color: #333;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.admin-nav {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
