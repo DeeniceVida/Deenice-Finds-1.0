@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Order Management</title>
+    <style>
+        .admin-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .order-card { background: white; padding: 20px; margin: 10px 0; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .status-select { padding: 5px; border-radius: 5px; margin-left: 10px; }
+        .status-pending { color: #ca8a04; }
+        .status-processing { color: #2563eb; }
+        .status-completed { color: #16a34a; }
+        .status-cancelled { color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Order Management</h1>
+        <div id="orders-list"></div>
+    </div>
+    <script src="js/admin-orders.js"></script>
+</body>
+</html>
