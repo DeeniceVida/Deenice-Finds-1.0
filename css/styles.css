@@ -2291,7 +2291,7 @@ h1 {
 .delivery-options {
     background: var(--glass-bg, rgba(255, 255, 255, 0.6));
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(142, 219, 209, 0.2); /* Updated border color */
     border-radius: var(--radius, 14px);
     padding: 24px;
     margin: 20px 0;
@@ -2310,7 +2310,7 @@ h1 {
 
 .delivery-option {
     background: rgba(255, 255, 255, 0.5);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(142, 219, 209, 0.3); /* Updated border color */
     border-radius: 10px;
     padding: 18px;
     margin-bottom: 12px;
@@ -2323,20 +2323,20 @@ h1 {
 
 .delivery-option:hover {
     transform: translateY(-2px);
-    border-color: var(--accent, #D9E4FC);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #8EDBD1; /* Updated hover border color */
+    box-shadow: 0 4px 12px rgba(142, 219, 209, 0.2); /* Updated shadow color */
 }
 
 .delivery-option.selected {
-    border-color: var(--accent, #D9E4FC);
-    background: var(--focus, #ECF0FE);
-    box-shadow: 0 4px 15px rgba(217, 228, 252, 0.4);
+    border-color: #8EDBD1; /* Updated selected border color */
+    background: rgba(142, 219, 209, 0.1); /* Updated selected background */
+    box-shadow: 0 4px 15px rgba(142, 219, 209, 0.3); /* Updated shadow color */
 }
 
 .delivery-option input[type="radio"] {
     width: 18px;
     height: 18px;
-    accent-color: var(--accent, #D9E4FC);
+    accent-color: #8EDBD1; /* Updated radio button color */
 }
 
 .delivery-label {
@@ -2362,7 +2362,7 @@ h1 {
     border-radius: 10px;
     padding: 20px;
     margin-top: 15px;
-    border-left: 4px solid var(--accent, #D9E4FC);
+    border-left: 4px solid #8EDBD1; /* Updated accent border */
 }
 
 .pickup-info.show {
@@ -2376,11 +2376,11 @@ h1 {
     text-align: center;
     margin: 15px 0;
     padding: 15px;
-    background: linear-gradient(135deg, var(--accent, #D9E4FC), var(--focus, #ECF0FE));
+    background: linear-gradient(135deg, #8EDBD1, rgba(142, 219, 209, 0.3)); /* Updated gradient */
     border-radius: 10px;
     letter-spacing: 3px;
     font-family: 'Courier New', monospace;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(142, 219, 209, 0.3); /* Updated border */
 }
 
 .shop-address {
@@ -2388,26 +2388,54 @@ h1 {
     padding: 18px;
     border-radius: 10px;
     margin: 15px 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(142, 219, 209, 0.2); /* Updated border */
     line-height: 1.5;
 }
 
-/* Add these missing styles for map link and instructions */
+/* Updated button styles with new color */
+.primary {
+    background: linear-gradient(135deg, #8EDBD1, rgba(142, 219, 209, 0.3)); /* Updated gradient */
+    color: var(--primary-text, #0b1420);
+    border: none;
+    padding: 16px 32px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(142, 219, 209, 0.2); /* Updated border */
+}
+
+.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(142, 219, 209, 0.4); /* Updated shadow */
+}
+
+.primary:active {
+    transform: translateY(0);
+}
+
+/* Map link with new color */
 .map-link {
     display: inline-block;
-    background: #28a745;
-    color: white;
+    background: #8EDBD1; /* Updated background */
+    color: var(--primary-text, #0b1420); /* Dark text for contrast */
     padding: 12px 20px;
     border-radius: 8px;
     text-decoration: none;
     margin-top: 10px;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
     font-weight: 500;
+    border: 1px solid rgba(142, 219, 209, 0.3);
 }
 
 .map-link:hover {
-    background: #218838;
-    color: white;
+    background: #7BC9BF; /* Slightly darker shade for hover */
+    color: var(--primary-text, #0b1420);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(142, 219, 209, 0.3);
 }
 
 .instructions {
@@ -2415,9 +2443,9 @@ h1 {
     color: #666;
     margin-top: 15px;
     padding: 15px;
-    background: #fff3cd;
+    background: rgba(142, 219, 209, 0.1); /* Updated background */
     border-radius: 8px;
-    border: 1px solid #ffeaa7;
+    border: 1px solid rgba(142, 219, 209, 0.3); /* Updated border */
     line-height: 1.5;
 }
 
