@@ -180,9 +180,10 @@ app.delete('/api/orders/:id', authenticateToken, checkSessionTimeout, (req, res)
         // Remove the order from the array
         const deletedOrder = orders.splice(orderIndex, 1)[0];
         
-        console.log('🗑️ Order deleted:', orderId);
+        console.log('🗑️ Order deleted from server memory:', orderId);
         
         res.json({ 
+            success: true,
             message: 'Order deleted successfully',
             deletedOrder: deletedOrder
         });
