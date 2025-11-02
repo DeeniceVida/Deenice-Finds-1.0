@@ -2,117 +2,85 @@ class AdminOrderManager {
     constructor() {
         this.orders = [];
         this.currentFilter = 'all';
+        this.baseURL = 'https://deenice-finds-1-0-1.onrender.com/api';
+        this.token = localStorage.getItem('admin_token');
         this.init();
     }
 
-    init() {
-        console.log('🔄 AdminOrderManager initializing...');
-        this.loadOrders();
+    async init() {
+        console.log('🔄 AdminOrderManager initializing with backend...');
+        if (!this.token) {
+            window.location.href = 'admin-login.html';
+            return;
+        }
+        await this.loadOrdersFromBackend();
         this.renderStats();
         this.renderOrders();
         this.setupEventListeners();
-        this.debugOrders(); // Add debug function
     }
 
-    debugOrders() {
-        console.log('=== DEBUG ORDERS ===');
-        console.log('📦 Total orders found:', this.orders.length);
-        console.log('📁 Raw localStorage data:', localStorage.getItem('de_order_history'));
-        
-        if (this.orders.length > 0) {
-            console.log('📋 Orders details:');
-            this.orders.forEach((order, index) => {
-                console.log(`Order ${index + 1}:`, {
-                    id: order.id,
-                    status: order.status,
-                    customer: order.customer,
-                    items: order.items?.length,
-                    total: order.totalAmount,
-                    delivery: order.delivery
-                });
-            });
-        } else {
-            console.log('❌ No orders found in localStorage');
-            
-            // Check if there are orders under different keys
-            console.log('🔍 Checking all localStorage keys:');
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key.includes('order') || key.includes('cart')) {
-                    console.log(`Key: ${key}`, localStorage.getItem(key));
-                }
-            }
-        }
-        console.log('=== END DEBUG ===');
-    }
-
-    loadOrders() {
+    async makeRequest(endpoint, options = {}) {
         try {
-            console.log('📥 Loading orders from localStorage...');
-            const savedOrders = localStorage.getItem('de_order_history');
-            
-            if (!savedOrders) {
-                console.log('❌ No orders found in de_order_history');
-                this.orders = [];
-                return;
-            }
-
-            this.orders = JSON.parse(savedOrders);
-            console.log('✅ Parsed orders:', this.orders);
-
-            // Ensure orders have proper structure
-            this.orders = this.orders.map((order, index) => {
-                // Fix common data issues
-                const fixedOrder = {
-                    id: order.id || `UNKNOWN_${Date.now()}_${index}`,
-                    orderDate: order.orderDate || new Date().toISOString(),
-                    status: order.status || 'pending',
-                    customer: order.customer || { name: 'Unknown Customer', city: 'Unknown City' },
-                    delivery: order.delivery || { method: 'delivery', city: 'Unknown City' },
-                    items: order.items || [],
-                    totalAmount: order.totalAmount || 0,
-                    currency: order.currency || 'KES',
-                    statusUpdated: order.statusUpdated,
-                    completedDate: order.completedDate,
-                    ...order
-                };
-
-                // Ensure items array is properly formatted
-                if (fixedOrder.items && Array.isArray(fixedOrder.items)) {
-                    fixedOrder.items = fixedOrder.items.map(item => ({
-                        title: item.title || 'Unknown Item',
-                        price: item.price || 0,
-                        qty: item.qty || 1,
-                        currency: item.currency || 'KES',
-                        color: item.color,
-                        size: item.size,
-                        model: item.model,
-                        img: item.img || 'https://via.placeholder.com/50',
-                        ...item
-                    }));
-                }
-
-                return fixedOrder;
+            const response = await fetch(`${this.baseURL}${endpoint}`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
             });
 
-            // Sort by date (newest first)
-            this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-            console.log('✅ Final processed orders:', this.orders);
+            if (response.status === 401) {
+                this.logout();
+                throw new Error('Session expired');
+            }
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return await response.json();
         } catch (error) {
-            console.error('❌ Error loading orders:', error);
-            console.error('Error details:', error.message);
+            console.error('API request failed:', error);
+            throw error;
+        }
+    }
+
+    async loadOrdersFromBackend() {
+        try {
+            console.log('📥 Loading orders from backend...');
+            const data = await this.makeRequest('/orders');
+            this.orders = data.orders || [];
+            console.log('✅ Backend orders loaded:', this.orders.length);
+        } catch (error) {
+            console.error('❌ Failed to load orders from backend:', error);
+            alert('Failed to load orders. Please check your connection.');
             this.orders = [];
         }
     }
 
-    saveOrders() {
+    async updateStatus(orderId, newStatus) {
         try {
-            localStorage.setItem('de_order_history', JSON.stringify(this.orders));
-            console.log('💾 Orders saved to localStorage:', this.orders.length);
+            console.log('🔄 Updating order status:', orderId, newStatus);
+            await this.makeRequest(`/orders/${orderId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: newStatus })
+            });
+            
+            await this.loadOrdersFromBackend(); // Reload from backend
+            this.renderStats();
+            this.renderOrders();
+            alert(`Order #${orderId} status updated to ${newStatus}`);
         } catch (error) {
-            console.error('❌ Error saving orders:', error);
+            console.error('Failed to update status:', error);
+            alert('Failed to update order status.');
         }
+    }
+
+    logout() {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_logged_in');
+        window.location.href = 'admin-login.html';
     }
 
     setupEventListeners() {
@@ -126,11 +94,11 @@ class AdminOrderManager {
         // Add refresh button listener
         const refreshBtn = document.getElementById('refreshOrders');
         if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                this.loadOrders();
+            refreshBtn.addEventListener('click', async () => {
+                await this.loadOrdersFromBackend();
                 this.renderStats();
                 this.renderOrders();
-                alert('Orders refreshed!');
+                alert('Orders refreshed from backend!');
             });
         }
     }
@@ -232,9 +200,8 @@ class AdminOrderManager {
                         <div class="order-meta">
                             <span>📅 ${orderDate}</span>
                             <span>👤 ${order.customer?.name || 'N/A'}</span>
-                            <span>📍 ${order.delivery?.city || 'N/A'}</span>
-                            <span>🚚 ${this.getDeliveryText(order.delivery)}</span>
-                            ${order.delivery?.pickupCode ? `<span>🔑 ${order.delivery.pickupCode}</span>` : ''}
+                            <span>📍 ${order.customer?.city || 'N/A'}</span>
+                            <span>🚚 ${this.getDeliveryText(order)}</span>
                         </div>
                     </div>
                     <div>
@@ -255,7 +222,7 @@ class AdminOrderManager {
                 
                 <div class="order-footer">
                     <div class="order-total">
-                        Total: ${order.currency} ${order.totalAmount?.toLocaleString() || '0'}
+                        Total: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
                     </div>
                     <div class="order-actions">
                         <button class="btn btn-secondary" onclick="adminManager.viewOrderDetails('${order.id}')">
@@ -263,9 +230,6 @@ class AdminOrderManager {
                         </button>
                         <button class="btn btn-primary" onclick="adminManager.contactCustomer('${order.id}')">
                             Contact Customer
-                        </button>
-                        <button class="btn btn-danger" onclick="adminManager.deleteOrder('${order.id}')">
-                            Delete
                         </button>
                     </div>
                 </div>
@@ -297,9 +261,9 @@ class AdminOrderManager {
         `;
     }
 
-    getDeliveryText(delivery) {
-        if (!delivery || !delivery.method) return 'Delivery info missing';
-        return delivery.method === 'pickup' ? 'Store Pickup' : 'Home Delivery';
+    getDeliveryText(order) {
+        if (!order.delivery) return 'Delivery';
+        return order.delivery.method === 'pickup' ? 'Store Pickup' : 'Home Delivery';
     }
 
     getStatusClass(status) {
@@ -310,34 +274,6 @@ class AdminOrderManager {
             'cancelled': 'status-cancelled'
         };
         return statusClasses[status] || 'status-pending';
-    }
-
-    getStatusText(status) {
-        const statusTexts = {
-            'pending': 'Pending',
-            'processing': 'Processing', 
-            'completed': 'Completed',
-            'cancelled': 'Cancelled'
-        };
-        return statusTexts[status] || 'Pending';
-    }
-
-    updateStatus(orderId, newStatus) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            order.status = newStatus;
-            order.statusUpdated = new Date().toISOString();
-            
-            if (newStatus === 'completed') {
-                order.completedDate = new Date().toISOString();
-            }
-            
-            this.saveOrders();
-            this.renderStats();
-            this.renderOrders();
-            
-            alert(`Order #${orderId} status updated to ${newStatus}`);
-        }
     }
 
     viewOrderDetails(orderId) {
@@ -351,21 +287,17 @@ Name: ${order.customer?.name || 'N/A'}
 City: ${order.customer?.city || 'N/A'}
 
 ORDER INFORMATION:
-Status: ${this.getStatusText(order.status)}
+Status: ${order.status}
 Order Date: ${new Date(order.orderDate).toLocaleString()}
 Last Updated: ${order.statusUpdated ? new Date(order.statusUpdated).toLocaleString() : 'N/A'}
 ${order.completedDate ? `Completed: ${new Date(order.completedDate).toLocaleString()}` : ''}
-
-DELIVERY:
-Method: ${this.getDeliveryText(order.delivery)}
-${order.delivery?.pickupCode ? `Pickup Code: ${order.delivery.pickupCode}` : ''}
 
 ITEMS (${order.items?.length || 0}):
 ${order.items ? order.items.map((item, index) => 
     `${index + 1}. ${item.title} - ${item.qty} × ${item.currency} ${item.price}`
 ).join('\n') : 'No items'}
 
-TOTAL: ${order.currency} ${order.totalAmount?.toLocaleString() || '0'}
+TOTAL: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
             `;
             alert(details);
         }
@@ -387,26 +319,13 @@ TOTAL: ${order.currency} ${order.totalAmount?.toLocaleString() || '0'}
         }
     }
 
-    deleteOrder(orderId) {
-        if (confirm(`Are you sure you want to delete order #${orderId}? This action cannot be undone.`)) {
-            this.orders = this.orders.filter(order => order.id !== orderId);
-            this.saveOrders();
-            this.renderStats();
-            this.renderOrders();
-            alert(`Order #${orderId} has been deleted.`);
-        }
-    }
-
     getEmptyState() {
         return `
             <div class="empty-state">
                 <h3>No orders found</h3>
                 <p>There are no orders in the system yet.</p>
-                <button class="btn btn-primary" onclick="adminManager.debugOrders()">
-                    Debug Orders
-                </button>
-                <button class="btn btn-secondary" onclick="adminManager.loadOrders(); adminManager.renderOrders();">
-                    Refresh
+                <button class="btn btn-primary" onclick="adminManager.loadOrdersFromBackend()">
+                    Refresh from Backend
                 </button>
             </div>
         `;
