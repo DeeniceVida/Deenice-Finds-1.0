@@ -60,22 +60,31 @@ class AdminOrderManager {
     }
 
     async updateStatus(orderId, newStatus) {
-        try {
-            console.log('🔄 Updating order status:', orderId, newStatus);
-            await this.makeRequest(`/orders/${orderId}/status`, {
-                method: 'PUT',
-                body: JSON.stringify({ status: newStatus })
-            });
-            
-            await this.loadOrdersFromBackend(); // Reload from backend
-            this.renderStats();
-            this.renderOrders();
-            alert(`Order #${orderId} status updated to ${newStatus}`);
-        } catch (error) {
-            console.error('Failed to update status:', error);
-            alert('Failed to update order status.');
+    try {
+        console.log('🔄 Updating order status:', orderId, newStatus);
+        const response = await this.makeRequest(`/orders/${orderId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: newStatus })
+        });
+        
+        await this.loadOrdersFromBackend();
+        this.renderStats();
+        this.renderOrders();
+        
+        // Show WhatsApp notification option
+        if (response.whatsappURL) {
+            const sendMsg = confirm(`✅ Order #${orderId} updated to ${newStatus}!\n\nSend WhatsApp notification to customer?`);
+            if (sendMsg) {
+                window.open(response.whatsappURL, '_blank');
+            }
+        } else {
+            alert(`✅ Order #${orderId} updated to ${newStatus}!${response.order.customer?.phone ? '\n\n📞 Customer has phone number but WhatsApp link not generated.' : '\n\n📞 No customer phone number available.'}`);
         }
+    } catch (error) {
+        console.error('Failed to update status:', error);
+        alert('Failed to update order status.');
     }
+}
 
     logout() {
         localStorage.removeItem('admin_token');
