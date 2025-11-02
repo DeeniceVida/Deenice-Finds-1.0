@@ -153,6 +153,11 @@ City: ${city}
     // 5. Create WhatsApp URL
     const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
     
+    saveOrderToHistory(cart, {
+    method: window.selectedDeliveryOption,
+    city: document.getElementById('user-city')?.value || ''
+});
+    
     window.open(whatsappURL, '_blank');
     
     // 🆕 Show confirmation message with pickup details
