@@ -258,150 +258,93 @@ function renderCart() {
     }
 
     // Only insert the form if it doesn't already exist in the DOM
-    if (!existingForm) {
-        const form = document.createElement('div');
-        form.className = 'premium-form';
-        form.innerHTML = `
-    <h3>👤 Your Details</h3>
-    <div class="form-group input-icon name">
-        <input type="text" 
-               id="user-name" 
-               class="premium-input" 
-               placeholder="Enter your full name" 
-               required 
-               pattern="[A-Za-z\\s]{2,}">
-    </div>
-    <div class="form-group input-icon city">
-        <input type="text" 
-               id="user-city" 
-               class="premium-input" 
-               placeholder="Enter your city/town" 
-               required 
-               pattern="[A-Za-z\\s]{2,}">
-    </div>
-    <div class="form-group input-icon phone">
-        <input type="tel" 
-               id="user-phone" 
-               class="premium-input" 
-               placeholder="Enter your WhatsApp number" 
-               required 
-               pattern="[0-9+\\s]{10,}">
-    </div>
-`;
-        list.insertAdjacentElement('afterend', form);
+if (!existingForm) {
+    const form = document.createElement('div');
+    form.className = 'premium-form';
+    form.innerHTML = `
+        <h3>👤 Your Details</h3>
+        <div class="form-group input-icon name">
+            <input type="text" 
+                   id="user-name" 
+                   class="premium-input" 
+                   placeholder="Enter your full name" 
+                   required 
+                   pattern="[A-Za-z\\s]{2,}">
+        </div>
+        <div class="form-group input-icon city">
+            <input type="text" 
+                   id="user-city" 
+                   class="premium-input" 
+                   placeholder="Enter your city/town" 
+                   required 
+                   pattern="[A-Za-z\\s]{2,}">
+        </div>
+        <div class="form-group input-icon phone">
+            <input type="tel" 
+                   id="user-phone" 
+                   class="premium-input" 
+                   placeholder="e.g., 254712345678" 
+                   required 
+                   pattern="[0-9]{10,12}">
+            <small style="display:block; color:#666; margin-top:5px; font-size:12px;">
+                Enter your WhatsApp number without + or 0 (e.g., 254712345678)
+            </small>
+        </div>
+    `;
+    list.insertAdjacentElement('afterend', form);
+    
+    // Update the form completion check to include phone
+    const nameInput = document.getElementById('user-name');
+    const cityInput = document.getElementById('user-city');
+    const phoneInput = document.getElementById('user-phone');
+    
+    function checkFormCompletion() {
+        const nameValue = nameInput.value.trim();
+        const cityValue = cityInput.value.trim();
+        const phoneValue = phoneInput.value.trim();
+        const deliveryOptions = document.getElementById('delivery-options');
         
-        // Now create and insert the delivery options AFTER the form
-        const deliveryOptions = document.createElement('div');
-        deliveryOptions.id = 'delivery-options';
-        deliveryOptions.className = 'delivery-options';
-        deliveryOptions.style.display = 'none'; // Hidden initially
-        deliveryOptions.innerHTML = `
-            <h3>🛒 Delivery Options</h3>
-            
-            <div class="delivery-option" onclick="selectDeliveryOption('delivery')">
-                <input type="radio" id="delivery-home" name="delivery" value="delivery">
-                <div class="delivery-label">
-                    <label for="delivery-home">
-                        <strong>🚚 Home Delivery</strong><br>
-                        <small>Get your order delivered to your address</small>
-                    </label>
-                </div>
-            </div>
-            
-            <div class="delivery-option" onclick="selectDeliveryOption('pickup')">
-                <input type="radio" id="pickup-shop" name="delivery" value="pickup">
-                <div class="delivery-label">
-                    <label for="pickup-shop">
-                        <strong>🏪 Pick Up in Shop</strong><br>
-                        <small>Collect your order from our store</small>
-                    </label>
-                </div>
-            </div>
-            
-            <!-- Pickup Information (shown when pickup is selected) -->
-            <div id="pickup-info" class="pickup-info">
-                <h4>📍 Store Pickup Information</h4>
-                
-                <div class="pickup-code" id="pickup-code">
-                    <!-- Unique code will be generated here -->
-                </div>
-                
-                <div class="shop-address">
-                    <strong>🏬 Our Store Location:</strong><br>
-                    Dynamic Mall, Shop ML 135, 3rd Floor<br>
-                    Along Tom Mboya Street<br>
-                    Behind The National Archives<br>
-                    Opposite AMBASSADEUR<br>
-                    Nairobi, Kenya
-                </div>
-                
-                <a href="https://maps.google.com/maps?q=Dynamic+Mall+Tom+Mboya+Street+Nairobi" 
-                   target="_blank" class="map-link">
-                   📍 Open in Google Maps
-                </a>
-                
-                <div class="instructions">
-                    <strong>📋 Pickup Instructions:</strong><br>
-                    1. Save or screenshot your unique pickup code above<br>
-                    2. Visit our store during business hours (Mon-Sat, 9AM-6PM)<br>
-                    3. Show your pickup code to our staff<br>
-                    4. Collect your order - no waiting!<br>
-                    <em>Please bring valid ID for verification</em>
-                </div>
-            </div>
-        `;
-        
-        // Insert delivery options after the form
-        form.insertAdjacentElement('afterend', deliveryOptions);
-        
-        // Add real-time validation to show delivery options when both fields are filled
-        const nameInput = document.getElementById('user-name');
-        const cityInput = document.getElementById('user-city');
-        
-        function checkFormCompletion() {
-            const nameValue = nameInput.value.trim();
-            const cityValue = cityInput.value.trim();
-            const deliveryOptions = document.getElementById('delivery-options');
-            
-            if (nameValue && cityValue && deliveryOptions) {
-                deliveryOptions.style.display = 'block';
-                deliveryOptions.classList.add('show');
-                // Auto-select home delivery by default
-                if (!window.deliveryOptionsInitialized) {
-                    setTimeout(() => {
-                        selectDeliveryOption('delivery');
-                        window.deliveryOptionsInitialized = true;
-                    }, 100);
-                }
-            } else if (deliveryOptions) {
-                deliveryOptions.style.display = 'none';
-                deliveryOptions.classList.remove('show');
+        // Require ALL three fields to show delivery options
+        if (nameValue && cityValue && phoneValue && deliveryOptions) {
+            deliveryOptions.style.display = 'block';
+            deliveryOptions.classList.add('show');
+            // Auto-select home delivery by default
+            if (!window.deliveryOptionsInitialized) {
+                setTimeout(() => {
+                    selectDeliveryOption('delivery');
+                    window.deliveryOptionsInitialized = true;
+                }, 100);
             }
+        } else if (deliveryOptions) {
+            deliveryOptions.style.display = 'none';
+            deliveryOptions.classList.remove('show');
         }
-        
-        // Add event listeners to both inputs
-        nameInput.addEventListener('input', checkFormCompletion);
-        cityInput.addEventListener('input', checkFormCompletion);
-        
-        // Also add validation feedback
-        const inputs = form.querySelectorAll('.premium-input');
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                if (this.validity.valid) {
-                    this.style.borderColor = 'rgba(34, 197, 94, 0.3)';
-                } else if (this.value.length > 0) {
-                    this.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                } else {
-                    this.style.borderColor = 'rgba(15, 20, 30, 0.1)';
-                }
-                // Also check form completion on each input
-                checkFormCompletion();
-            });
-        });
-        
-        // Initial check in case there are existing values
-        setTimeout(checkFormCompletion, 100);
     }
+    
+    // Add event listeners to ALL three inputs
+    nameInput.addEventListener('input', checkFormCompletion);
+    cityInput.addEventListener('input', checkFormCompletion);
+    phoneInput.addEventListener('input', checkFormCompletion);
+    
+    // Also add validation feedback for phone
+    const inputs = form.querySelectorAll('.premium-input');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.validity.valid) {
+                this.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+            } else if (this.value.length > 0) {
+                this.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            } else {
+                this.style.borderColor = 'rgba(15, 20, 30, 0.1)';
+            }
+            // Also check form completion on each input
+            checkFormCompletion();
+        });
+    });
+    
+    // Initial check in case there are existing values
+    setTimeout(checkFormCompletion, 100);
+}
     
     // --- Attach Event Listeners ---
     document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
