@@ -66,41 +66,40 @@ function removeItemFromCart(itemTitle) {
 function sendOrderViaWhatsApp() {
     const cart = getCart();
     
-    // 1. Get user details (with basic validation)
-    const name = document.getElementById('user-name') ? document.getElementById('user-name').value.trim() : '';
-    const city = document.getElementById('user-city') ? document.getElementById('user-city').value.trim() : '';
+    // 1. Get user details
+    const name = document.getElementById('user-name')?.value.trim() || '';
+    const city = document.getElementById('user-city')?.value.trim() || '';
 
     if (!name || !city) {
         alert("Please enter your Name and City before sending the order.");
         return;
     }
     
-    // 🆕 Check if delivery option is selected
     if (!window.selectedDeliveryOption) {
-        alert("Please select a delivery option (Home Delivery or Pick Up in Shop).");
+        alert("Please select a delivery option.");
         return;
     }
 
-    // 2. Build the order message
+    // 2. Create order first to get order ID
+    const orderId = saveOrderToHistory(cart, {
+        method: window.selectedDeliveryOption,
+        city: city,
+        customer: { name, city }
+    });
+
+    // 3. Build message with order ID
     let total = 0;
-    let message = `*✨ New Order from Deenice Finds!*
+    let message = `*✨ New Order from Deenice Finds!*\n\n`;
+    message += `*Order ID:* ${orderId}\n`;
+    message += `*Customer:* ${name}\n`;
+    message += `*City:* ${city}\n`;
+    message += `*Delivery:* ${window.selectedDeliveryOption === 'pickup' ? '🏪 Pick Up in Shop' : '🚚 Home Delivery'}\n`;
 
-*Customer Details:*
-Name: ${name}
-City: ${city}
-`;
-
-    // 🆕 Add delivery information
-    if (window.selectedDeliveryOption === 'pickup') {
-        message += `Delivery: 🏪 Pick Up in Shop\n`;
-        message += `Pickup Code: ${window.currentPickupCode}\n`;
-    } else {
-        message += `Delivery: 🚚 Home Delivery\n`;
+    if (window.selectedDeliveryOption === 'pickup' && window.currentPickupCode) {
+        message += `*Pickup Code:* ${window.currentPickupCode}\n`;
     }
 
-    message += `---
-*Order Items:*
-`;
+    message += `\n*Order Items:*\n`;
 
     cart.forEach((item, index) => {
         const itemTotal = item.price * item.qty;
@@ -111,61 +110,36 @@ City: ${city}
         if (item.size) details.push(`Size: ${item.size}`);
         if (item.model && item.model !== 'Standard') details.push(`Model: ${item.model}`);
 
-        message += `${index + 1}. ${item.title}
-   - Qty: ${item.qty}
-   - Price: ${item.currency} ${item.price.toLocaleString()}
-   - Specs: ${details.join(' / ')}
-   - Subtotal: ${item.currency} ${itemTotal.toLocaleString()}
-`;
+        message += `${index + 1}. ${item.title}\n`;
+        message += `   - Qty: ${item.qty}\n`;
+        message += `   - Price: ${item.currency} ${item.price.toLocaleString()}\n`;
+        if (details.length > 0) message += `   - Specs: ${details.join(' / ')}\n`;
+        message += `   - Subtotal: ${item.currency} ${itemTotal.toLocaleString()}\n\n`;
     });
 
-    message += `
----
-*Total Amount: ${cart[0].currency} ${total.toLocaleString()}*
-`;
+    message += `*Total Amount: ${cart[0]?.currency || 'KES'} ${total.toLocaleString()}*\n\n`;
+    message += `*Order Status:* 📝 Pending\n`;
+    message += `_We'll update you on WhatsApp when your order status changes._`;
 
-    // 🆕 Add pickup instructions if applicable
-    if (window.selectedDeliveryOption === 'pickup') {
-        message += `
-*🏪 PICKUP INSTRUCTIONS:*
-• Store: Dynamic Mall, Shop ML 135, 3rd Floor
-• Location: Tom Mboya Street, Behind National Archives
-• Hours: Monday-Saturday, 9AM-6PM
-• Bring: This pickup code and valid ID
-• Code: ${window.currentPickupCode}
-`;
-    }
-
-    // 3. Get WhatsApp Number from the global configuration object
+    // 4. Send via WhatsApp
     const config = window.DEENICE_CONFIG || {};
     let whatsappNumber = config.whatsappNumber;
 
     if (!whatsappNumber) {
-        alert("Error: WhatsApp number is not configured (check js/config.js).");
-        console.error("WhatsApp number is missing from DEENICE_CONFIG.");
+        alert("Error: WhatsApp number is not configured.");
         return;
     }
     
-    // 4. Clean the number and Encode the message
     whatsappNumber = whatsappNumber.replace('+', '');
     const encodedMessage = encodeURIComponent(message);
-    
-    // 5. Create WhatsApp URL
     const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-    
-    saveOrderToHistory(cart, {
-    method: window.selectedDeliveryOption,
-    city: document.getElementById('user-city')?.value || ''
-});
     
     window.open(whatsappURL, '_blank');
     
-    // 🆕 Show confirmation message with pickup details
-    if (window.selectedDeliveryOption === 'pickup') {
-        setTimeout(() => {
-            alert(`✅ Order sent successfully!\n\n📋 Your Pickup Code: ${window.currentPickupCode}\n\n📍 Store Location: Dynamic Mall, Shop ML 135, 3rd Floor\n⏰ Hours: Mon-Sat, 9AM-6PM\n\nPlease save your pickup code for collection.`);
-        }, 1000);
-    }
+    // 5. Show confirmation
+    setTimeout(() => {
+        alert(`✅ Order #${orderId} sent successfully!\n\n📋 Status: Pending\n\nWe'll notify you when your order status updates.`);
+    }, 1000);
 }
 
 // --- Cart Renderer (Modified to attach WhatsApp listener) ---
