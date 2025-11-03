@@ -1,26 +1,22 @@
 [
   {
     "id": "p1",
-    "title": "Magsafe Battery pack 10,000mAh",
-    "price": 3900,
-    "originalPrice": 5400,
+    "title": "Vacuum-Grip Magnetic Car Phone Mount",
+    "price": 1900,
+    "originalPrice": 4400,
     "currency": "KES",
-    "description": "Power your devices effortlessly with this Wholesale Mini Portable Power Bank. Designed for convenience and speed,this compact charger boasts a large 10,000mAh capacity to keep your phones, tablets, and devices running all day.This charger features Fast Charging technology and a versatile Type-C input interface for quick recharging of the power bank itself. The sleek design includes a prominent magnetic ring, indicating compatibility with popular magnetic wireless charging systems (like MagSafe), allowing you to snap it onto your phone for charging without cables.A built-in kickstand allows you to prop up your phone while charging, perfect for hands-free viewing during travel or at your desk.Key Features & Keywords: Capacity: 10000mAh, 10K mAh, Large Capacity Charging: Fast Charging, Wireless Charging, Magnetic, MagSafe-Compatible Design: Mini Portable, Compact, Kickstand, Customizable Logo Interface: Type-C Input, USB-C, Portable Charger",
+    "description": "Upgrade your driving stability with the Vacuum-Grip Magnetic Car Phone Mount, the ultimate solution for hands-free security. This premium accessory features a durable zinc-alloy construction and utilizes a powerful vacuum suction base to create an air-tight, unshakeable seal on your dashboard or windshield, guaranteeing zero slips even on rough roads. Coupled with a strong, universal magnetic ring, it ensures instant, secure attachment for any smartphone. The integrated 360° rotating gimbal allows you to effortlessly achieve the perfect viewing angle for GPS navigation and safe, clear calls, making it the most reliable and convenient car phone holder available.",
     "images": [
-      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg",
-      "https://i.postimg.cc/D03nz6zL/Screenshot-2025-10-15-201118.png",
-      "https://i.postimg.cc/RZpmt4Fx/image.png",
-      "https://i.postimg.cc/kgHr4s1R/image.png",
-      "https://i.postimg.cc/V6LXV9wM/image.png"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/Hecf0239f23be47d094f294c06442307cp_wglayf.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184011/H1308c6dc430442b4b7647110bb45fcedE_iws4dw.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184011/H14fe408ee8ca40f68a4a4b4ef291b571P_evbsom.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/H9f40dad94df24db48620ba1da47ac688t_x5mahn.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184047/H990876ba26a649b1b7f298300cbd3f01r_wsl14b.jpg"
     ],
     "colors": [
       {
-        "name": "White",
-        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
-      },
-      {
         "name": "Black",
-        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/Hecf0239f23be47d094f294c06442307cp_wglayf.jpg"
       }
     ],
     "sku": "PS-A156",
