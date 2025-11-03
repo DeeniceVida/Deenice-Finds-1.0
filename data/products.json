@@ -99,49 +99,45 @@
 },
   {
     "id": "p4",
-    "title": "Chrome Heart Beanie",
-    "originalPrice": 1900,
-    "price": 1400,
+    "title": "Chrome Heart Blue Light Blocking Eyeglasses",
+    "originalPrice": 3700,
+    "price": 2600,
     "currency": "KES",
-    "description": "Stay warm in rebellious style with this classic Black Knit Beanie featuring a bold White Embroidered Logo that echoes the iconic Chrome Hearts style.Crafted from a soft, stretchable ribbed knit material, this cuffed beanie (or skullcap) provides ultimate warmth and a comfortable, unisex fit. The striking contrast of the black hat and the detailed white cross graphic instantly adds a streetwear edge to any outfit, whether you're hitting the slopes or navigating the city.",
+    "description": "Elevate your style and protect your eyes with our collection of Luxury Fashion Eyeglasses, featuring sleek, Chrome Hearts inspired detailing and multiple frame options including crystal clear, classic black, and stylish amber. These versatile frames are fitted with high-quality blue light blocking lenses to reduce digital eye strain, making them perfect for long hours in front of screens, whether for work or gaming. Crafted for universal fit, these unisex spectacle frames blend sophisticated design with essential eye protection, offering a premium and durable accessory that keeps you looking sharp while ensuring maximum visual comfort.",
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587467/O1CN01AEPiFT2G1tx27Tgm6__2213981258956-0-cib_1_o4bgdm.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587468/O1CN01qyKPVF2G1tx7obRRo__2213981258956-0-cib_knh53q.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587472/O1CN01SjTbKy2G1tx7ocNfp__2213981258956-0-cib_1_je68yd.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587467/O1CN01C151fx2G1twzv5hqn__2213981258956-0-cib_kdr3i8.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587466/O1CN01cQUWc82G1tx55CBna__2213981258956-0-cib_yq2qlm.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224718_g11wfh.png",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224334_hcizi9.png",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199295/Screenshot_2025-11-03_224437_zd57zv.png",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224621_szcm2l.png",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198433/O1CN017jq4Gj1d4PHyPG4RP__2214783223682-0-cib_lh5oec.jpg"
     ],
     "colors": [
       {
         "name": "H1",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587464/O1CN01Syf7ht2G1tx66cSKR__2213981258956-0-cib_kquhcn.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198433/O1CN017jq4Gj1d4PHyPG4RP__2214783223682-0-cib_lh5oec.jpg"
       },
       {
         "name": "H2",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761588466/O1CN01oWHH9l2G1tx7p9c4D__2213981258956-0-cib_1_vypkhx.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198432/O1CN019mzREU1d4PHsqD38t__2214783223682-0-cib_nkgfsy.jpg"
       },
       {
         "name": "H3",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587465/O1CN01b1r7At2G1tx7pEiP6__2213981258956-0-cib_cwtpwy.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198432/O1CN01Wn369Z1d4PHuz0UcR__2214783223682-0-cib_a5jvft.jpg"
       },
       {
         "name": "H4",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587465/O1CN01Wg1AK22G1tx9SrQ0e__2213981258956-0-cib_oyxsnl.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198432/O1CN01Zhti391d4PHw50oZr__2214783223682-0-cib_c3unpd.jpg"
       },
       {
         "name": "H5",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587465/O1CN01xH9WCV2G1tx9SvFBj__2213981258956-0-cib_ue9bff.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198436/O1CN01fLhfJE1d4PHw4xzhq__2214783223682-0-cib_sbqokv.jpg"
       },
       {
         "name": "H6",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587466/O1CN01U7SxZZ2G1tx7pHjpn__2213981258956-0-cib_wagzwa.jpg"
-      },
-      {
-        "name": "H7",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761587466/O1CN01HgMUtm2G1uCXfOkAW__2213981258956-0-cib_jjocg4.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199660/O1CN01fpoNbg1d4PHuGtUpw__2214783223682-0-cib_1_m4kfd5.jpg"
       }
     ],
-    "sku": "Beanie",
+    "sku": "glasses",
     "stock": 13,
     "category": "Wearables"
   },
