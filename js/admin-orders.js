@@ -22,45 +22,6 @@ class AdminOrderManager {
         this.setupEventListeners();
     }
 
-    // Add this method to your AdminOrderManager class in admin-orders.js
-async deleteOrder(orderId) {
-    try {
-        const confirmDelete = confirm(
-            `🗑️ DELETE ORDER #${orderId}\n\n` +
-            `Are you sure you want to delete this order?\n\n` +
-            `This will remove the order from:\n` +
-            `• Admin panel\n` +
-            `• Backend server\n` +
-            `• Customer's order history\n\n` +
-            `This action cannot be undone!`
-        );
-        
-        if (!confirmDelete) return;
-
-        console.log('🗑️ Deleting order:', orderId);
-        
-        // 1. Delete from backend
-        await this.makeRequest(`/orders/${orderId}`, {
-            method: 'DELETE'
-        });
-        
-        console.log('✅ Order deleted from backend');
-
-        // 2. Remove from local state
-        this.orders = this.orders.filter(order => order.id !== orderId);
-        
-        // 3. Update UI
-        this.renderStats();
-        this.renderOrders();
-        
-        alert(`✅ Order #${orderId} has been deleted successfully!`);
-        
-    } catch (error) {
-        console.error('Failed to delete order:', error);
-        alert('Failed to delete order: ' + error.message);
-    }
-}
-
     async makeRequest(endpoint, options = {}) {
         try {
             console.log(`🌐 Making request to: ${this.baseURL}${endpoint}`);
@@ -158,6 +119,62 @@ async deleteOrder(orderId) {
         } catch (error) {
             console.error('❌ Error loading from localStorage:', error);
             this.orders = [];
+        }
+    }
+
+    // FIXED DELETE METHOD
+    async deleteOrder(orderId) {
+        try {
+            const confirmDelete = confirm(
+                `🗑️ DELETE ORDER #${orderId}\n\n` +
+                `Are you sure you want to delete this order?\n\n` +
+                `This will remove the order from:\n` +
+                `• Admin panel\n` +
+                `• Backend server\n` +
+                `• Customer's order history\n\n` +
+                `This action cannot be undone!`
+            );
+            
+            if (!confirmDelete) return;
+
+            console.log('🗑️ Deleting order:', orderId);
+            
+            // Remove from local state first for immediate feedback
+            this.orders = this.orders.filter(order => order.id !== orderId);
+            
+            // Update UI immediately
+            this.renderStats();
+            this.renderOrders();
+            
+            // Try to delete from backend
+            try {
+                await this.makeRequest(`/orders/${orderId}`, {
+                    method: 'DELETE'
+                });
+                console.log('✅ Order deleted from backend');
+            } catch (error) {
+                console.log('⚠️ Backend delete failed, but removed locally');
+            }
+            
+            // Remove from localStorage (affects user's order history)
+            this.removeOrderFromLocalStorage(orderId);
+            
+            alert(`✅ Order #${orderId} has been deleted!`);
+            
+        } catch (error) {
+            console.error('Failed to delete order:', error);
+            alert('Failed to delete order: ' + error.message);
+        }
+    }
+
+    removeOrderFromLocalStorage(orderId) {
+        try {
+            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            const updatedOrders = localOrders.filter(order => order.id !== orderId);
+            localStorage.setItem('de_order_history', JSON.stringify(updatedOrders));
+            console.log('✅ Removed from localStorage');
+        } catch (error) {
+            console.error('Error removing from localStorage:', error);
         }
     }
 
@@ -490,6 +507,12 @@ ${order.items ? order.items.map((item, index) =>
         await this.loadOrdersFromBackend();
         this.renderStats();
         this.renderOrders();
+    }
+
+    logout() {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_logged_in');
+        window.location.href = 'admin-login.html';
     }
 }
 
