@@ -11,8 +11,22 @@ class InventoryManager {
         this.setupModalHandlers();
     }
 
+    // 🟢 ENHANCED: Load products with persistence
     async loadProducts() {
         try {
+            console.log('📥 Loading products...');
+            
+            // Try to load from localStorage first (admin modifications)
+            const savedProducts = localStorage.getItem('inventory_products');
+            
+            if (savedProducts) {
+                this.products = JSON.parse(savedProducts);
+                console.log('✅ Loaded products from localStorage:', this.products.length);
+                return;
+            }
+            
+            // Fallback to original JSON file
+            console.log('📥 No saved products, loading from JSON file...');
             const response = await fetch('data/products.json');
             if (!response.ok) {
                 throw new Error('Failed to load products');
@@ -33,10 +47,98 @@ class InventoryManager {
                 originalData: product
             }));
             
-            console.log('Products loaded:', this.products.length);
+            console.log('✅ Loaded products from JSON:', this.products.length);
+            
+            // Save initial load to localStorage
+            await this.saveToBackend();
+            
         } catch (error) {
             console.error('Error loading products:', error);
             this.showError('Failed to load products. Please check the console for details.');
+            this.products = [];
+        }
+    }
+
+    // 🟢 ENHANCED: Save inventory changes persistently
+    async saveToBackend() {
+        try {
+            console.log('💾 Saving inventory changes...');
+            
+            // Save to localStorage for immediate access
+            localStorage.setItem('inventory_products', JSON.stringify(this.products));
+            
+            // Also save to a backup in case localStorage gets cleared
+            localStorage.setItem('inventory_last_updated', new Date().toISOString());
+            
+            console.log('✅ Inventory saved successfully:', this.products.length, 'products');
+            
+            // Update the main products.json in localStorage for the storefront
+            this.updateStorefrontProducts();
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Error saving inventory:', error);
+            throw error;
+        }
+    }
+
+    // 🟢 NEW: Update storefront products with current inventory
+    updateStorefrontProducts() {
+        try {
+            // Create storefront-compatible product data
+            const storefrontProducts = this.products.map(product => {
+                const totalStock = product.colorStock ? 
+                    Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : 
+                    product.stock || 0;
+                    
+                return {
+                    id: product.id,
+                    title: product.name,
+                    price: product.price,
+                    originalPrice: product.originalData?.originalPrice,
+                    currency: product.originalData?.currency || 'KES',
+                    description: product.description,
+                    images: product.originalData?.images || [product.image],
+                    colors: product.colors,
+                    sizes: product.originalData?.sizes,
+                    models: product.originalData?.models,
+                    specs: product.originalData?.specs,
+                    available_status: product.originalData?.available_status,
+                    sku: product.originalData?.sku,
+                    stock: totalStock, // Use calculated total stock
+                    category: product.category,
+                    colorStock: product.colorStock,
+                    availableColors: product.availableColors
+                };
+            });
+            
+            // Save to localStorage for storefront to use
+            localStorage.setItem('storefront_products', JSON.stringify(storefrontProducts));
+            localStorage.setItem('storefront_products_updated', new Date().toISOString());
+            
+            console.log('🔄 Storefront products updated:', storefrontProducts.length);
+            
+        } catch (error) {
+            console.error('Error updating storefront products:', error);
+        }
+    }
+
+    // 🟢 NEW: Force refresh from source
+    async refreshFromSource() {
+        try {
+            if (confirm('This will reload products from the original JSON file and overwrite any changes. Continue?')) {
+                // Clear saved products
+                localStorage.removeItem('inventory_products');
+                localStorage.removeItem('storefront_products');
+                
+                // Reload from JSON
+                await this.loadProducts();
+                this.renderInventory();
+                this.showSuccess('Products refreshed from source!');
+            }
+        } catch (error) {
+            console.error('Error refreshing from source:', error);
+            this.showError('Failed to refresh products.');
         }
     }
 
@@ -147,6 +249,14 @@ class InventoryManager {
         if (addBtn) {
             addBtn.addEventListener('click', () => {
                 this.openModal();
+            });
+        }
+
+        // 🟢 NEW: Refresh products button
+        const refreshBtn = document.getElementById('refreshProductsBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.refreshFromSource();
             });
         }
 
@@ -562,11 +672,6 @@ class InventoryManager {
         filtered.forEach(product => {
             tbody.appendChild(this.createProductRow(product));
         });
-    }
-
-    async saveToBackend() {
-        console.log('Current products:', this.products);
-        localStorage.setItem('inventory_products', JSON.stringify(this.products));
     }
 
     showError(message) {
