@@ -17,6 +17,7 @@
             justify-content: space-between;
             margin-bottom: 20px;
             gap: 15px;
+            flex-wrap: wrap;
         }
 
         .inventory-table-container {
@@ -24,11 +25,13 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            -webkit-overflow-scrolling: touch;
         }
 
         #inventoryTable {
             width: 100%;
             border-collapse: collapse;
+            min-width: 800px;
         }
 
         #inventoryTable th,
@@ -76,14 +79,16 @@
         .actions {
             display: flex;
             gap: 5px;
+            flex-wrap: wrap;
         }
 
-        .edit-btn, .delete-btn {
-            padding: 6px 12px;
+        .edit-btn, .delete-btn, .colors-btn {
+            padding: 6px 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
+            white-space: nowrap;
         }
 
         .edit-btn {
@@ -93,6 +98,15 @@
 
         .edit-btn:hover {
             background-color: #0056b3;
+        }
+
+        .colors-btn {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .colors-btn:hover {
+            background-color: #138496;
         }
 
         .delete-btn {
@@ -112,6 +126,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            white-space: nowrap;
         }
 
         #addProductBtn:hover {
@@ -123,6 +138,8 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             width: 300px;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         /* Modal Styles */
@@ -135,16 +152,18 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            overflow: auto;
         }
 
         .modal-content {
             background-color: white;
             margin: 5% auto;
-            padding: 30px;
+            padding: 20px;
             border-radius: 8px;
             width: 90%;
             max-width: 500px;
             position: relative;
+            box-sizing: border-box;
         }
 
         .close {
@@ -155,6 +174,7 @@
             font-weight: bold;
             cursor: pointer;
             color: #aaa;
+            line-height: 1;
         }
 
         .close:hover {
@@ -162,7 +182,7 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .form-group label {
@@ -180,6 +200,7 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
+            box-sizing: border-box;
         }
 
         .form-group textarea {
@@ -209,273 +230,383 @@
             margin-bottom: 30px;
             padding-bottom: 15px;
             border-bottom: 2px solid #eee;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .admin-nav a {
-            margin-left: 20px;
             text-decoration: none;
             color: #333;
             padding: 8px 16px;
             border-radius: 4px;
+            white-space: nowrap;
         }
 
         .admin-nav a.active {
             background-color: #007bff;
             color: white;
         }
-        /* Add this to your existing style section in admin-inventory.html */
 
-/* Color Management Styles */
-.color-management {
-    max-width: 100%;
-}
+        /* Color Management Styles */
+        .color-management {
+            max-width: 100%;
+        }
 
-.colors-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-    margin: 20px 0;
-    max-height: 400px;
-    overflow-y: auto;
-    padding: 10px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-}
+        .colors-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
 
-.color-option {
-    display: flex;
-    align-items: center;
-}
+        .color-option {
+            display: flex;
+            align-items: center;
+        }
 
-.color-checkbox {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    width: 100%;
-}
+        .color-checkbox {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            width: 100%;
+        }
 
-.color-checkbox input[type="checkbox"] {
-    margin-right: 10px;
-}
+        .color-checkbox input[type="checkbox"] {
+            margin-right: 10px;
+        }
 
-.color-preview {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    width: 100%;
-}
+        .color-preview {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
 
-.color-checkbox input[type="checkbox"]:checked + .color-preview {
-    border-color: #007bff;
-    background-color: #f8f9ff;
-}
+        .color-checkbox input[type="checkbox"]:checked + .color-preview {
+            border-color: #007bff;
+            background-color: #f8f9ff;
+        }
 
-.color-thumb {
-    width: 30px;
-    height: 30px;
-    object-fit: cover;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
+        .color-thumb {
+            width: 30px;
+            height: 30px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
 
-.color-name {
-    font-size: 0.9em;
-    font-weight: 500;
-    flex: 1;
-}
+        .color-name {
+            font-size: 0.9em;
+            font-weight: 500;
+            flex: 1;
+        }
 
-.color-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
+        .color-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            flex-wrap: wrap;
+        }
 
-.color-status {
-    padding: 4px 8px;
-    background: #e9ecef;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-    color: #495057;
-}
+        .color-status {
+            padding: 4px 8px;
+            background: #e9ecef;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #495057;
+        }
 
-.colors-btn {
-    background-color: #6f42c1;
-    color: white;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-}
-
-.colors-btn:hover {
-    background-color: #5a32a3;
-}
-
-/* Update table to accommodate new column */
-#inventoryTable th:nth-child(8),
-#inventoryTable td:nth-child(8) {
-    text-align: center;
-}
         /* Enhanced Color Stock Management Styles */
-.stock-summary {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
+        .stock-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-.total-stock {
-    font-size: 1.1em;
-}
+        .total-stock {
+            font-size: 1.1em;
+        }
 
-.stock-total {
-    font-size: 1.3em;
-    font-weight: bold;
-    color: #007bff;
-}
+        .stock-total {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #007bff;
+        }
 
-.stock-controls {
-    display: flex;
-    gap: 10px;
-}
+        .stock-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 0.85em;
-}
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
 
-.btn-outline {
-    background: transparent;
-    border: 1px solid #007bff;
-    color: #007bff;
-}
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
 
-.btn-outline:hover {
-    background: #007bff;
-    color: white;
-}
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
 
-.colors-stock-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin: 20px 0;
-    max-height: 500px;
-    overflow-y: auto;
-    padding: 10px;
-}
+        .btn-primary:hover {
+            background: #0056b3;
+        }
 
-.color-stock-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
 
-.color-stock-item.disabled {
-    opacity: 0.6;
-    background-color: #f8f9fa;
-}
+        .btn-secondary:hover {
+            background: #545b62;
+        }
 
-.color-stock-item:hover {
-    border-color: #007bff;
-    background-color: #f8f9ff;
-}
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
 
-.color-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-}
+        .btn-success:hover {
+            background: #218838;
+        }
 
-.stock-control {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #007bff;
+            color: #007bff;
+        }
 
-.availability-toggle {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.9em;
-    color: #666;
-}
+        .btn-outline:hover {
+            background: #007bff;
+            color: white;
+        }
 
-.stock-input-group {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
+        .colors-stock-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 10px;
+        }
 
-.stock-btn {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #ddd;
-    background: white;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
+        .color-stock-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-.stock-btn:hover {
-    background: #f8f9fa;
-}
+        .color-stock-item.disabled {
+            opacity: 0.6;
+            background-color: #f8f9fa;
+        }
 
-.stock-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
+        .color-stock-item:hover {
+            border-color: #007bff;
+            background-color: #f8f9ff;
+        }
 
-.stock-input {
-    width: 60px;
-    height: 30px;
-    text-align: center;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.9em;
-}
+        .color-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 150px;
+        }
 
-.stock-display {
-    font-size: 0.9em;
-    color: #666;
-    min-width: 60px;
-    text-align: center;
-}
+        .stock-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
 
-/* Update the colors button style */
-.colors-btn {
-    background-color: #17a2b8;
-    color: white;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-}
+        .availability-toggle {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
 
-.colors-btn:hover {
-    background-color: #138496;
-}
+        .stock-input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stock-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .stock-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .stock-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .stock-input {
+            width: 60px;
+            height: 30px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .stock-display {
+            font-size: 0.9em;
+            color: #666;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Update table to accommodate new column */
+        #inventoryTable th:nth-child(8),
+        #inventoryTable td:nth-child(8) {
+            text-align: center;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 10px;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .admin-nav {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .inventory-controls {
+                flex-direction: column;
+            }
+
+            #searchInventory {
+                width: 100%;
+            }
+
+            .modal-content {
+                margin: 10% auto;
+                padding: 15px;
+                width: 95%;
+            }
+
+            .color-stock-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stock-control {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .stock-summary {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stock-controls {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .actions {
+                justify-content: center;
+            }
+
+            .color-actions {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #inventoryTable {
+                font-size: 0.9em;
+            }
+
+            #inventoryTable th,
+            #inventoryTable td {
+                padding: 8px 4px;
+            }
+
+            .edit-btn, .delete-btn, .colors-btn {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+
+            .modal-content {
+                margin: 5% auto;
+                padding: 10px;
+            }
+
+            .stock-control {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -495,25 +626,25 @@
         </div>
 
         <div class="inventory-table-container">
-    <table id="inventoryTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th>Colors</th> <!-- This is the NEW header -->
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="inventoryBody">
-            <!-- Inventory will be loaded here dynamically -->
-        </tbody>
-    </table>
-</div>
+            <table id="inventoryTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Colors</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryBody">
+                    <!-- Inventory will be loaded here dynamically -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Add/Edit Product Modal -->
@@ -528,11 +659,11 @@
                     <input type="text" id="productName" required>
                 </div>
                 <div class="form-group">
-                    <label for="productPrice">Price ($) *</label>
+                    <label for="productPrice">Price (KES) *</label>
                     <input type="number" id="productPrice" step="0.01" min="0" required>
                 </div>
                 <div class="form-group">
-                    <label for="productStock">Stock Quantity *</label>
+                    <label for="productStock">Total Stock Quantity *</label>
                     <input type="number" id="productStock" min="0" required>
                 </div>
                 <div class="form-group">
@@ -549,6 +680,17 @@
                 </div>
                 <button type="submit">Save Product</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Color Stock Management Modal -->
+    <div id="colorsModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close">&times;</span>
+            <h2>Manage Color Stock</h2>
+            <div id="colorsModalContent">
+                <!-- Color stock management content will be loaded here -->
+            </div>
         </div>
     </div>
 
