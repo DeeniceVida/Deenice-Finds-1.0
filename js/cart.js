@@ -74,7 +74,10 @@ function renderCart() {
     if (cart.length === 0) {
         list.innerHTML = '<p style="text-align: center; padding: 40px; color: #666;">Your cart is empty.</p>';
         summaryContainer.innerHTML = '';
-        if (btn) btn.style.display = 'none';
+        if (btn) {
+            btn.style.display = 'none';
+            btn.disabled = true;
+        }
         if (deliveryOptions) deliveryOptions.style.display = 'none';
         
         // Hide form if it exists
@@ -98,35 +101,37 @@ function renderCart() {
         </div>
     `;
 
-    // Build the cart HTML
+    // Build the cart HTML with proper image sizing
     let html = `
         <div class="cart-items-container">
-            <ul class="cart-items-list">
-                ${cart.map(item => `
-                    <li class="cart-item" data-product-title="${item.title}">
-                        <img src="${item.img || 'https://via.placeholder.com/80'}" alt="${item.title}" class="cart-item-image" />
-                        <div class="cart-item-details">
-                            <strong class="cart-item-title">${item.title}</strong>
-                            <div class="cart-item-specs">
-                                ${item.color || ''} 
-                                ${item.size ? `/ ${item.size}` : ''}
-                                ${item.model && item.model !== 'Standard' ? `/ ${item.model}` : ''}
-                            </div>
-                            <div class="cart-item-price">
-                                ${item.qty} × ${currency} ${item.price.toLocaleString()}
-                            </div>
+            ${cart.map(item => `
+                <div class="cart-item" data-product-title="${item.title}">
+                    <img src="${item.img || 'https://via.placeholder.com/80'}" alt="${item.title}" class="cart-item-image" 
+                         onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'" />
+                    <div class="cart-item-details">
+                        <strong class="cart-item-title">${item.title}</strong>
+                        <div class="cart-item-specs">
+                            ${item.color || ''} 
+                            ${item.size ? `/ ${item.size}` : ''}
+                            ${item.model && item.model !== 'Standard' ? `/ ${item.model}` : ''}
                         </div>
-                        <button class="remove-from-cart-btn" data-item-title="${item.title}">
-                            Remove
-                        </button>
-                    </li>
-                `).join('')}
-            </ul>
+                        <div class="cart-item-price">
+                            ${item.qty} × ${currency} ${item.price.toLocaleString()}
+                        </div>
+                    </div>
+                    <button class="remove-from-cart-btn" data-item-title="${item.title}">
+                        Remove
+                    </button>
+                </div>
+            `).join('')}
         </div>
     `;
 
     list.innerHTML = html;
-    if (btn) btn.style.display = 'block';
+    if (btn) {
+        btn.style.display = 'block';
+        btn.disabled = true; // Disable until form is filled
+    }
 
     // Show delivery options
     if (deliveryOptions) {
@@ -142,30 +147,27 @@ function renderCart() {
         form.className = 'premium-form';
         form.innerHTML = `
             <h3>👤 Your Details</h3>
-            <div class="form-group input-icon name">
+            <div class="form-group">
                 <input type="text" 
                        id="user-name" 
                        class="premium-input" 
                        placeholder="Enter your full name" 
-                       required 
-                       pattern="[A-Za-z\\s]{2,}">
+                       required>
             </div>
-            <div class="form-group input-icon city">
+            <div class="form-group">
                 <input type="text" 
                        id="user-city" 
                        class="premium-input" 
                        placeholder="Enter your city/town" 
-                       required 
-                       pattern="[A-Za-z\\s]{2,}">
+                       required>
             </div>
-            <div class="form-group input-icon phone">
+            <div class="form-group">
                 <input type="tel" 
                        id="user-phone" 
                        class="premium-input" 
                        placeholder="e.g., 254712345678" 
-                       required 
-                       pattern="[0-9]{10,12}">
-                <small style="display:block; color:#666; margin-top:5px; font-size:12px;">
+                       required>
+                <small style="display:block; color:#fff; margin-top:5px; font-size:12px; opacity:0.8;">
                     Enter your WhatsApp number without + or 0 (e.g., 254712345678)
                 </small>
             </div>
@@ -207,21 +209,6 @@ function renderCart() {
         nameInput.addEventListener('input', checkFormCompletion);
         cityInput.addEventListener('input', checkFormCompletion);
         phoneInput.addEventListener('input', checkFormCompletion);
-        
-        // Also add validation feedback
-        const inputs = form.querySelectorAll('.premium-input');
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                if (this.validity.valid) {
-                    this.style.borderColor = 'rgba(34, 197, 94, 0.3)';
-                } else if (this.value.length > 0) {
-                    this.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                } else {
-                    this.style.borderColor = 'rgba(15, 20, 30, 0.1)';
-                }
-                checkFormCompletion();
-            });
-        });
         
         // Initial check
         setTimeout(checkFormCompletion, 100);
@@ -270,8 +257,6 @@ function renderCart() {
     // Attach the WhatsApp logic to the button
     if (btn) {
         btn.onclick = sendOrderViaWhatsApp;
-        // Initially disable the button until form is filled
-        btn.disabled = true;
     }
 
     // Auto-select delivery option if not already selected
@@ -280,7 +265,7 @@ function renderCart() {
     }
 }
 
-// 🚀 WhatsApp Order Sender (keep the fixed version from previous response)
+// 🚀 WhatsApp Order Sender
 async function sendOrderViaWhatsApp() {
     const cart = getCart();
     
@@ -407,11 +392,15 @@ async function sendOrderViaWhatsApp() {
             );
             
             if (manualSend) {
-                navigator.clipboard.writeText(message).then(() => {
-                    alert("✅ Order message copied to clipboard!\n\n📱 Now open WhatsApp and send it to Deenice Finds.");
-                }).catch(() => {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(message).then(() => {
+                        alert("✅ Order message copied to clipboard!\n\n📱 Now open WhatsApp and send it to Deenice Finds.");
+                    }).catch(() => {
+                        prompt("📋 Copy this order message to WhatsApp:", message);
+                    });
+                } else {
                     prompt("📋 Copy this order message to WhatsApp:", message);
-                });
+                }
             }
         }
     }, 2000);
@@ -426,7 +415,6 @@ async function sendOrderViaWhatsApp() {
     }, 500);
 }
 
-// Keep the saveOrderToHistory function from previous response
 async function saveOrderToHistory(cart, deliveryInfo) {
     const orderData = {
         items: [...cart],
