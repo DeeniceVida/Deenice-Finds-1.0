@@ -50,79 +50,71 @@ class AdminOrderManager {
         try {
             console.log('📥 Loading orders from backend...');
             const data = await this.makeRequest('/orders');
-            this.orders = data.orders || [];
+            
+            // Handle different response structures
+            if (data.orders) {
+                this.orders = data.orders;
+            } else if (Array.isArray(data)) {
+                this.orders = data;
+            } else {
+                this.orders = [];
+            }
+            
             console.log('✅ Backend orders loaded:', this.orders.length);
+            console.log('📋 Orders data:', this.orders);
+            
         } catch (error) {
             console.error('❌ Failed to load orders from backend:', error);
-            alert('Failed to load orders. Please check your connection.');
-            this.orders = [];
+            
+            // Fallback: Try to load from localStorage as backup
+            try {
+                const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+                this.orders = localOrders;
+                console.log('🔄 Using localStorage orders as fallback:', this.orders.length);
+            } catch (fallbackError) {
+                console.error('❌ Fallback also failed:', fallbackError);
+                this.orders = [];
+            }
+            
+            alert('Failed to load orders from backend. Using local data.');
         }
     }
 
     async updateStatus(orderId, newStatus) {
         try {
             console.log('🔄 Updating order status:', orderId, newStatus);
+            
+            // Update in backend
             const response = await this.makeRequest(`/orders/${orderId}/status`, {
                 method: 'PUT',
                 body: JSON.stringify({ status: newStatus })
             });
             
+            // Reload orders to get fresh data
             await this.loadOrdersFromBackend();
             this.renderStats();
             this.renderOrders();
             
             console.log('📱 Full server response:', response);
-            console.log('📞 Customer phone:', response.order.customer?.phone);
-            console.log('🔗 WhatsApp URL:', response.whatsappURL);
+            
+            // Find the updated order
+            const updatedOrder = this.orders.find(order => order.id === orderId);
             
             // Show WhatsApp notification option
-            if (response.whatsappURL) {
-                console.log('✅ WhatsApp URL available, showing confirm dialog');
+            if (updatedOrder && updatedOrder.customer?.phone) {
+                console.log('✅ Customer phone available, showing confirm dialog');
                 const sendMsg = confirm(
                     `✅ Order #${orderId} updated to ${newStatus}!\n\n` +
-                    `Customer: ${response.order.customer?.name || 'N/A'}\n` +
-                    `Phone: ${response.order.customer?.phone || 'No phone'}\n\n` +
+                    `Customer: ${updatedOrder.customer?.name || 'N/A'}\n` +
+                    `Phone: ${updatedOrder.customer?.phone || 'No phone'}\n\n` +
                     `Send WhatsApp notification to customer?`
                 );
                 
                 if (sendMsg) {
-                    console.log('🔄 Opening WhatsApp URL:', response.whatsappURL);
-                    
-                    // iOS-Compatible WhatsApp Opening
-                    setTimeout(() => {
-                        // Use window.location for better iOS compatibility
-                        window.location.href = response.whatsappURL;
-                    }, 100);
-                    
-                    // Fallback for blocked popups
-                    setTimeout(() => {
-                        if (window.location.href.indexOf('whatsapp') === -1) {
-                            const manualOpen = confirm(
-                                "WhatsApp didn't open automatically.\n\n" +
-                                "Click OK to copy the WhatsApp link and open it manually."
-                            );
-                            if (manualOpen) {
-                                navigator.clipboard.writeText(response.whatsappURL).then(() => {
-                                    alert("📱 WhatsApp link copied! Please paste it in your browser to send the notification.");
-                                });
-                            }
-                        }
-                    }, 2000);
+                    this.sendWhatsAppNotification(updatedOrder, newStatus);
                 }
             } else {
-                console.log('❌ No WhatsApp URL in response');
-                let alertMessage = `✅ Order #${orderId} updated to ${newStatus}!`;
-                
-                if (response.order.customer?.phone) {
-                    alertMessage += `\n\n📞 Customer phone: ${response.order.customer.phone}`;
-                    alertMessage += `\n❓ Phone available but no WhatsApp link was generated.`;
-                    alertMessage += `\n🔍 Check server logs for details.`;
-                } else {
-                    alertMessage += `\n\n📞 No customer phone number provided.`;
-                    alertMessage += `\n💡 Customers need to enter their WhatsApp number during checkout.`;
-                }
-                
-                alert(alertMessage);
+                alert(`✅ Order #${orderId} updated to ${newStatus}!`);
             }
         } catch (error) {
             console.error('Failed to update status:', error);
@@ -130,50 +122,98 @@ class AdminOrderManager {
         }
     }
 
-    async deleteOrder(orderId) {
-    try {
-        const confirmDelete = confirm(
-            `🗑️ DELETE ORDER #${orderId}\n\n` +
-            `Are you sure you want to delete this order?\n\n` +
-            `This will remove the order from:\n` +
-            `• Admin panel\n` +
-            `• Backend server memory\n` +
-            `• Customer's order history\n\n` +
-            `This action cannot be undone!`
-        );
+    sendWhatsAppNotification(order, newStatus) {
+        const config = window.DEENICE_CONFIG || {};
+        const whatsappNumber = config.whatsappNumber ? config.whatsappNumber.replace('+', '') : '';
         
-        if (!confirmDelete) return;
-
-        console.log('🗑️ Deleting order from backend:', orderId);
-        
-        // 1. Call backend API to delete from server memory
-        await this.makeRequest(`/orders/${orderId}`, {
-            method: 'DELETE'
-        });
-        
-        console.log('✅ Order deleted from backend');
-
-        // 2. Remove from frontend memory
-        const orderIndex = this.orders.findIndex(o => o.id === orderId);
-        if (orderIndex > -1) {
-            this.orders.splice(orderIndex, 1);
-            console.log('✅ Removed from frontend memory');
+        if (!whatsappNumber) {
+            alert('WhatsApp number not configured in DEENICE_CONFIG');
+            return;
         }
 
-        // 3. Remove from ALL localStorage instances
-        this.removeOrderFromAllClients(orderId);
+        const statusMessages = {
+            'processing': `🔄 Your order #${order.id} is now being processed. We'll update you when it's ready!`,
+            'completed': `✅ Your order #${order.id} has been completed! ${order.delivery?.method === 'pickup' ? 'Ready for pickup!' : 'On its way to you!'}`,
+            'cancelled': `❌ Your order #${order.id} has been cancelled. Contact us for details.`
+        };
 
-        // 4. Update the UI
-        this.renderStats();
-        this.renderOrders();
+        const message = statusMessages[newStatus] || 
+                       `📢 Update on your order #${order.id}: Status changed to ${newStatus}`;
+
+        const customerPhone = order.customer?.phone;
+        if (!customerPhone) {
+            alert('No customer phone number available for WhatsApp notification.');
+            return;
+        }
+
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappURL = `https://wa.me/${customerPhone}?text=${encodedMessage}`;
         
-        alert(`✅ Order #${orderId} has been deleted successfully!`);
+        console.log('🔄 Opening WhatsApp URL:', whatsappURL);
         
-    } catch (error) {
-        console.error('Failed to delete order:', error);
-        alert('Failed to delete order: ' + error.message);
+        // Open WhatsApp
+        const newWindow = window.open(whatsappURL, '_blank');
+        
+        if (!newWindow) {
+            // Fallback for blocked popups
+            setTimeout(() => {
+                const manualOpen = confirm(
+                    "WhatsApp didn't open automatically.\n\n" +
+                    "Click OK to copy the WhatsApp link and open it manually."
+                );
+                if (manualOpen) {
+                    navigator.clipboard.writeText(whatsappURL).then(() => {
+                        alert("📱 WhatsApp link copied! Please paste it in your browser to send the notification.");
+                    });
+                }
+            }, 1000);
+        }
     }
-}
+
+    async deleteOrder(orderId) {
+        try {
+            const confirmDelete = confirm(
+                `🗑️ DELETE ORDER #${orderId}\n\n` +
+                `Are you sure you want to delete this order?\n\n` +
+                `This will remove the order from:\n` +
+                `• Admin panel\n` +
+                `• Backend server memory\n` +
+                `• Customer's order history\n\n` +
+                `This action cannot be undone!`
+            );
+            
+            if (!confirmDelete) return;
+
+            console.log('🗑️ Deleting order from backend:', orderId);
+            
+            // 1. Call backend API to delete from server memory
+            await this.makeRequest(`/orders/${orderId}`, {
+                method: 'DELETE'
+            });
+            
+            console.log('✅ Order deleted from backend');
+
+            // 2. Remove from frontend memory
+            const orderIndex = this.orders.findIndex(o => o.id === orderId);
+            if (orderIndex > -1) {
+                this.orders.splice(orderIndex, 1);
+                console.log('✅ Removed from frontend memory');
+            }
+
+            // 3. Remove from ALL localStorage instances
+            this.removeOrderFromAllClients(orderId);
+
+            // 4. Update the UI
+            this.renderStats();
+            this.renderOrders();
+            
+            alert(`✅ Order #${orderId} has been deleted successfully!`);
+            
+        } catch (error) {
+            console.error('Failed to delete order:', error);
+            alert('Failed to delete order: ' + error.message);
+        }
+    }
 
     removeOrderFromAllClients(orderId) {
         try {
@@ -223,10 +263,24 @@ class AdminOrderManager {
         const refreshBtn = document.getElementById('refreshOrders');
         if (refreshBtn) {
             refreshBtn.addEventListener('click', async () => {
+                refreshBtn.disabled = true;
+                refreshBtn.textContent = 'Refreshing...';
+                
                 await this.loadOrdersFromBackend();
                 this.renderStats();
                 this.renderOrders();
+                
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = 'Refresh Orders';
                 alert('Orders refreshed from backend!');
+            });
+        }
+
+        // Add search functionality
+        const searchInput = document.getElementById('searchOrders');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchOrders(e.target.value);
             });
         }
     }
@@ -239,6 +293,33 @@ class AdminOrderManager {
         });
 
         this.renderOrders();
+    }
+
+    searchOrders(query) {
+        const filteredOrders = this.orders.filter(order => 
+            order.id.toLowerCase().includes(query.toLowerCase()) ||
+            order.customer?.name?.toLowerCase().includes(query.toLowerCase()) ||
+            order.customer?.phone?.includes(query) ||
+            order.customer?.city?.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        this.renderFilteredOrders(filteredOrders);
+    }
+
+    renderFilteredOrders(filteredOrders) {
+        const container = document.getElementById('ordersList') || document.getElementById('orders-list');
+        
+        if (filteredOrders.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>No orders found</h3>
+                    <p>No orders match your search criteria.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filteredOrders.map(order => this.createOrderCard(order)).join('');
     }
 
     renderStats() {
@@ -270,6 +351,10 @@ class AdminOrderManager {
                 <div class="stat-card">
                     <div class="stat-number stat-completed">${stats.completed}</div>
                     <div>Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number stat-cancelled">${stats.cancelled}</div>
+                    <div>Cancelled</div>
                 </div>
             `;
         }
@@ -331,6 +416,7 @@ class AdminOrderManager {
                             <span>📍 ${order.customer?.city || 'N/A'}</span>
                             <span>📞 ${order.customer?.phone || 'No phone'}</span>
                             <span>🚚 ${this.getDeliveryText(order)}</span>
+                            ${order.delivery?.pickupCode ? `<span>🔑 ${order.delivery.pickupCode}</span>` : ''}
                         </div>
                     </div>
                     <div>
@@ -379,7 +465,8 @@ class AdminOrderManager {
             <div class="order-item">
                 <img src="${item.img || 'https://via.placeholder.com/50'}" 
                      alt="${item.title}" 
-                     class="item-image">
+                     class="item-image"
+                     onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
                 <div class="item-details">
                     <h4>${item.title || 'Unknown Item'}</h4>
                     ${specs.length > 0 ? `
@@ -442,17 +529,12 @@ TOTAL: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
 
     contactCustomer(orderId) {
         const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            const config = window.DEENICE_CONFIG || {};
-            const whatsappNumber = config.whatsappNumber ? config.whatsappNumber.replace('+', '') : '';
+        if (order && order.customer?.phone) {
             const message = `Hello ${order.customer?.name || 'there'}, this is Deenice Finds regarding your order #${orderId}.`;
-            
-            if (whatsappNumber) {
-                const encodedMessage = encodeURIComponent(message);
-                window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
-            } else {
-                alert(`Contact customer for order #${orderId}\n\nMessage: ${message}`);
-            }
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/${order.customer.phone}?text=${encodedMessage}`, '_blank');
+        } else {
+            alert(`No phone number available for order #${orderId}`);
         }
     }
 
@@ -463,6 +545,9 @@ TOTAL: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
                 <p>There are no orders in the system yet.</p>
                 <button class="btn btn-primary" onclick="adminManager.loadOrdersFromBackend()">
                     Refresh from Backend
+                </button>
+                <button class="btn btn-secondary" onclick="adminManager.loadOrdersFromBackend()">
+                    Check Local Storage
                 </button>
             </div>
         `;
@@ -481,4 +566,5 @@ TOTAL: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
     }
 }
 
+// Initialize admin manager
 const adminManager = new AdminOrderManager();
