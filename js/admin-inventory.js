@@ -17,7 +17,21 @@ class InventoryManager {
             if (!response.ok) {
                 throw new Error('Failed to load products');
             }
-            this.products = await response.json();
+            const productsData = await response.json();
+            
+            // Transform the data to match what the inventory expects
+            this.products = productsData.map(product => ({
+                id: product.id,
+                name: product.title, // Map 'title' to 'name'
+                price: product.price,
+                stock: product.stock || 0,
+                category: product.category,
+                image: product.images ? product.images[0] : '', // Use first image
+                description: product.description,
+                // Keep original data for reference
+                originalData: product
+            }));
+            
             console.log('Products loaded:', this.products.length);
         } catch (error) {
             console.error('Error loading products:', error);
@@ -27,7 +41,10 @@ class InventoryManager {
 
     renderInventory() {
         const tbody = document.getElementById('inventoryBody');
-        if (!tbody) return;
+        if (!tbody) {
+            console.error('Inventory table body not found');
+            return;
+        }
 
         tbody.innerHTML = '';
 
@@ -62,7 +79,7 @@ class InventoryManager {
             </td>
             <td>${this.escapeHtml(product.name)}</td>
             <td>${this.escapeHtml(product.category)}</td>
-            <td>$${parseFloat(product.price).toFixed(2)}</td>
+            <td>KES ${parseFloat(product.price).toFixed(2)}</td>
             <td>${product.stock}</td>
             <td><span class="status ${status}">${this.formatStatusText(status)}</span></td>
             <td class="actions">
@@ -89,6 +106,7 @@ class InventoryManager {
     }
 
     escapeHtml(unsafe) {
+        if (!unsafe) return '';
         return unsafe
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -175,12 +193,16 @@ class InventoryManager {
             this.resetForm();
         }
         
-        modal.style.display = 'block';
+        if (modal) {
+            modal.style.display = 'block';
+        }
     }
 
     closeModal() {
         const modal = document.getElementById('productModal');
-        modal.style.display = 'none';
+        if (modal) {
+            modal.style.display = 'none';
+        }
         this.resetForm();
     }
 
@@ -300,19 +322,13 @@ class InventoryManager {
     async saveToBackend() {
         // For now, we'll just log the products
         // In a real application, you would send this to your server
-        console.log('Saving products to backend:', this.products);
+        console.log('Current products:', this.products);
         
-        // Example of what you would do with a real backend:
-        // const response = await fetch('/api/products', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(this.products)
-        // });
-        
-        // if (!response.ok) throw new Error('Failed to save products');
-        
-        // Since we're working with static files, we'll just update the local storage as a fallback
+        // Since we're working with static files, we'll use localStorage as a fallback
         localStorage.setItem('inventory_products', JSON.stringify(this.products));
+        
+        // Note: To actually update products.json, you'll need backend integration
+        // This would require additional server-side code
     }
 
     showError(message) {
@@ -326,5 +342,6 @@ class InventoryManager {
 
 // Initialize inventory manager when page loads
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Initializing Inventory Manager...');
     new InventoryManager();
 });
