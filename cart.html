@@ -30,89 +30,232 @@
             padding: 20px;
         }
         
+        /* Premium Delivery Options */
         .delivery-options {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 20px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border: 1px solid #e9ecef;
+            padding: 30px;
+            border-radius: 16px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            display: none;
         }
-        
+
+        .delivery-options.show {
+            display: block;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        .delivery-options h3 {
+            margin: 0 0 25px 0;
+            text-align: center;
+            font-size: 1.5em;
+            color: white;
+            font-weight: 600;
+        }
+
+        .delivery-options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
         .delivery-option {
-            margin-bottom: 15px;
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            backdrop-filter: blur(10px);
         }
-        
+
+        .delivery-option:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
         .delivery-option.selected {
-            border-color: #007bff;
-            background: #e7f3ff;
+            background: rgba(255, 255, 255, 0.25);
+            border-color: #fff;
+            box-shadow: 0 8px 25px rgba(255,255,255,0.2);
         }
-        
-        .delivery-option input {
-            margin-right: 10px;
+
+        .delivery-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #fff;
         }
-        
+
+        .delivery-label {
+            flex: 1;
+        }
+
+        .delivery-label strong {
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .delivery-label small {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+        }
+
+        /* Premium Pickup Info */
         .pickup-info {
             display: none;
-            margin-top: 15px;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            border-left: 4px solid #007bff;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
         }
-        
+
         .pickup-info.show {
             display: block;
+            animation: slideDown 0.4s ease-out;
         }
-        
-        .pickup-code {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #007bff;
-            text-align: center;
-            margin: 10px 0;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            letter-spacing: 2px;
-        }
-        
-        .shop-address {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border: 1px solid #e9ecef;
-        }
-        
-        .map-link {
-            display: inline-block;
-            background: #28a745;
+
+        .pickup-info h4 {
+            margin: 0 0 15px 0;
             color: white;
-            padding: 10px 15px;
-            border-radius: 6px;
+            font-size: 1.2em;
+        }
+
+        .pickup-code {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #ffeb3b;
+            text-align: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            letter-spacing: 3px;
+            font-family: 'Courier New', monospace;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .shop-address {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            line-height: 1.6;
+            color: white;
+        }
+
+        .map-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
             text-decoration: none;
             margin-top: 10px;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
         }
-        
+
         .map-link:hover {
-            background: #218838;
-            color: white;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255,255,255,0.2);
         }
-        
+
         .instructions {
             font-size: 0.9em;
-            color: #666;
-            margin-top: 10px;
-            padding: 10px;
-            background: #fff3cd;
-            border-radius: 6px;
-            border: 1px solid #ffeaa7;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            line-height: 1.5;
+        }
+
+        /* Premium User Details Form */
+        .premium-form {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 35px;
+            border-radius: 20px;
+            margin: 30px 0;
+            color: white;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            display: none;
+        }
+
+        .premium-form.show {
+            display: block;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .premium-form h3 {
+            margin: 0 0 25px 0;
+            text-align: center;
+            font-size: 1.6em;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .premium-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 12px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-sizing: border-box;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .premium-input::placeholder {
+            color: #999;
+        }
+
+        .premium-input:focus {
+            outline: none;
+            border-color: #fff;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .premium-input:valid {
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+
+        .form-note {
+            display: block;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 8px;
+            font-size: 0.85em;
+            font-style: italic;
         }
 
         /* Cart Item Styles */
@@ -120,19 +263,25 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 15px;
+            padding: 20px;
             border-bottom: 1px solid #e9ecef;
             background: white;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
         }
 
         .cart-item-image {
             width: 80px !important;
             height: 80px !important;
             object-fit: cover !important;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 2px solid #f8f9fa;
             flex-shrink: 0;
         }
@@ -144,89 +293,59 @@
 
         .cart-item-title {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: #333;
-            font-size: 1em;
+            font-size: 1.05em;
             word-wrap: break-word;
         }
 
         .cart-item-specs {
             font-size: 0.85em;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
 
         .cart-item-price {
             font-weight: bold;
             color: #2c5aa0;
-            font-size: 0.95em;
+            font-size: 1em;
         }
 
         .remove-from-cart-btn {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, #dc3545, #c82333);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 10px 18px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.9em;
+            font-weight: 600;
             white-space: nowrap;
             flex-shrink: 0;
+            transition: all 0.3s ease;
         }
 
         .remove-from-cart-btn:hover {
-            background-color: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
         }
 
         /* Cart Summary */
         .cart-summary {
             text-align: right;
             margin: 30px 0;
-            padding: 20px;
+            padding: 25px;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* Premium Form Styles */
-        .premium-form {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 30px;
             border-radius: 12px;
-            margin: 30px 0;
-            color: white;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        .premium-form h3 {
-            margin: 0 0 20px 0;
-            text-align: center;
-            font-size: 1.4em;
-            color: white;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .premium-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 8px;
-            font-size: 16px;
-            background: rgba(255,255,255,0.9);
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-
-        .premium-input:focus {
-            outline: none;
-            border-color: #fff;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+        .cart-summary h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.8em;
+            font-weight: 700;
         }
 
         /* WhatsApp Button */
@@ -234,22 +353,28 @@
             background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
             color: white;
             border: none;
-            padding: 16px 32px;
+            padding: 18px 35px;
             border-radius: 50px;
             font-size: 1.2em;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             display: block;
             width: 100%;
-            max-width: 300px;
-            margin: 30px auto;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            max-width: 320px;
+            margin: 40px auto;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        #cart-send:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+        #cart-send:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(37, 211, 102, 0.4);
+        }
+
+        #cart-send:active {
+            transform: translateY(-1px);
         }
 
         #cart-send:disabled {
@@ -257,6 +382,19 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+            opacity: 0.7;
+        }
+
+        /* Animations */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Mobile Responsive */
@@ -268,7 +406,8 @@
             .cart-item {
                 flex-direction: column;
                 text-align: center;
-                gap: 10px;
+                gap: 12px;
+                padding: 15px;
             }
             
             .cart-item-image {
@@ -276,13 +415,19 @@
                 height: 100px !important;
             }
             
-            .premium-form {
-                padding: 20px;
+            .premium-form,
+            .delivery-options {
+                padding: 25px 20px;
             }
             
             #cart-send {
                 max-width: 100%;
-                margin: 20px auto;
+                margin: 30px auto;
+                padding: 16px 25px;
+            }
+
+            .delivery-option {
+                padding: 15px;
             }
         }
 
@@ -291,77 +436,30 @@
                 padding: 10px;
             }
             
-            .premium-form {
-                padding: 15px;
+            .premium-form,
+            .delivery-options {
+                padding: 20px 15px;
             }
             
             .cart-item-image {
                 width: 80px !important;
                 height: 80px !important;
             }
+
+            .pickup-code {
+                font-size: 1.5em;
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body class="cart-page"> 
-    <a href='index.html'>Home</a>
-    <h1>Your Cart</h1>
+    <a href='index.html' style="display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; font-weight: 600;">← Back to Home</a>
+    <h1 style="margin-bottom: 30px; color: #333; text-align: center;">🛒 Your Shopping Cart</h1>
     <div id='cart-contents'></div>
     <div id='cart-summary'></div>
 
-    <!-- Delivery Options Section -->
-    <div id="delivery-options" class="delivery-options">
-        <h3>🛒 Delivery Options</h3>
-        
-        <div class="delivery-option" onclick="selectDeliveryOption('delivery')">
-            <input type="radio" id="delivery-home" name="delivery" value="delivery">
-            <label for="delivery-home">
-                <strong>🚚 Home Delivery</strong><br>
-                <small>Get your order delivered to your address</small>
-            </label>
-        </div>
-        
-        <div class="delivery-option" onclick="selectDeliveryOption('pickup')">
-            <input type="radio" id="pickup-shop" name="delivery" value="pickup">
-            <label for="pickup-shop">
-                <strong>🏪 Pick Up in Shop</strong><br>
-                <small>Collect your order from our store</small>
-            </label>
-        </div>
-        
-        <!-- Pickup Information (shown when pickup is selected) -->
-        <div id="pickup-info" class="pickup-info">
-            <h4>📍 Store Pickup Information</h4>
-            
-            <div class="pickup-code" id="pickup-code">
-                <!-- Unique code will be generated here -->
-            </div>
-            
-            <div class="shop-address">
-                <strong>🏬 Our Store Location:</strong><br>
-                Dynamic Mall, Shop ML 135, 3rd Floor<br>
-                Along Tom Mboya Street<br>
-                Behind The National Archives<br>
-                Opposite AMBASSADEUR<br>
-                Nairobi, Kenya
-            </div>
-            
-            <a href="https://maps.google.com/maps?q=Dynamic+Mall+Tom+Mboya+Street+Nairobi" 
-               target="_blank" class="map-link">
-               📍 Open in Google Maps
-            </a>
-            
-            <div class="instructions">
-                <strong>📋 Pickup Instructions:</strong><br>
-                1. Save or screenshot your unique pickup code above<br>
-                2. Visit our store during business hours (Mon-Sat, 9AM-6PM)<br>
-                3. Show your pickup code to our staff<br>
-                4. Collect your order - no waiting!<br>
-                <em>Please bring valid ID for verification</em>
-            </div>
-        </div>
-    </div>
-
-    <button id='cart-send' class='primary'>Send Order via WhatsApp</button>
+    <button id='cart-send' class='primary'>📱 Send Order via WhatsApp</button>
     
     <script src='js/config.js'></script>
     <script src='js/cart.js'></script>
