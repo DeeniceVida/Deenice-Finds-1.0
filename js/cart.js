@@ -58,7 +58,7 @@ function removeItemFromCart(itemTitle) {
     }
 }
 
-// --- Cart Renderer (Fixed for premium styling) ---
+// --- Cart Renderer (Apple-style glass design) ---
 function renderCart() {
     const list = document.getElementById('cart-contents');
     const btn = document.getElementById('cart-send');
@@ -72,10 +72,10 @@ function renderCart() {
 
     if (cart.length === 0) {
         list.innerHTML = `
-            <div style="text-align: center; padding: 60px 20px; color: #666;">
-                <h2 style="color: #333; margin-bottom: 10px;">Your cart is empty</h2>
-                <p style="margin-bottom: 30px;">Add some products to get started!</p>
-                <a href="index.html" style="display: inline-block; background: #007bff; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
+            <div class="empty-cart glass-card" style="padding: 60px 20px;">
+                <h2>Your cart is empty</h2>
+                <p>Add some products to get started!</p>
+                <a href="index.html" class="continue-shopping">
                     Continue Shopping
                 </a>
             </div>
@@ -103,16 +103,16 @@ function renderCart() {
     });
 
     summaryContainer.innerHTML = `
-        <div class="cart-summary">
+        <div class="cart-summary glass-card">
             <h2>Total: ${currency} ${total.toLocaleString()}</h2>
         </div>
     `;
 
-    // Build the cart HTML with premium styling
+    // Build the cart HTML with Apple-style glass design
     let html = `
         <div class="cart-items-container">
             ${cart.map(item => `
-                <div class="cart-item" data-product-title="${item.title}">
+                <div class="cart-item glass-card" data-product-title="${item.title}">
                     <img src="${item.img || 'https://via.placeholder.com/80'}" alt="${item.title}" class="cart-item-image" 
                          onerror="this.src='https://via.placeholder.com/80x80?text=No+Image'" />
                     <div class="cart-item-details">
@@ -127,7 +127,7 @@ function renderCart() {
                         </div>
                     </div>
                     <button class="remove-from-cart-btn" data-item-title="${item.title}">
-                        🗑️ Remove
+                        Remove
                     </button>
                 </div>
             `).join('')}
@@ -145,9 +145,9 @@ function renderCart() {
     if (!form) {
         form = document.createElement('div');
         form.id = 'user-details-form';
-        form.className = 'premium-form';
+        form.className = 'premium-form glass-card';
         form.innerHTML = `
-            <h3>👤 Your Details</h3>
+            <h3>Your Details</h3>
             <div class="form-group">
                 <input type="text" 
                        id="user-name" 
@@ -182,14 +182,14 @@ function renderCart() {
     if (!deliveryOptions) {
         deliveryOptions = document.createElement('div');
         deliveryOptions.id = 'delivery-options';
-        deliveryOptions.className = 'delivery-options';
+        deliveryOptions.className = 'delivery-options glass-card';
         deliveryOptions.innerHTML = `
-            <h3>🚚 Delivery Options</h3>
+            <h3>Delivery Options</h3>
             <div class="delivery-options-container">
                 <div class="delivery-option" onclick="selectDeliveryOption('delivery')">
                     <input type="radio" id="delivery-home" name="delivery" value="delivery">
                     <div class="delivery-label">
-                        <strong>🚚 Home Delivery</strong>
+                        <strong>Home Delivery</strong>
                         <small>Get your order delivered to your address</small>
                     </div>
                 </div>
@@ -197,7 +197,7 @@ function renderCart() {
                 <div class="delivery-option" onclick="selectDeliveryOption('pickup')">
                     <input type="radio" id="pickup-shop" name="delivery" value="pickup">
                     <div class="delivery-label">
-                        <strong>🏪 Pick Up in Shop</strong>
+                        <strong>Pick Up in Shop</strong>
                         <small>Collect your order from our store</small>
                     </div>
                 </div>
@@ -205,14 +205,14 @@ function renderCart() {
             
             <!-- Pickup Information -->
             <div id="pickup-info" class="pickup-info">
-                <h4>📍 Store Pickup Information</h4>
+                <h4>Store Pickup Information</h4>
                 
                 <div class="pickup-code" id="pickup-code">
                     <!-- Unique code will be generated here -->
                 </div>
                 
                 <div class="shop-address">
-                    <strong>🏬 Our Store Location:</strong><br>
+                    <strong>Our Store Location:</strong><br>
                     Dynamic Mall, Shop ML 135, 3rd Floor<br>
                     Along Tom Mboya Street<br>
                     Behind The National Archives<br>
@@ -222,11 +222,11 @@ function renderCart() {
                 
                 <a href="https://maps.google.com/maps?q=Dynamic+Mall+Tom+Mboya+Street+Nairobi" 
                    target="_blank" class="map-link">
-                   📍 Open in Google Maps
+                   Open in Google Maps
                 </a>
                 
                 <div class="instructions">
-                    <strong>📋 Pickup Instructions:</strong><br>
+                    <strong>Pickup Instructions:</strong><br>
                     1. Save or screenshot your unique pickup code above<br>
                     2. Visit our store during business hours (Mon-Sat, 9AM-6PM)<br>
                     3. Show your pickup code to our staff<br>
@@ -299,7 +299,7 @@ function renderCart() {
     }
 }
 
-// 🚀 WhatsApp Order Sender (keep the same as before)
+// 🚀 WhatsApp Order Sender
 async function sendOrderViaWhatsApp() {
     const cart = getCart();
     
