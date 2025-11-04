@@ -353,6 +353,37 @@ Phone: ${order.customer?.phone || 'Not provided'}
             }, 1000);
         }
     }
+    // Add to OrderHistory class in order-history.js
+setupRealTimeUpdates() {
+    // Listen for storage changes
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'de_order_history') {
+            console.log('🔄 Storage update detected, refreshing orders...');
+            this.loadOrders().then(() => this.renderOrders());
+        }
+    });
+
+    // Listen for custom sync events
+    window.addEventListener('manualRefresh', () => {
+        this.loadOrders().then(() => this.renderOrders());
+    });
+
+    // Auto-refresh when page becomes visible
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            console.log('📱 Page visible, checking for updates...');
+            this.loadOrders().then(() => this.renderOrders());
+        }
+    });
+}
+
+// Call this in init()
+async init() {
+    await this.loadOrders();
+    this.renderOrders();
+    this.setupEventListeners();
+    this.setupRealTimeUpdates(); // Add this line
+}
 
     contactSupport(orderId) {
         const order = this.orders.find(o => o.id === orderId);
