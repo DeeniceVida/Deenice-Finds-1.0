@@ -22,11 +22,11 @@ class InventoryManager {
             // Transform the data to match what the inventory expects
             this.products = productsData.map(product => ({
                 id: product.id,
-                name: product.title,
+                name: product.title, // Map 'title' to 'name'
                 price: product.price,
                 stock: product.stock || 0,
                 category: product.category,
-                image: product.images ? product.images[0] : '',
+                image: product.images ? product.images[0] : '', // Use first image
                 description: product.description,
                 colors: product.colors || [], // Include colors array
                 availableColors: product.colors ? product.colors.map(color => color.name) : [], // All colors available by default
@@ -102,7 +102,30 @@ class InventoryManager {
         return row;
     }
 
-    // ... (keep all existing methods like getStockStatus, formatStatusText, escapeHtml, etc.)
+    getStockStatus(stock) {
+        if (stock > 10) return 'in-stock';
+        if (stock > 0) return 'low-stock';
+        return 'out-of-stock';
+    }
+
+    formatStatusText(status) {
+        const statusMap = {
+            'in-stock': 'In Stock',
+            'low-stock': 'Low Stock',
+            'out-of-stock': 'Out of Stock'
+        };
+        return statusMap[status] || 'Unknown';
+    }
+
+    escapeHtml(unsafe) {
+        if (!unsafe) return '';
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
     setupEventListeners() {
         // Add product button
@@ -137,6 +160,40 @@ class InventoryManager {
                 }
             });
         }
+    }
+
+    setupModalHandlers() {
+        const modal = document.getElementById('productModal');
+        const closeBtn = document.querySelector('.close');
+        const form = document.getElementById('productForm');
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.closeModal();
+            });
+        }
+
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeModal();
+                }
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveProduct();
+            });
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
+            }
+        });
     }
 
     // Add this new method for color management
@@ -283,7 +340,39 @@ class InventoryManager {
         }
     }
 
-    // Update the populateForm method to include colors
+    openModal(product = null) {
+        const modal = document.getElementById('productModal');
+        const title = document.getElementById('modalTitle');
+        
+        if (product) {
+            title.textContent = 'Edit Product';
+            this.populateForm(product);
+        } else {
+            title.textContent = 'Add New Product';
+            this.resetForm();
+        }
+        
+        if (modal) {
+            modal.style.display = 'block';
+        }
+    }
+
+    closeModal() {
+        const modal = document.getElementById('productModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        this.resetForm();
+    }
+
+    resetForm() {
+        const form = document.getElementById('productForm');
+        if (form) {
+            form.reset();
+            document.getElementById('productId').value = '';
+        }
+    }
+
     populateForm(product) {
         document.getElementById('productId').value = product.id;
         document.getElementById('productName').value = product.name;
@@ -292,15 +381,8 @@ class InventoryManager {
         document.getElementById('productCategory').value = product.category;
         document.getElementById('productImage').value = product.image || '';
         document.getElementById('productDescription').value = product.description || '';
-        
-        // Add colors input (you can enhance this with a better UI for adding multiple colors)
-        const colorsInput = document.getElementById('productColors');
-        if (colorsInput) {
-            colorsInput.value = product.colors ? JSON.stringify(product.colors) : '';
-        }
     }
 
-    // Update the saveProduct method to handle colors
     async saveProduct() {
         const productId = document.getElementById('productId').value;
         const formData = {
@@ -311,17 +393,6 @@ class InventoryManager {
             image: document.getElementById('productImage').value.trim(),
             description: document.getElementById('productDescription').value.trim()
         };
-
-        // Handle colors data (you'll need to add proper color input in your form)
-        const colorsInput = document.getElementById('productColors');
-        if (colorsInput && colorsInput.value) {
-            try {
-                formData.colors = JSON.parse(colorsInput.value);
-                formData.availableColors = formData.colors.map(color => color.name);
-            } catch (e) {
-                console.error('Error parsing colors:', e);
-            }
-        }
 
         // Validation
         if (!formData.name || !formData.category || isNaN(formData.price) || isNaN(formData.stock)) {
@@ -354,6 +425,77 @@ class InventoryManager {
             console.error('Error saving product:', error);
             this.showError('Failed to save product. Please try again.');
         }
+    }
+
+    editProduct(productId) {
+        const product = this.products.find(p => p.id === productId);
+        if (product) {
+            this.openModal(product);
+        }
+    }
+
+    async deleteProduct(productId) {
+        if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            this.products = this.products.filter(p => p.id !== productId);
+            await this.saveToBackend();
+            this.renderInventory();
+            this.showSuccess('Product deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            this.showError('Failed to delete product. Please try again.');
+        }
+    }
+
+    filterProducts(searchTerm) {
+        const filtered = this.products.filter(product => 
+            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.id.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+        const tbody = document.getElementById('inventoryBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 40px;">
+                        No products match your search.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        filtered.forEach(product => {
+            tbody.appendChild(this.createProductRow(product));
+        });
+    }
+
+    async saveToBackend() {
+        // For now, we'll just log the products
+        // In a real application, you would send this to your server
+        console.log('Current products:', this.products);
+        
+        // Since we're working with static files, we'll use localStorage as a fallback
+        localStorage.setItem('inventory_products', JSON.stringify(this.products));
+        
+        // Note: To actually update products.json, you'll need backend integration
+        // This would require additional server-side code
+    }
+
+    showError(message) {
+        alert('Error: ' + message);
+    }
+
+    showSuccess(message) {
+        alert('Success: ' + message);
     }
 }
 
