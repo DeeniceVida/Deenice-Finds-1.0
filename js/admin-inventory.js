@@ -8,20 +8,39 @@ class InventoryManager {
         await this.loadProducts();
         this.renderInventory();
         this.setupEventListeners();
+        this.setupModalHandlers();
     }
 
     async loadProducts() {
         try {
-            const response = await fetch('../data/products.json');
+            const response = await fetch('data/products.json');
+            if (!response.ok) {
+                throw new Error('Failed to load products');
+            }
             this.products = await response.json();
+            console.log('Products loaded:', this.products.length);
         } catch (error) {
             console.error('Error loading products:', error);
+            this.showError('Failed to load products. Please check the console for details.');
         }
     }
 
     renderInventory() {
         const tbody = document.getElementById('inventoryBody');
+        if (!tbody) return;
+
         tbody.innerHTML = '';
+
+        if (this.products.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px;">
+                        No products found. Click "Add New Product" to get started.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
 
         this.products.forEach(product => {
             const row = this.createProductRow(product);
@@ -31,14 +50,21 @@ class InventoryManager {
 
     createProductRow(product) {
         const row = document.createElement('tr');
+        const status = this.getStockStatus(product.stock);
+        
         row.innerHTML = `
             <td>${product.id}</td>
-            <td><img src="${product.image}" alt="${product.name}" class="product-thumb"></td>
-            <td>${product.name}</td>
-            <td>${product.category}</td>
-            <td>$${product.price}</td>
+            <td>
+                ${product.image ? 
+                    `<img src="${product.image}" alt="${product.name}" class="product-thumb" onerror="this.style.display='none'">` : 
+                    '<div style="width:50px;height:50px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;border-radius:4px;color:#6c757d;font-size:12px;">No Image</div>'
+                }
+            </td>
+            <td>${this.escapeHtml(product.name)}</td>
+            <td>${this.escapeHtml(product.category)}</td>
+            <td>$${parseFloat(product.price).toFixed(2)}</td>
             <td>${product.stock}</td>
-            <td><span class="status ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">${product.stock > 0 ? 'In Stock' : 'Out of Stock'}</span></td>
+            <td><span class="status ${status}">${this.formatStatusText(status)}</span></td>
             <td class="actions">
                 <button class="edit-btn" data-id="${product.id}">Edit</button>
                 <button class="delete-btn" data-id="${product.id}">Delete</button>
@@ -47,35 +73,92 @@ class InventoryManager {
         return row;
     }
 
+    getStockStatus(stock) {
+        if (stock > 10) return 'in-stock';
+        if (stock > 0) return 'low-stock';
+        return 'out-of-stock';
+    }
+
+    formatStatusText(status) {
+        const statusMap = {
+            'in-stock': 'In Stock',
+            'low-stock': 'Low Stock',
+            'out-of-stock': 'Out of Stock'
+        };
+        return statusMap[status] || 'Unknown';
+    }
+
+    escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     setupEventListeners() {
         // Add product button
-        document.getElementById('addProductBtn').addEventListener('click', () => {
-            this.openModal();
-        });
+        const addBtn = document.getElementById('addProductBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => {
+                this.openModal();
+            });
+        }
 
         // Search functionality
-        document.getElementById('searchInventory').addEventListener('input', (e) => {
-            this.filterProducts(e.target.value);
-        });
-
-        // Modal close
-        document.querySelector('.close').addEventListener('click', () => {
-            this.closeModal();
-        });
-
-        // Form submission
-        document.getElementById('productForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveProduct();
-        });
+        const searchInput = document.getElementById('searchInventory');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.filterProducts(e.target.value);
+            });
+        }
 
         // Edit/Delete buttons (event delegation)
-        document.getElementById('inventoryBody').addEventListener('click', (e) => {
-            if (e.target.classList.contains('edit-btn')) {
-                this.editProduct(e.target.dataset.id);
-            }
-            if (e.target.classList.contains('delete-btn')) {
-                this.deleteProduct(e.target.dataset.id);
+        const tbody = document.getElementById('inventoryBody');
+        if (tbody) {
+            tbody.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target.classList.contains('edit-btn')) {
+                    this.editProduct(target.dataset.id);
+                }
+                if (target.classList.contains('delete-btn')) {
+                    this.deleteProduct(target.dataset.id);
+                }
+            });
+        }
+    }
+
+    setupModalHandlers() {
+        const modal = document.getElementById('productModal');
+        const closeBtn = document.querySelector('.close');
+        const form = document.getElementById('productForm');
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                this.closeModal();
+            });
+        }
+
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeModal();
+                }
+            });
+        }
+
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveProduct();
+            });
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
             }
         });
     }
@@ -88,16 +171,25 @@ class InventoryManager {
             title.textContent = 'Edit Product';
             this.populateForm(product);
         } else {
-            title.textContent = 'Add Product';
-            document.getElementById('productForm').reset();
-            document.getElementById('productId').value = '';
+            title.textContent = 'Add New Product';
+            this.resetForm();
         }
         
         modal.style.display = 'block';
     }
 
     closeModal() {
-        document.getElementById('productModal').style.display = 'none';
+        const modal = document.getElementById('productModal');
+        modal.style.display = 'none';
+        this.resetForm();
+    }
+
+    resetForm() {
+        const form = document.getElementById('productForm');
+        if (form) {
+            form.reset();
+            document.getElementById('productId').value = '';
+        }
     }
 
     populateForm(product) {
@@ -111,33 +203,47 @@ class InventoryManager {
     }
 
     async saveProduct() {
-        const formData = new FormData(document.getElementById('productForm'));
         const productId = document.getElementById('productId').value;
-        
-        const productData = {
-            id: productId || Date.now().toString(),
-            name: document.getElementById('productName').value,
+        const formData = {
+            name: document.getElementById('productName').value.trim(),
             price: parseFloat(document.getElementById('productPrice').value),
             stock: parseInt(document.getElementById('productStock').value),
-            category: document.getElementById('productCategory').value,
-            image: document.getElementById('productImage').value,
-            description: document.getElementById('productDescription').value
+            category: document.getElementById('productCategory').value.trim(),
+            image: document.getElementById('productImage').value.trim(),
+            description: document.getElementById('productDescription').value.trim()
         };
 
-        if (productId) {
-            // Update existing product
-            const index = this.products.findIndex(p => p.id === productId);
-            if (index !== -1) {
-                this.products[index] = { ...this.products[index], ...productData };
-            }
-        } else {
-            // Add new product
-            this.products.push(productData);
+        // Validation
+        if (!formData.name || !formData.category || isNaN(formData.price) || isNaN(formData.stock)) {
+            this.showError('Please fill in all required fields with valid data.');
+            return;
         }
 
-        await this.saveToBackend();
-        this.renderInventory();
-        this.closeModal();
+        try {
+            if (productId) {
+                // Update existing product
+                const index = this.products.findIndex(p => p.id === productId);
+                if (index !== -1) {
+                    this.products[index] = { ...this.products[index], ...formData };
+                }
+            } else {
+                // Add new product
+                const newProduct = {
+                    id: Date.now().toString(),
+                    ...formData
+                };
+                this.products.push(newProduct);
+            }
+
+            await this.saveToBackend();
+            this.renderInventory();
+            this.closeModal();
+            this.showSuccess(`Product ${productId ? 'updated' : 'added'} successfully!`);
+            
+        } catch (error) {
+            console.error('Error saving product:', error);
+            this.showError('Failed to save product. Please try again.');
+        }
     }
 
     editProduct(productId) {
@@ -148,31 +254,73 @@ class InventoryManager {
     }
 
     async deleteProduct(productId) {
-        if (confirm('Are you sure you want to delete this product?')) {
+        if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
             this.products = this.products.filter(p => p.id !== productId);
             await this.saveToBackend();
             this.renderInventory();
+            this.showSuccess('Product deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            this.showError('Failed to delete product. Please try again.');
         }
     }
 
     filterProducts(searchTerm) {
         const filtered = this.products.filter(product => 
             product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.category.toLowerCase().includes(searchTerm.toLowerCase())
+            product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.id.toLowerCase().includes(searchTerm.toLowerCase())
         );
         
         const tbody = document.getElementById('inventoryBody');
+        if (!tbody) return;
+
         tbody.innerHTML = '';
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px;">
+                        No products match your search.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
         filtered.forEach(product => {
             tbody.appendChild(this.createProductRow(product));
         });
     }
 
     async saveToBackend() {
-        // You'll need to implement this based on your backend
-        // This could be an API call to your server.js
-        console.log('Saving products:', this.products);
-        // Example: await fetch('/api/products', { method: 'POST', body: JSON.stringify(this.products) });
+        // For now, we'll just log the products
+        // In a real application, you would send this to your server
+        console.log('Saving products to backend:', this.products);
+        
+        // Example of what you would do with a real backend:
+        // const response = await fetch('/api/products', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(this.products)
+        // });
+        
+        // if (!response.ok) throw new Error('Failed to save products');
+        
+        // Since we're working with static files, we'll just update the local storage as a fallback
+        localStorage.setItem('inventory_products', JSON.stringify(this.products));
+    }
+
+    showError(message) {
+        alert('Error: ' + message);
+    }
+
+    showSuccess(message) {
+        alert('Success: ' + message);
     }
 }
 
