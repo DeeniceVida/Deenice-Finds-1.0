@@ -28,18 +28,39 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            background: #f5f5f7;
+            min-height: 100vh;
         }
         
+        /* Apple-style Liquid Glass Effects */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-card-dark {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
         /* Premium Delivery Options */
         .delivery-options {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 20px 0;
             padding: 30px;
-            border-radius: 16px;
-            color: white;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
             display: none;
         }
 
@@ -52,45 +73,49 @@
             margin: 0 0 25px 0;
             text-align: center;
             font-size: 1.5em;
-            color: white;
             font-weight: 600;
+            color: #1d1d1f;
         }
 
         .delivery-options-container {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
         }
 
         .delivery-option {
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
             padding: 20px;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             gap: 15px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .delivery-option:hover {
             transform: translateY(-2px);
-            border-color: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
 
         .delivery-option.selected {
-            background: rgba(255, 255, 255, 0.25);
-            border-color: #fff;
-            box-shadow: 0 8px 25px rgba(255,255,255,0.2);
+            background: rgba(0, 122, 255, 0.1);
+            border: 1px solid #007AFF;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.2);
+        }
+
+        .delivery-option.selected .delivery-label strong {
+            color: #007AFF;
         }
 
         .delivery-option input[type="radio"] {
             width: 20px;
             height: 20px;
-            accent-color: #fff;
+            accent-color: #007AFF;
         }
 
         .delivery-label {
@@ -101,23 +126,24 @@
             display: block;
             font-size: 1.1em;
             margin-bottom: 5px;
-            color: white;
+            color: #1d1d1f;
+            font-weight: 600;
         }
 
         .delivery-label small {
-            color: rgba(255, 255, 255, 0.8);
+            color: #86868b;
             font-size: 0.9em;
         }
 
         /* Premium Pickup Info */
         .pickup-info {
             display: none;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
             padding: 25px;
             margin-top: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .pickup-info.show {
@@ -127,78 +153,72 @@
 
         .pickup-info h4 {
             margin: 0 0 15px 0;
-            color: white;
+            color: #1d1d1f;
             font-size: 1.2em;
+            font-weight: 600;
         }
 
         .pickup-code {
             font-size: 1.8em;
             font-weight: bold;
-            color: #ffeb3b;
+            color: #007AFF;
             text-align: center;
             margin: 15px 0;
             padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
+            background: rgba(0, 122, 255, 0.1);
+            border-radius: 12px;
             letter-spacing: 3px;
-            font-family: 'Courier New', monospace;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            font-family: 'SF Mono', 'Courier New', monospace;
+            border: 1px solid rgba(0, 122, 255, 0.2);
         }
 
         .shop-address {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.5);
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 12px;
             margin: 20px 0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             line-height: 1.6;
-            color: white;
+            color: #1d1d1f;
         }
 
         .map-link {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            background: rgba(0, 122, 255, 0.1);
+            color: #007AFF;
             padding: 12px 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             text-decoration: none;
             margin-top: 10px;
             transition: all 0.3s ease;
             font-weight: 500;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(0, 122, 255, 0.2);
             backdrop-filter: blur(10px);
         }
 
         .map-link:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(0, 122, 255, 0.2);
             transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(255,255,255,0.2);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.2);
         }
 
         .instructions {
             font-size: 0.9em;
-            color: rgba(255, 255, 255, 0.9);
+            color: #86868b;
             margin-top: 15px;
             padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             line-height: 1.5;
         }
 
         /* Premium User Details Form */
         .premium-form {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 35px;
-            border-radius: 20px;
             margin: 30px 0;
-            color: white;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
             display: none;
         }
 
@@ -211,9 +231,8 @@
             margin: 0 0 25px 0;
             text-align: center;
             font-size: 1.6em;
-            color: white;
+            color: #1d1d1f;
             font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .form-group {
@@ -224,35 +243,36 @@
         .premium-input {
             width: 100%;
             padding: 16px 20px;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 12px;
             font-size: 16px;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255, 255, 255, 0.8);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-sizing: border-box;
-            color: #333;
+            color: #1d1d1f;
             font-weight: 500;
+            backdrop-filter: blur(10px);
         }
 
         .premium-input::placeholder {
-            color: #999;
+            color: #86868b;
         }
 
         .premium-input:focus {
             outline: none;
-            border-color: #fff;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(255,255,255,0.3);
+            border-color: #007AFF;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
             transform: translateY(-2px);
         }
 
         .premium-input:valid {
-            border-color: rgba(34, 197, 94, 0.5);
+            border-color: rgba(52, 199, 89, 0.5);
         }
 
         .form-note {
             display: block;
-            color: rgba(255, 255, 255, 0.8);
+            color: #86868b;
             margin-top: 8px;
             font-size: 0.85em;
             font-style: italic;
@@ -264,25 +284,27 @@
             align-items: center;
             gap: 15px;
             padding: 20px;
-            border-bottom: 1px solid #e9ecef;
-            background: white;
-            border-radius: 12px;
             margin-bottom: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .cart-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.9);
         }
 
         .cart-item-image {
             width: 80px !important;
             height: 80px !important;
             object-fit: cover !important;
-            border-radius: 10px;
-            border: 2px solid #f8f9fa;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             flex-shrink: 0;
         }
 
@@ -295,40 +317,42 @@
             display: block;
             margin-bottom: 6px;
             font-weight: 600;
-            color: #333;
+            color: #1d1d1f;
             font-size: 1.05em;
             word-wrap: break-word;
         }
 
         .cart-item-specs {
             font-size: 0.85em;
-            color: #666;
+            color: #86868b;
             margin-bottom: 6px;
         }
 
         .cart-item-price {
             font-weight: bold;
-            color: #2c5aa0;
+            color: #1d1d1f;
             font-size: 1em;
         }
 
         .remove-from-cart-btn {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            color: white;
-            border: none;
+            background: rgba(255, 59, 48, 0.1);
+            color: #FF3B30;
+            border: 1px solid rgba(255, 59, 48, 0.2);
             padding: 10px 18px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 0.9em;
             font-weight: 600;
             white-space: nowrap;
             flex-shrink: 0;
             transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
         .remove-from-cart-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            background: rgba(255, 59, 48, 0.2);
+            box-shadow: 0 4px 12px rgba(255, 59, 48, 0.2);
         }
 
         /* Cart Summary */
@@ -336,25 +360,27 @@
             text-align: right;
             margin: 30px 0;
             padding: 25px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .cart-summary h2 {
             margin: 0;
-            color: #333;
+            color: #1d1d1f;
             font-size: 1.8em;
             font-weight: 700;
         }
 
-        /* WhatsApp Button */
+        /* WhatsApp Button - Apple Style */
         #cart-send {
-            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            background: linear-gradient(135deg, #34C759 0%, #30D158 100%);
             color: white;
             border: none;
             padding: 18px 35px;
-            border-radius: 50px;
+            border-radius: 12px;
             font-size: 1.2em;
             font-weight: 700;
             cursor: pointer;
@@ -363,14 +389,21 @@
             max-width: 320px;
             margin: 40px auto;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            box-shadow: 
+                0 8px 25px rgba(52, 199, 89, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            text-transform: none;
+            letter-spacing: 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         #cart-send:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(37, 211, 102, 0.4);
+            box-shadow: 
+                0 12px 35px rgba(52, 199, 89, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #30D158 0%, #34C759 100%);
         }
 
         #cart-send:active {
@@ -378,7 +411,7 @@
         }
 
         #cart-send:disabled {
-            background: #6c757d;
+            background: #8E8E93;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
@@ -395,6 +428,68 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        /* Back Link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #007AFF;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Page Title */
+        .page-title {
+            margin-bottom: 30px;
+            color: #1d1d1f;
+            text-align: center;
+            font-weight: 700;
+            font-size: 2.2em;
+        }
+
+        /* Empty Cart State */
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: #86868b;
+        }
+
+        .empty-cart h2 {
+            color: #1d1d1f;
+            margin-bottom: 10px;
+        }
+
+        .continue-shopping {
+            display: inline-block;
+            background: #007AFF;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .continue-shopping:hover {
+            background: #0056CC;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.3);
         }
 
         /* Mobile Responsive */
@@ -429,6 +524,10 @@
             .delivery-option {
                 padding: 15px;
             }
+
+            .page-title {
+                font-size: 1.8em;
+            }
         }
 
         @media (max-width: 480px) {
@@ -454,12 +553,12 @@
     </style>
 </head>
 <body class="cart-page"> 
-    <a href='index.html' style="display: inline-block; margin-bottom: 20px; color: #007bff; text-decoration: none; font-weight: 600;">← Back to Home</a>
-    <h1 style="margin-bottom: 30px; color: #333; text-align: center;">🛒 Your Shopping Cart</h1>
+    <a href='index.html' class="back-link">← Back to Home</a>
+    <h1 class="page-title">Your Cart</h1>
     <div id='cart-contents'></div>
     <div id='cart-summary'></div>
 
-    <button id='cart-send' class='primary'>📱 Send Order via WhatsApp</button>
+    <button id='cart-send'>Send Order via WhatsApp</button>
     
     <script src='js/config.js'></script>
     <script src='js/cart.js'></script>
