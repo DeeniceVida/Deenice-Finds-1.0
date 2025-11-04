@@ -22,15 +22,16 @@ class InventoryManager {
             // Transform the data to match what the inventory expects
             this.products = productsData.map(product => ({
                 id: product.id,
-                name: product.title, // Map 'title' to 'name'
+                name: product.title,
                 price: product.price,
                 stock: product.stock || 0,
                 category: product.category,
-                image: product.images ? product.images[0] : '', // Use first image
+                image: product.images ? product.images[0] : '',
                 description: product.description,
-                colors: product.colors || [], // Include colors array
-                availableColors: product.colors ? product.colors.map(color => color.name) : [], // All colors available by default
-                // Keep original data for reference
+                colors: product.colors || [],
+                // Initialize color stock - if not exists, create it
+                colorStock: product.colorStock || this.initializeColorStock(product.colors, product.stock),
+                availableColors: product.availableColors || (product.colors ? product.colors.map(color => color.name) : []),
                 originalData: product
             }));
             
@@ -39,6 +40,21 @@ class InventoryManager {
             console.error('Error loading products:', error);
             this.showError('Failed to load products. Please check the console for details.');
         }
+    }
+
+    initializeColorStock(colors, totalStock) {
+        if (!colors || colors.length === 0) return {};
+        
+        const colorStock = {};
+        const stockPerColor = Math.floor(totalStock / colors.length);
+        const remainder = totalStock % colors.length;
+        
+        colors.forEach((color, index) => {
+            // Distribute stock evenly, with remainder going to first color
+            colorStock[color.name] = stockPerColor + (index < remainder ? 1 : 0);
+        });
+        
+        return colorStock;
     }
 
     renderInventory() {
@@ -73,6 +89,9 @@ class InventoryManager {
         const availableColorsCount = product.availableColors ? product.availableColors.length : 0;
         const totalColorsCount = product.colors ? product.colors.length : 0;
         
+        // Calculate total stock from color stock
+        const totalColorStock = product.colorStock ? Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : 0;
+        
         row.innerHTML = `
             <td>${product.id}</td>
             <td>
@@ -84,7 +103,7 @@ class InventoryManager {
             <td>${this.escapeHtml(product.name)}</td>
             <td>${this.escapeHtml(product.category)}</td>
             <td>KES ${parseFloat(product.price).toFixed(2)}</td>
-            <td>${product.stock}</td>
+            <td>${totalColorStock}</td>
             <td>
                 <span class="status ${status}">${this.formatStatusText(status)}</span>
             </td>
@@ -95,7 +114,7 @@ class InventoryManager {
             </td>
             <td class="actions">
                 <button class="edit-btn" data-id="${product.id}">Edit</button>
-                <button class="colors-btn" data-id="${product.id}">Colors</button>
+                <button class="colors-btn" data-id="${product.id}">Stock</button>
                 <button class="delete-btn" data-id="${product.id}">Delete</button>
             </td>
         `;
@@ -153,7 +172,7 @@ class InventoryManager {
                     this.editProduct(target.dataset.id);
                 }
                 if (target.classList.contains('colors-btn')) {
-                    this.manageColors(target.dataset.id);
+                    this.manageColorStock(target.dataset.id);
                 }
                 if (target.classList.contains('delete-btn')) {
                     this.deleteProduct(target.dataset.id);
@@ -196,8 +215,8 @@ class InventoryManager {
         });
     }
 
-    // Add this new method for color management
-    manageColors(productId) {
+    // Updated method for color stock management
+    manageColorStock(productId) {
         const product = this.products.find(p => p.id === productId);
         if (!product) return;
 
@@ -206,22 +225,22 @@ class InventoryManager {
         
         if (!modal || !modalContent) {
             this.createColorsModal();
-            this.manageColors(productId); // Retry after creating modal
+            this.manageColorStock(productId); // Retry after creating modal
             return;
         }
 
-        modalContent.innerHTML = this.generateColorsManagementHTML(product);
+        modalContent.innerHTML = this.generateColorStockManagementHTML(product);
         modal.style.display = 'block';
     }
 
     createColorsModal() {
         const modalHTML = `
             <div id="colorsModal" class="modal">
-                <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-content" style="max-width: 700px;">
                     <span class="close" onclick="document.getElementById('colorsModal').style.display='none'">&times;</span>
-                    <h2>Manage Color Availability</h2>
+                    <h2>Manage Color Stock</h2>
                     <div id="colorsModalContent">
-                        <!-- Color management content will be loaded here -->
+                        <!-- Color stock management content will be loaded here -->
                     </div>
                 </div>
             </div>
@@ -229,7 +248,7 @@ class InventoryManager {
         document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
 
-    generateColorsManagementHTML(product) {
+    generateColorStockManagementHTML(product) {
         if (!product.colors || product.colors.length === 0) {
             return `
                 <div style="text-align: center; padding: 40px;">
@@ -239,30 +258,57 @@ class InventoryManager {
             `;
         }
 
+        const totalStock = product.colorStock ? Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : 0;
+
         let html = `
             <div class="color-management">
                 <h3>${product.name}</h3>
-                <p>Select which color options are available for purchase:</p>
-                <div class="colors-list">
+                <div class="stock-summary">
+                    <div class="total-stock">
+                        <strong>Total Stock:</strong> <span class="stock-total">${totalStock}</span> pcs
+                    </div>
+                    <div class="stock-controls">
+                        <button type="button" class="btn btn-sm btn-outline" onclick="inventoryManager.distributeStockEvenly('${product.id}')">
+                            Distribute Evenly
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="inventoryManager.setAllStock('${product.id}', 0)">
+                            Set All to 0
+                        </button>
+                    </div>
+                </div>
+                <p>Set available stock for each color:</p>
+                <div class="colors-stock-list">
         `;
 
         product.colors.forEach(color => {
-            const isAvailable = product.availableColors ? 
-                product.availableColors.includes(color.name) : true;
+            const currentStock = product.colorStock ? (product.colorStock[color.name] || 0) : 0;
+            const isAvailable = product.availableColors ? product.availableColors.includes(color.name) : true;
             
             html += `
-                <div class="color-option">
-                    <label class="color-checkbox">
-                        <input type="checkbox" 
-                               name="availableColors" 
-                               value="${color.name}" 
-                               ${isAvailable ? 'checked' : ''}
-                               onchange="inventoryManager.toggleColorAvailability('${product.id}', '${color.name}', this.checked)">
-                        <div class="color-preview">
-                            <img src="${color.img}" alt="${color.name}" class="color-thumb" onerror="this.style.display='none'">
-                            <span class="color-name">${color.name}</span>
+                <div class="color-stock-item ${!isAvailable ? 'disabled' : ''}">
+                    <div class="color-info">
+                        <img src="${color.img}" alt="${color.name}" class="color-thumb" onerror="this.style.display='none'">
+                        <span class="color-name">${color.name}</span>
+                    </div>
+                    <div class="stock-control">
+                        <label class="availability-toggle">
+                            <input type="checkbox" 
+                                   ${isAvailable ? 'checked' : ''}
+                                   onchange="inventoryManager.toggleColorAvailability('${product.id}', '${color.name}', this.checked)">
+                            Available
+                        </label>
+                        <div class="stock-input-group">
+                            <button type="button" class="stock-btn minus" onclick="inventoryManager.adjustColorStock('${product.id}', '${color.name}', -1)">-</button>
+                            <input type="number" 
+                                   class="stock-input" 
+                                   value="${currentStock}" 
+                                   min="0"
+                                   onchange="inventoryManager.updateColorStock('${product.id}', '${color.name}', this.value)"
+                                   ${!isAvailable ? 'disabled' : ''}>
+                            <button type="button" class="stock-btn plus" onclick="inventoryManager.adjustColorStock('${product.id}', '${color.name}', 1)">+</button>
                         </div>
-                    </label>
+                        <span class="stock-display">${currentStock} pcs</span>
+                    </div>
                 </div>
             `;
         });
@@ -270,14 +316,8 @@ class InventoryManager {
         html += `
                 </div>
                 <div class="color-actions">
-                    <button type="button" class="btn btn-primary" onclick="inventoryManager.selectAllColors('${product.id}')">
-                        Select All
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="inventoryManager.deselectAllColors('${product.id}')">
-                        Deselect All
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="inventoryManager.saveColorAvailability('${product.id}')">
-                        Save Changes
+                    <button type="button" class="btn btn-primary" onclick="inventoryManager.saveColorStock('${product.id}')">
+                        Save Stock Changes
                     </button>
                 </div>
             </div>
@@ -286,7 +326,7 @@ class InventoryManager {
         return html;
     }
 
-    // Color management methods
+    // Color stock management methods
     toggleColorAvailability(productId, colorName, isAvailable) {
         const product = this.products.find(p => p.id === productId);
         if (!product) return;
@@ -301,88 +341,104 @@ class InventoryManager {
             }
         } else {
             product.availableColors = product.availableColors.filter(color => color !== colorName);
+            // Set stock to 0 when disabling a color
+            if (product.colorStock) {
+                product.colorStock[colorName] = 0;
+            }
         }
+
+        this.updateColorStockModal(productId);
     }
 
-    selectAllColors(productId) {
+    adjustColorStock(productId, colorName, adjustment) {
         const product = this.products.find(p => p.id === productId);
-        if (product && product.colors) {
-            product.availableColors = product.colors.map(color => color.name);
-            this.updateColorsModal(productId);
-        }
+        if (!product || !product.colorStock) return;
+
+        const currentStock = product.colorStock[colorName] || 0;
+        const newStock = Math.max(0, currentStock + adjustment);
+        
+        product.colorStock[colorName] = newStock;
+        this.updateColorStockModal(productId);
     }
 
-    deselectAllColors(productId) {
+    updateColorStock(productId, colorName, newStock) {
         const product = this.products.find(p => p.id === productId);
-        if (product) {
-            product.availableColors = [];
-            this.updateColorsModal(productId);
+        if (!product) return;
+
+        if (!product.colorStock) {
+            product.colorStock = {};
         }
+
+        product.colorStock[colorName] = Math.max(0, parseInt(newStock) || 0);
+        this.updateColorStockModal(productId);
     }
 
-    updateColorsModal(productId) {
+    distributeStockEvenly(productId) {
+        const product = this.products.find(p => p.id === productId);
+        if (!product || !product.colors || product.colors.length === 0) return;
+
+        const availableColors = product.availableColors || product.colors.map(color => color.name);
+        if (availableColors.length === 0) return;
+
+        const totalStock = product.colorStock ? Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : 0;
+        const stockPerColor = Math.floor(totalStock / availableColors.length);
+        const remainder = totalStock % availableColors.length;
+
+        if (!product.colorStock) {
+            product.colorStock = {};
+        }
+
+        // Reset all to 0 first
+        product.colors.forEach(color => {
+            product.colorStock[color.name] = 0;
+        });
+
+        // Distribute to available colors only
+        availableColors.forEach((colorName, index) => {
+            product.colorStock[colorName] = stockPerColor + (index < remainder ? 1 : 0);
+        });
+
+        this.updateColorStockModal(productId);
+    }
+
+    setAllStock(productId, stockValue) {
+        const product = this.products.find(p => p.id === productId);
+        if (!product || !product.colors) return;
+
+        if (!product.colorStock) {
+            product.colorStock = {};
+        }
+
+        product.colors.forEach(color => {
+            product.colorStock[color.name] = parseInt(stockValue) || 0;
+        });
+
+        this.updateColorStockModal(productId);
+    }
+
+    updateColorStockModal(productId) {
         const product = this.products.find(p => p.id === productId);
         const modalContent = document.getElementById('colorsModalContent');
         if (product && modalContent) {
-            modalContent.innerHTML = this.generateColorsManagementHTML(product);
+            modalContent.innerHTML = this.generateColorStockManagementHTML(product);
         }
     }
 
-    async saveColorAvailability(productId) {
+    async saveColorStock(productId) {
         try {
             await this.saveToBackend();
             this.renderInventory();
             document.getElementById('colorsModal').style.display = 'none';
-            this.showSuccess('Color availability updated successfully!');
+            this.showSuccess('Color stock updated successfully!');
         } catch (error) {
-            console.error('Error saving color availability:', error);
-            this.showError('Failed to save color availability. Please try again.');
+            console.error('Error saving color stock:', error);
+            this.showError('Failed to save color stock. Please try again.');
         }
     }
 
-    openModal(product = null) {
-        const modal = document.getElementById('productModal');
-        const title = document.getElementById('modalTitle');
-        
-        if (product) {
-            title.textContent = 'Edit Product';
-            this.populateForm(product);
-        } else {
-            title.textContent = 'Add New Product';
-            this.resetForm();
-        }
-        
-        if (modal) {
-            modal.style.display = 'block';
-        }
-    }
+    // ... (keep all other existing methods like openModal, closeModal, etc.)
 
-    closeModal() {
-        const modal = document.getElementById('productModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-        this.resetForm();
-    }
-
-    resetForm() {
-        const form = document.getElementById('productForm');
-        if (form) {
-            form.reset();
-            document.getElementById('productId').value = '';
-        }
-    }
-
-    populateForm(product) {
-        document.getElementById('productId').value = product.id;
-        document.getElementById('productName').value = product.name;
-        document.getElementById('productPrice').value = product.price;
-        document.getElementById('productStock').value = product.stock;
-        document.getElementById('productCategory').value = product.category;
-        document.getElementById('productImage').value = product.image || '';
-        document.getElementById('productDescription').value = product.description || '';
-    }
-
+    // Update the saveProduct method to handle color stock
     async saveProduct() {
         const productId = document.getElementById('productId').value;
         const formData = {
@@ -405,12 +461,21 @@ class InventoryManager {
                 // Update existing product
                 const index = this.products.findIndex(p => p.id === productId);
                 if (index !== -1) {
+                    // Preserve color stock when updating
+                    const existingProduct = this.products[index];
+                    formData.colorStock = existingProduct.colorStock;
+                    formData.availableColors = existingProduct.availableColors;
+                    formData.colors = existingProduct.colors;
+                    
                     this.products[index] = { ...this.products[index], ...formData };
                 }
             } else {
-                // Add new product
+                // Add new product - initialize empty color stock
                 const newProduct = {
                     id: Date.now().toString(),
+                    colorStock: {},
+                    availableColors: [],
+                    colors: [],
                     ...formData
                 };
                 this.products.push(newProduct);
@@ -427,76 +492,7 @@ class InventoryManager {
         }
     }
 
-    editProduct(productId) {
-        const product = this.products.find(p => p.id === productId);
-        if (product) {
-            this.openModal(product);
-        }
-    }
-
-    async deleteProduct(productId) {
-        if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-            return;
-        }
-
-        try {
-            this.products = this.products.filter(p => p.id !== productId);
-            await this.saveToBackend();
-            this.renderInventory();
-            this.showSuccess('Product deleted successfully!');
-        } catch (error) {
-            console.error('Error deleting product:', error);
-            this.showError('Failed to delete product. Please try again.');
-        }
-    }
-
-    filterProducts(searchTerm) {
-        const filtered = this.products.filter(product => 
-            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.id.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        
-        const tbody = document.getElementById('inventoryBody');
-        if (!tbody) return;
-
-        tbody.innerHTML = '';
-        
-        if (filtered.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="9" style="text-align: center; padding: 40px;">
-                        No products match your search.
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        filtered.forEach(product => {
-            tbody.appendChild(this.createProductRow(product));
-        });
-    }
-
-    async saveToBackend() {
-        // For now, we'll just log the products
-        // In a real application, you would send this to your server
-        console.log('Current products:', this.products);
-        
-        // Since we're working with static files, we'll use localStorage as a fallback
-        localStorage.setItem('inventory_products', JSON.stringify(this.products));
-        
-        // Note: To actually update products.json, you'll need backend integration
-        // This would require additional server-side code
-    }
-
-    showError(message) {
-        alert('Error: ' + message);
-    }
-
-    showSuccess(message) {
-        alert('Success: ' + message);
-    }
+    // ... (keep all other existing methods)
 }
 
 // Make inventoryManager globally accessible
