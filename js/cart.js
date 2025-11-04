@@ -299,7 +299,7 @@ function renderCart() {
     }
 }
 
-// 🚀 WhatsApp Order Sender
+// 🚀 OPTIMIZED WhatsApp Order Sender (FASTER)
 async function sendOrderViaWhatsApp() {
     const cart = getCart();
     
@@ -405,48 +405,37 @@ async function sendOrderViaWhatsApp() {
     
     console.log('WhatsApp URL:', whatsappURL);
     
-    // 9. Open WhatsApp
-    let whatsappOpened = false;
-    const newWindow = window.open(whatsappURL, '_blank');
-    if (newWindow) {
-        whatsappOpened = true;
-    }
-    
-    setTimeout(() => {
-        if (!whatsappOpened) {
-            window.location.href = whatsappURL;
-            whatsappOpened = true;
-        }
-    }, 100);
-    
-    setTimeout(() => {
-        if (!whatsappOpened) {
-            const manualSend = confirm(
-                "WhatsApp didn't open automatically.\n\nClick OK to copy the order message."
-            );
-            
-            if (manualSend) {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(message).then(() => {
-                        alert("✅ Order message copied to clipboard!\n\n📱 Now open WhatsApp and send it to Deenice Finds.");
-                    }).catch(() => {
-                        prompt("📋 Copy this order message to WhatsApp:", message);
-                    });
-                } else {
-                    prompt("📋 Copy this order message to WhatsApp:", message);
-                }
-            }
-        }
-    }, 2000);
-    
-    // 10. Show success message and clear cart
-    setTimeout(() => {
-        alert(`✅ Order #${orderId} sent!\n\nWe'll confirm your order shortly.`);
-        localStorage.removeItem('de_cart');
+    // 9. OPTIMIZED: Direct WhatsApp opening with immediate feedback
+    const openWhatsApp = () => {
+        // Try direct window location first (fastest)
+        window.location.href = whatsappURL;
+        
+        // Show immediate feedback
         setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 2000);
-    }, 500);
+            alert(`✅ Order #${orderId} sent!\n\nWe'll confirm your order shortly.`);
+            localStorage.removeItem('de_cart');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }, 500);
+    };
+
+    // Try popup first, then fallback immediately
+    const newWindow = window.open(whatsappURL, '_blank');
+    
+    if (!newWindow) {
+        // If popup blocked, use direct method immediately
+        openWhatsApp();
+    } else {
+        // If popup worked, show success message after short delay
+        setTimeout(() => {
+            alert(`✅ Order #${orderId} sent!\n\nWe'll confirm your order shortly.`);
+            localStorage.removeItem('de_cart');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }, 300);
+    }
 }
 
 async function saveOrderToHistory(cart, deliveryInfo) {
