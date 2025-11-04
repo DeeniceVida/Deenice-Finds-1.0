@@ -146,46 +146,28 @@
     "title": "Luxury Magsafe iPhone Case",
     "price": 1100,
     "currency": "KES",
-    "description": "Protect your investment with this sleek, functional, and colorful MagSafe compatible iPhone case. Designed for maximum convenience and security, it features a powerful magnetic ring for flawless connection with all MagSafe chargers and accessories.The standout feature is the sliding camera lens protector—a simple slide secures your lenses against scratches, dust, and impact when you're on the go.Crafted for shockproof drop protection, this durable case maintains a slim profile while offering full coverage. Choose from a spectrum of vibrant colors including Navy Blue, Deep Green, Royal Purple, Bright Orange, Sleek Gray, and Black.",
+    "description": "This immersive ambient lighting system is designed to significantly enhance your PC gaming, movie watching, and computing experience. It utilizes DX Light Software to offer an expansive 100,000 color selection, along with 7 kinds of Dynamic Mode and 7 kinds of Music Mode, allowing the light bars to perfectly synchronize with the on-screen content and audio, creating a captivating Picture Rhythm. The result is a vibrant, visual feast that extends the action beyond the monitor, dramatically improving both visual immersion and the overall aesthetic of your setup for an unforgettable gaming and entertainment atmosphere.",
     "models": [
-        "iPhone 13 Pro Max",
-        "iPhone 13 Pro"
+        "For 27inch",
+        "For 32inch",
+        "For 34inch"
     ],
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761762961/O1CN01JkcVIs1OFCNjgJXOd__3872131675-0-cib_hgakan.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761762961/O1CN01RhBLFJ1OFCNnUKSZP__3872131675-0-cib_mjjlx1.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761762961/O1CN01u1jVhY1OFCNgiYp8c__3872131675-0-cib_ygvo1o.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761762973/O1CN01Skpsjp1OFCNhWaEcC__3872131675-0-cib_nmpdpy.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261190/H7fa4dbca0eae4250a345e0bfb99d28fd2_j12fhh.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/H022e5070f4d845e9b18638b0aa9ab68fu_qbz6wo.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/Hbd834035d3de4049b77468017d54c1f41_cdkgsc.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/H2c2dcec72121451b911bc55fe1bb1d16z_awquli.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/Hb549da11427c412b9ec80d2d3834d4be3_pxetqg.jpg"
     ],
     "colors": [
       {
         "name": "Black",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761762962/O1CN01uNy5cI1OFCNjI1Jpl__3872131675-0-cib_gpkvmr.jpg"
-      },
-      {
-        "name": "Gray",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761762966/O1CN010NVB9U1OFCNjxVzCR__3872131675-0-cib_dlnc9i.jpg"
-      },
-      {
-        "name": "Green",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761762962/O1CN01FqOpHp1OFCNm58ebp__3872131675-0-cib_pwrcjg.jpg"
-      },
-      {
-        "name": "Orange",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761762961/O1CN01xW8Jog1OFCNkkx0lX__3872131675-0-cib_t6bvyf.jpg"
-      },
-      {
-        "name": "Purple",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761762963/O1CN01Z55p3m1OFCNmHspfr__3872131675-0-cib_omo5hn.jpg"
-      },
-      {
-        "name": "Blue",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761762963/O1CN01ZMsASb1OFCNhWxC9Y__3872131675-0-cib_xypszs.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261190/H7fa4dbca0eae4250a345e0bfb99d28fd2_j12fhh.jpg"
       }
     ],
     "sku": "DEMO-4",
     "stock": 14,
-    "category": "phones"
+    "category": "Comps"
   },
   {
     "id": "thermal-label-printer",
