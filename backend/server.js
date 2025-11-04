@@ -105,37 +105,106 @@ async function sendWhatsAppNotification(order, newStatus) {
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        ordersCount: orders.length,
+        memoryUsage: process.memoryUsage()
+    });
 });
 
-// Get orders for specific user (NEW ENDPOINT)
+// ENHANCED: Get orders for specific user with lastSync support
 app.post('/api/orders/user', (req, res) => {
     try {
-        const { localOrders } = req.body;
+        const { localOrders, lastSync } = req.body;
         
         if (!localOrders || !Array.isArray(localOrders)) {
             return res.status(400).json({ error: 'Local orders array required' });
         }
 
-        // Get all orders that match the user's local orders by ID
         const userOrderIds = localOrders.map(order => order.id);
-        const serverOrders = orders.filter(order => userOrderIds.includes(order.id));
+        let serverOrders = orders.filter(order => userOrderIds.includes(order.id));
         
-        console.log('👤 User orders request:', {
-            localOrdersCount: localOrders.length,
-            serverOrdersCount: serverOrders.length,
-            matchingOrders: serverOrders.map(o => ({ id: o.id, status: o.status }))
-        });
+        // If lastSync provided, only return orders updated since then
+        if (lastSync) {
+            const lastSyncDate = new Date(lastSync);
+            serverOrders = serverOrders.filter(order => {
+                const orderUpdateTime = new Date(order.statusUpdated || order.orderDate);
+                return orderUpdateTime > lastSyncDate;
+            });
+            
+            console.log('🔄 Delta sync request:', {
+                lastSync: lastSync,
+                localOrdersCount: localOrders.length,
+                updatedOrdersCount: serverOrders.length,
+                updatedOrders: serverOrders.map(o => ({ 
+                    id: o.id, 
+                    status: o.status,
+                    updated: o.statusUpdated 
+                }))
+            });
+        } else {
+            console.log('👤 Full sync request:', {
+                localOrdersCount: localOrders.length,
+                serverOrdersCount: serverOrders.length,
+                matchingOrders: serverOrders.map(o => ({ id: o.id, status: o.status }))
+            });
+        }
 
-        // Return server orders (these have the latest status from admin)
+        // Return server orders with enhanced metadata
         res.json({
             orders: serverOrders,
-            message: `Found ${serverOrders.length} orders on server`
+            message: lastSync ? 
+                `Found ${serverOrders.length} updated orders since ${lastSync}` : 
+                `Found ${serverOrders.length} orders on server`,
+            timestamp: new Date().toISOString(),
+            syncType: lastSync ? 'delta' : 'full'
         });
 
     } catch (error) {
         console.error('Get user orders error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ 
+            error: 'Internal server error',
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// NEW: Efficient order updates endpoint for mobile
+app.post('/api/orders/updates', (req, res) => {
+    try {
+        const { orderIds, lastSync } = req.body;
+        
+        if (!orderIds || !Array.isArray(orderIds)) {
+            return res.status(400).json({ error: 'Order IDs array required' });
+        }
+
+        let updatedOrders = orders.filter(order => orderIds.includes(order.id));
+        
+        // Filter by lastSync if provided
+        if (lastSync) {
+            const lastSyncDate = new Date(lastSync);
+            updatedOrders = updatedOrders.filter(order => {
+                const orderUpdateTime = new Date(order.statusUpdated || order.orderDate);
+                return orderUpdateTime > lastSyncDate;
+            });
+        }
+        
+        console.log('📡 Efficient updates request:', {
+            orderIdsCount: orderIds.length,
+            updatedOrdersCount: updatedOrders.length,
+            lastSync: lastSync || 'none'
+        });
+
+        res.json({
+            updatedOrders: updatedOrders,
+            timestamp: new Date().toISOString(),
+            hasUpdates: updatedOrders.length > 0
+        });
+
+    } catch (error) {
+        console.error('Updates endpoint error:', error);
+        res.status(500).json({ error: 'Failed to get updates' });
     }
 });
 
@@ -191,6 +260,7 @@ app.post('/api/admin/login',
         }
     }
 );
+
 // Sync endpoint for user orders
 app.post('/api/orders/sync', (req, res) => {
     try {
@@ -281,7 +351,8 @@ app.get('/api/orders', authenticateToken, checkSessionTimeout, (req, res) => {
                 processing: orders.filter(o => o.status === 'processing').length,
                 completed: orders.filter(o => o.status === 'completed').length,
                 cancelled: orders.filter(o => o.status === 'cancelled').length
-            }
+            },
+            timestamp: new Date().toISOString()
         });
     } catch (error) {
         console.error('Get orders error:', error);
@@ -289,7 +360,7 @@ app.get('/api/orders', authenticateToken, checkSessionTimeout, (req, res) => {
     }
 });
 
-// Update order status (protected) - UPDATED
+// Update order status (protected) - ENHANCED FOR MOBILE SYNC
 app.put('/api/orders/:id/status', 
     authenticateToken, 
     checkSessionTimeout,
@@ -325,18 +396,23 @@ app.put('/api/orders/:id/status',
                 whatsappURL = await sendWhatsAppNotification(orders[orderIndex], status);
             }
 
-            console.log('✅ Order status updated:', {
+            // ENHANCED LOGGING FOR MOBILE SYNC
+            console.log('🔄 ORDER STATUS UPDATED - READY FOR MOBILE SYNC:', {
                 orderId: orderId,
                 oldStatus: oldStatus,
                 newStatus: status,
+                statusUpdated: orders[orderIndex].statusUpdated,
                 customer: orders[orderIndex].customer?.name,
-                phone: orders[orderIndex].customer?.phone
+                phone: orders[orderIndex].customer?.phone,
+                totalOrdersInSystem: orders.length,
+                adminUser: req.user.username
             });
 
             res.json({ 
                 message: 'Order status updated successfully',
                 order: orders[orderIndex],
-                whatsappURL: whatsappURL
+                whatsappURL: whatsappURL,
+                timestamp: new Date().toISOString() // Added timestamp for sync
             });
 
         } catch (error) {
@@ -387,15 +463,15 @@ app.post('/api/orders',
             
             res.status(201).json({
                 message: 'Order created successfully',
-                order: newOrder
+                order: newOrder,
+                timestamp: new Date().toISOString()
             });
 
         } catch (error) {
             console.error('Create order error:', error);
             res.status(500).json({ error: 'Internal server error' });
-        }
     }
-);
+});
 
 // Admin logout
 app.post('/api/admin/logout', authenticateToken, (req, res) => {
@@ -408,21 +484,119 @@ app.post('/api/admin/logout', authenticateToken, (req, res) => {
     }
 });
 
+// NEW: Get server stats for monitoring
+app.get('/api/stats', (req, res) => {
+    try {
+        const stats = {
+            totalOrders: orders.length,
+            ordersByStatus: {
+                pending: orders.filter(o => o.status === 'pending').length,
+                processing: orders.filter(o => o.status === 'processing').length,
+                completed: orders.filter(o => o.status === 'completed').length,
+                cancelled: orders.filter(o => o.status === 'cancelled').length
+            },
+            recentOrders: orders.slice(0, 5).map(o => ({
+                id: o.id,
+                status: o.status,
+                customer: o.customer?.name,
+                date: o.orderDate
+            })),
+            serverTime: new Date().toISOString(),
+            uptime: process.uptime(),
+            memory: process.memoryUsage()
+        };
+
+        res.json(stats);
+    } catch (error) {
+        console.error('Stats error:', error);
+        res.status(500).json({ error: 'Failed to get stats' });
+    }
+});
+
+// NEW: Bulk status update for admin
+app.put('/api/orders/bulk/status', 
+    authenticateToken, 
+    checkSessionTimeout,
+    [
+        body('orderIds').isArray({ min: 1 }).withMessage('Order IDs array required'),
+        body('status').isIn(['pending', 'processing', 'completed', 'cancelled']).withMessage('Invalid status')
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const { orderIds, status } = req.body;
+            const updatedOrders = [];
+            const failedOrders = [];
+
+            for (const orderId of orderIds) {
+                try {
+                    const orderIndex = orders.findIndex(o => o.id === orderId);
+                    if (orderIndex !== -1) {
+                        orders[orderIndex].status = status;
+                        orders[orderIndex].statusUpdated = new Date().toISOString();
+                        
+                        if (status === 'completed') {
+                            orders[orderIndex].completedDate = new Date().toISOString();
+                        }
+                        
+                        updatedOrders.push(orders[orderIndex]);
+                    } else {
+                        failedOrders.push({ orderId, error: 'Order not found' });
+                    }
+                } catch (error) {
+                    failedOrders.push({ orderId, error: error.message });
+                }
+            }
+
+            console.log('🔄 Bulk status update:', {
+                total: orderIds.length,
+                successful: updatedOrders.length,
+                failed: failedOrders.length,
+                status: status,
+                admin: req.user.username
+            });
+
+            res.json({
+                message: `Updated ${updatedOrders.length} orders to ${status}`,
+                updatedOrders: updatedOrders,
+                failedOrders: failedOrders,
+                timestamp: new Date().toISOString()
+            });
+
+        } catch (error) {
+            console.error('Bulk update error:', error);
+            res.status(500).json({ error: 'Bulk update failed' });
+        }
+    }
+);
+
 // Error handling middleware
 app.use((error, req, res, next) => {
     console.error('Unhandled error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+        error: 'Internal server error',
+        timestamp: new Date().toISOString()
+    });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
-    res.status(404).json({ error: 'Endpoint not found' });
+    res.status(404).json({ 
+        error: 'Endpoint not found',
+        timestamp: new Date().toISOString()
+    });
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🔒 Environment: ${process.env.NODE_ENV}`);
-    console.log(`🌐 CORS Origin: ${process.env.CORS_ORIGIN}`);
+    console.log(`🔒 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🌐 CORS Origin: ${process.env.CORS_ORIGIN || '*'}`);
     console.log(`📊 Orders in memory: ${orders.length}`);
+    console.log(`🔄 Enhanced mobile sync endpoints ready!`);
+    console.log(`⏰ Server time: ${new Date().toISOString()}`);
 });
