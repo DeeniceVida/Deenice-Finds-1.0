@@ -52,34 +52,82 @@ class AdminOrderManager {
         }, 30000);
     }
 
-    // Enhanced sync method that works for both mobile and desktop
-    async syncOrderToUsers(orderId, newStatus) {
+    // ENHANCED SYNC METHOD FOR MOBILE
+async syncOrderToUsers(orderId, newStatus) {
+    try {
+        console.log('🔄 Syncing order to users:', orderId, newStatus);
+        
+        // 1. Update backend first (source of truth)
         try {
-            console.log('🔄 Syncing order to users:', orderId, newStatus);
-            
-            // 1. Update localStorage (immediate sync for same device)
-            this.updateLocalStorageOrder(orderId, newStatus);
-            
-            // 2. Update backend (for cross-device sync)
-            try {
-                await this.makeRequest(`/orders/${orderId}/status`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ status: newStatus })
-                });
-                console.log('✅ Backend sync successful');
-                
-                // 3. Trigger user sync by updating their localStorage via our sync system
-                this.triggerUserSync(orderId);
-                
-            } catch (backendError) {
-                console.log('⚠️ Backend sync failed, using localStorage only');
-                // Even if backend fails, localStorage will sync to users through order-sync.js
-            }
-            
-        } catch (error) {
-            console.error('Sync failed:', error);
+            await this.makeRequest(`/orders/${orderId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: newStatus })
+            });
+            console.log('✅ Backend update successful');
+        } catch (backendError) {
+            console.error('❌ Backend update failed:', backendError);
+            throw new Error('Backend sync failed');
         }
+
+        // 2. Update localStorage for immediate effect
+        this.updateLocalStorageOrder(orderId, newStatus);
+        
+        // 3. Trigger multiple sync methods for mobile compatibility
+        await this.triggerMobileSync(orderId);
+        
+        console.log('✅ Order sync completed for mobile');
+        
+    } catch (error) {
+        console.error('❌ Sync failed:', error);
+        throw error;
     }
+}
+
+// NEW: Enhanced mobile sync trigger
+async triggerMobileSync(orderId) {
+    try {
+        // Method 1: Update sync events (for order-sync.js)
+        const syncEvents = JSON.parse(localStorage.getItem('de_sync_events') || '[]');
+        syncEvents.push({
+            orderId: orderId,
+            timestamp: new Date().toISOString(),
+            type: 'admin_status_update',
+            forceRefresh: true
+        });
+        localStorage.setItem('de_sync_events', JSON.stringify(syncEvents.slice(-10)));
+
+        // Method 2: Create a sync marker specifically for this order
+        const orderSyncMarkers = JSON.parse(localStorage.getItem('de_order_sync_markers') || '{}');
+        orderSyncMarkers[orderId] = {
+            lastAdminUpdate: new Date().toISOString(),
+            requiresSync: true
+        };
+        localStorage.setItem('de_order_sync_markers', JSON.stringify(orderSyncMarkers));
+
+        // Method 3: Trigger storage event manually (cross-tab sync)
+        this.triggerStorageEvent('de_order_history_updated', { orderId: orderId });
+
+        console.log('📢 Multiple sync methods triggered for order:', orderId);
+
+    } catch (error) {
+        console.error('Error triggering mobile sync:', error);
+    }
+}
+
+// NEW: Trigger custom storage event
+triggerStorageEvent(key, data) {
+    try {
+        const event = new StorageEvent('storage', {
+            key: key,
+            newValue: JSON.stringify(data),
+            oldValue: localStorage.getItem(key),
+            url: window.location.href
+        });
+        window.dispatchEvent(event);
+    } catch (error) {
+        console.error('Error triggering storage event:', error);
+    }
+}
 
     // Trigger user sync by updating a special sync marker
     triggerUserSync(orderId) {
