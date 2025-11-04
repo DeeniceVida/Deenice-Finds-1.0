@@ -314,16 +314,14 @@ class AdminOrderManager {
                     <strong>${currency} ${totalAmount.toLocaleString()}</strong>
                 </td>
                 <td>
-                    <span class="status-badge ${this.getStatusClass(status)}">
-                        ${status}
-                    </span>
-                    <select class="status-select" 
+                    <!-- VISIBLE STATUS DROPDOWN -->
+                    <select class="status-select ${this.getStatusClass(status)}" 
                             onchange="adminManager.updateStatus('${order.id}', this.value)"
-                            style="display: none; margin-top: 5px;">
-                        <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option>
-                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>Processing</option>
-                        <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
-                        <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer; background: white; min-width: 120px;">
+                        <option value="pending" ${status === 'pending' ? 'selected' : ''}>📝 Pending</option>
+                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>🔄 Processing</option>
+                        <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Completed</option>
+                        <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
                     </select>
                 </td>
                 <td>
@@ -371,25 +369,62 @@ class AdminOrderManager {
         return statusClasses[status] || 'status-pending';
     }
 
+    // ENHANCED STATUS UPDATE METHOD
     async updateStatus(orderId, newStatus) {
         try {
             console.log('🔄 Updating order status:', orderId, newStatus);
             
-            // Update locally first for immediate feedback
+            // Find the order
             const order = this.orders.find(o => o.id === orderId);
-            if (order) {
-                order.status = newStatus;
-                this.renderStats();
-                this.renderOrders();
+            if (!order) {
+                alert('Order not found!');
+                return;
+            }
+
+            const oldStatus = order.status;
+            
+            // Update locally first for immediate feedback
+            order.status = newStatus;
+            order.statusUpdated = new Date().toISOString();
+            
+            if (newStatus === 'completed') {
+                order.completedDate = new Date().toISOString();
             }
             
+            // Update UI immediately
+            this.renderStats();
+            this.renderOrders();
+            
             // Then update in backend
-            await this.makeRequest(`/orders/${orderId}/status`, {
+            const response = await this.makeRequest(`/orders/${orderId}/status`, {
                 method: 'PUT',
                 body: JSON.stringify({ status: newStatus })
             });
             
-            alert(`✅ Order #${orderId} status updated to ${newStatus}!`);
+            console.log('✅ Backend response:', response);
+            
+            // Show success message with WhatsApp option
+            let successMessage = `✅ Order #${orderId} status updated from ${oldStatus} to ${newStatus}!`;
+            
+            if (response.whatsappURL && order.customer?.phone) {
+                const sendNotification = confirm(
+                    `${successMessage}\n\n` +
+                    `Customer: ${order.customer?.name || 'N/A'}\n` +
+                    `Phone: ${order.customer?.phone}\n\n` +
+                    `Send WhatsApp notification to customer?`
+                );
+                
+                if (sendNotification) {
+                    window.open(response.whatsappURL, '_blank');
+                }
+            } else {
+                alert(successMessage);
+            }
+            
+            // Trigger sync for user order history
+            if (window.orderSync) {
+                window.orderSync.notifyAdminChange(orderId, 'status_update');
+            }
             
         } catch (error) {
             console.error('Failed to update status:', error);
@@ -400,6 +435,71 @@ class AdminOrderManager {
             this.renderStats();
             this.renderOrders();
         }
+    }
+
+    // BULK STATUS UPDATE METHODS
+    async bulkUpdateStatus(orderIds, newStatus) {
+        try {
+            if (!orderIds || orderIds.length === 0) {
+                alert('Please select at least one order to update.');
+                return;
+            }
+
+            const confirmUpdate = confirm(
+                `Update ${orderIds.length} order(s) to "${newStatus}"?`
+            );
+            
+            if (!confirmUpdate) return;
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const orderId of orderIds) {
+                try {
+                    const order = this.orders.find(o => o.id === orderId);
+                    if (order) {
+                        // Update locally
+                        order.status = newStatus;
+                        order.statusUpdated = new Date().toISOString();
+                        
+                        if (newStatus === 'completed') {
+                            order.completedDate = new Date().toISOString();
+                        }
+                        
+                        // Update backend
+                        await this.makeRequest(`/orders/${orderId}/status`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ status: newStatus })
+                        });
+                        
+                        successCount++;
+                    }
+                } catch (error) {
+                    console.error(`Failed to update order ${orderId}:`, error);
+                    failCount++;
+                }
+            }
+
+            // Update UI
+            this.renderStats();
+            this.renderOrders();
+
+            let resultMessage = `✅ Updated ${successCount} order(s) to ${newStatus}!`;
+            if (failCount > 0) {
+                resultMessage += `\n❌ Failed to update ${failCount} order(s).`;
+            }
+            
+            alert(resultMessage);
+
+        } catch (error) {
+            console.error('Bulk update failed:', error);
+            alert('Bulk update failed. Check console for details.');
+        }
+    }
+
+    // QUICK STATUS UPDATE BUTTONS (Alternative method)
+    quickUpdateStatus(orderId, newStatus) {
+        this.updateStatus(orderId, newStatus);
     }
 
     viewOrderDetails(orderId) {
@@ -416,7 +516,12 @@ Phone: ${order.customer?.phone || order.phone || 'Not provided'}
 ORDER INFORMATION:
 Status: ${order.status || 'pending'}
 Order Date: ${new Date(order.orderDate || order.date).toLocaleString()}
+Last Updated: ${order.statusUpdated ? new Date(order.statusUpdated).toLocaleString() : 'N/A'}
 Total: ${order.currency || 'KES'} ${(order.totalAmount || order.total || 0).toLocaleString()}
+
+DELIVERY:
+Method: ${order.delivery?.method || 'Home Delivery'}
+${order.delivery?.pickupCode ? `Pickup Code: ${order.delivery.pickupCode}` : ''}
 
 ITEMS (${(order.items || []).length}):
 ${order.items ? order.items.map((item, index) => 
@@ -476,6 +581,96 @@ ${order.items ? order.items.map((item, index) =>
             btn.addEventListener('click', (e) => {
                 this.setFilter(e.target.dataset.filter);
             });
+        });
+
+        // Add bulk actions
+        this.addBulkActions();
+    }
+
+    addBulkActions() {
+        // Create bulk actions container if it doesn't exist
+        if (document.querySelector('.bulk-actions')) return;
+
+        const bulkActions = document.createElement('div');
+        bulkActions.className = 'bulk-actions';
+        bulkActions.style.margin = '15px 0';
+        bulkActions.style.padding = '15px';
+        bulkActions.style.background = '#f8f9fa';
+        bulkActions.style.borderRadius = '8px';
+        bulkActions.style.border = '1px solid #dee2e6';
+        
+        bulkActions.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <strong>📦 Bulk Actions:</strong>
+                <button class="btn btn-secondary" onclick="adminManager.bulkUpdateSelected('processing')" style="font-size: 12px;">
+                    Mark as Processing
+                </button>
+                <button class="btn btn-secondary" onclick="adminManager.bulkUpdateSelected('completed')" style="font-size: 12px;">
+                    Mark as Completed
+                </button>
+                <button class="btn btn-secondary" onclick="adminManager.selectAllOrders()" style="font-size: 12px;">
+                    Select All
+                </button>
+                <button class="btn btn-secondary" onclick="adminManager.clearSelection()" style="font-size: 12px;">
+                    Clear Selection
+                </button>
+                <small style="color: #666; margin-left: 10px;">Select orders using checkboxes</small>
+            </div>
+        `;
+        
+        // Insert before the table
+        const tableContainer = document.querySelector('.orders-table-container');
+        if (tableContainer) {
+            tableContainer.parentNode.insertBefore(bulkActions, tableContainer);
+        }
+        
+        // Add checkboxes to each row
+        this.addCheckboxesToRows();
+    }
+
+    addCheckboxesToRows() {
+        // This will be called after rendering orders
+        setTimeout(() => {
+            const rows = document.querySelectorAll('#ordersTableBody tr');
+            rows.forEach(row => {
+                // Skip if checkbox already exists
+                if (row.querySelector('.order-checkbox')) return;
+
+                const orderId = row.getAttribute('data-order-id');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'order-checkbox';
+                checkbox.value = orderId;
+                checkbox.style.marginRight = '10px';
+                checkbox.style.cursor = 'pointer';
+                
+                const firstCell = row.querySelector('td:first-child');
+                if (firstCell) {
+                    firstCell.innerHTML = checkbox.outerHTML + ' ' + firstCell.innerHTML;
+                }
+            });
+        }, 100);
+    }
+
+    // Bulk update selected orders
+    async bulkUpdateSelected(newStatus) {
+        const selectedCheckboxes = document.querySelectorAll('.order-checkbox:checked');
+        const selectedOrderIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+        
+        await this.bulkUpdateStatus(selectedOrderIds, newStatus);
+    }
+
+    // Select all orders
+    selectAllOrders() {
+        document.querySelectorAll('.order-checkbox').forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    }
+
+    // Clear selection
+    clearSelection() {
+        document.querySelectorAll('.order-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
         });
     }
 
