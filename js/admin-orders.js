@@ -22,6 +22,28 @@ class AdminOrderManager {
         this.setupEventListeners();
     }
 
+    // Helper method to update localStorage
+updateLocalStorageOrder(orderId, newStatus) {
+    try {
+        const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        const orderIndex = localOrders.findIndex(order => order.id === orderId);
+        
+        if (orderIndex > -1) {
+            localOrders[orderIndex].status = newStatus;
+            localOrders[orderIndex].statusUpdated = new Date().toISOString();
+            
+            if (newStatus === 'completed') {
+                localOrders[orderIndex].completedDate = new Date().toISOString();
+            }
+            
+            localStorage.setItem('de_order_history', JSON.stringify(localOrders));
+            console.log('✅ Updated order in localStorage:', orderId, newStatus);
+        }
+    } catch (error) {
+        console.error('Error updating localStorage:', error);
+    }
+}
+
     async makeRequest(endpoint, options = {}) {
         try {
             console.log(`🌐 Making request to: ${this.baseURL}${endpoint}`);
@@ -371,71 +393,104 @@ class AdminOrderManager {
 
     // ENHANCED STATUS UPDATE METHOD
     async updateStatus(orderId, newStatus) {
-        try {
-            console.log('🔄 Updating order status:', orderId, newStatus);
-            
-            // Find the order
-            const order = this.orders.find(o => o.id === orderId);
-            if (!order) {
-                alert('Order not found!');
-                return;
-            }
+    try {
+        console.log('🔄 Updating order status:', orderId, newStatus);
+        
+        // Update locally first for immediate feedback
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) {
+            alert('Order not found!');
+            return;
+        }
 
-            const oldStatus = order.status;
-            
-            // Update locally first for immediate feedback
-            order.status = newStatus;
-            order.statusUpdated = new Date().toISOString();
-            
-            if (newStatus === 'completed') {
-                order.completedDate = new Date().toISOString();
-            }
-            
-            // Update UI immediately
-            this.renderStats();
-            this.renderOrders();
-            
-            // Then update in backend
-            const response = await this.makeRequest(`/orders/${orderId}/status`, {
+        const oldStatus = order.status;
+        
+        // Update locally
+        order.status = newStatus;
+        order.statusUpdated = new Date().toISOString();
+        
+        if (newStatus === 'completed') {
+            order.completedDate = new Date().toISOString();
+        }
+        
+        // Update UI immediately
+        this.renderStats();
+        this.renderOrders();
+        
+        // TRY DIFFERENT ENDPOINT FORMATS
+        let response;
+        try {
+            // Try the original endpoint
+            response = await this.makeRequest(`/orders/${orderId}/status`, {
                 method: 'PUT',
                 body: JSON.stringify({ status: newStatus })
             });
-            
-            console.log('✅ Backend response:', response);
-            
-            // Show success message with WhatsApp option
-            let successMessage = `✅ Order #${orderId} status updated from ${oldStatus} to ${newStatus}!`;
-            
-            if (response.whatsappURL && order.customer?.phone) {
-                const sendNotification = confirm(
-                    `${successMessage}\n\n` +
-                    `Customer: ${order.customer?.name || 'N/A'}\n` +
-                    `Phone: ${order.customer?.phone}\n\n` +
-                    `Send WhatsApp notification to customer?`
-                );
-                
-                if (sendNotification) {
-                    window.open(response.whatsappURL, '_blank');
-                }
-            } else {
-                alert(successMessage);
-            }
-            
-            // Trigger sync for user order history
-            if (window.orderSync) {
-                window.orderSync.notifyAdminChange(orderId, 'status_update');
-            }
-            
         } catch (error) {
-            console.error('Failed to update status:', error);
-            alert('Failed to update order status: ' + error.message);
+            console.log('⚠️ First endpoint failed, trying alternative...');
             
-            // Reload orders to get correct state
-            await this.loadOrdersFromBackend();
-            this.renderStats();
-            this.renderOrders();
+            // Try alternative endpoint format
+            try {
+                response = await this.makeRequest(`/orders/${orderId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ 
+                        status: newStatus,
+                        statusUpdated: new Date().toISOString()
+                    })
+                });
+            } catch (secondError) {
+                console.log('⚠️ Second endpoint failed, trying PATCH method...');
+                
+                // Try PATCH method
+                response = await this.makeRequest(`/orders/${orderId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ 
+                        status: newStatus,
+                        statusUpdated: new Date().toISOString()
+                    })
+                });
+            }
         }
+        
+        console.log('✅ Backend response:', response);
+        
+        // Show success message
+        let successMessage = `✅ Order #${orderId} status updated from ${oldStatus} to ${newStatus}!`;
+        
+        // Check for WhatsApp URL in response
+        if (response.whatsappURL && order.customer?.phone) {
+            const sendNotification = confirm(
+                `${successMessage}\n\n` +
+                `Customer: ${order.customer?.name || 'N/A'}\n` +
+                `Phone: ${order.customer?.phone}\n\n` +
+                `Send WhatsApp notification to customer?`
+            );
+            
+            if (sendNotification) {
+                window.open(response.whatsappURL, '_blank');
+            }
+        } else {
+            alert(successMessage);
+        }
+        
+        // Update localStorage to sync with user
+        this.updateLocalStorageOrder(orderId, newStatus);
+        
+    } catch (error) {
+        console.error('All update attempts failed:', error);
+        
+        // Show appropriate error message
+        if (error.message.includes('404')) {
+            alert(`❌ Cannot update status: Order endpoint not found.\n\nThis might be a backend configuration issue. Status was updated locally only.`);
+        } else {
+            alert('Failed to update order status: ' + error.message);
+        }
+        
+        // Reload orders to get correct state
+        await this.loadOrdersFromBackend();
+        this.renderStats();
+        this.renderOrders();
     }
+}
 
     // BULK STATUS UPDATE METHODS
     async bulkUpdateStatus(orderIds, newStatus) {
