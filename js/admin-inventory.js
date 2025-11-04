@@ -19,7 +19,6 @@ class InventoryManager {
             }
             const productsData = await response.json();
             
-            // Transform the data to match what the inventory expects
             this.products = productsData.map(product => ({
                 id: product.id,
                 name: product.title,
@@ -29,7 +28,6 @@ class InventoryManager {
                 image: product.images ? product.images[0] : '',
                 description: product.description,
                 colors: product.colors || [],
-                // Initialize color stock - if not exists, create it
                 colorStock: product.colorStock || this.initializeColorStock(product.colors, product.stock),
                 availableColors: product.availableColors || (product.colors ? product.colors.map(color => color.name) : []),
                 originalData: product
@@ -50,7 +48,6 @@ class InventoryManager {
         const remainder = totalStock % colors.length;
         
         colors.forEach((color, index) => {
-            // Distribute stock evenly, with remainder going to first color
             colorStock[color.name] = stockPerColor + (index < remainder ? 1 : 0);
         });
         
@@ -85,12 +82,10 @@ class InventoryManager {
 
     createProductRow(product) {
         const row = document.createElement('tr');
-        const status = this.getStockStatus(product.stock);
+        const totalColorStock = product.colorStock ? Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : 0;
+        const status = this.getStockStatus(totalColorStock);
         const availableColorsCount = product.availableColors ? product.availableColors.length : 0;
         const totalColorsCount = product.colors ? product.colors.length : 0;
-        
-        // Calculate total stock from color stock
-        const totalColorStock = product.colorStock ? Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : 0;
         
         row.innerHTML = `
             <td>${product.id}</td>
@@ -182,40 +177,59 @@ class InventoryManager {
     }
 
     setupModalHandlers() {
-        const modal = document.getElementById('productModal');
-        const closeBtn = document.querySelector('.close');
-        const form = document.getElementById('productForm');
+        // Product modal handlers
+        const productModal = document.getElementById('productModal');
+        const productCloseBtn = productModal.querySelector('.close');
+        const productForm = document.getElementById('productForm');
 
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
+        if (productCloseBtn) {
+            productCloseBtn.addEventListener('click', () => {
                 this.closeModal();
             });
         }
 
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
+        if (productModal) {
+            productModal.addEventListener('click', (e) => {
+                if (e.target === productModal) {
                     this.closeModal();
                 }
             });
         }
 
-        if (form) {
-            form.addEventListener('submit', (e) => {
+        if (productForm) {
+            productForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 this.saveProduct();
             });
         }
 
-        // Close modal with Escape key
+        // Colors modal handlers
+        const colorsModal = document.getElementById('colorsModal');
+        const colorsCloseBtn = colorsModal.querySelector('.close');
+
+        if (colorsCloseBtn) {
+            colorsCloseBtn.addEventListener('click', () => {
+                colorsModal.style.display = 'none';
+            });
+        }
+
+        if (colorsModal) {
+            colorsModal.addEventListener('click', (e) => {
+                if (e.target === colorsModal) {
+                    colorsModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Close modals with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.closeModal();
+                document.getElementById('colorsModal').style.display = 'none';
             }
         });
     }
 
-    // Updated method for color stock management
     manageColorStock(productId) {
         const product = this.products.find(p => p.id === productId);
         if (!product) return;
@@ -223,29 +237,8 @@ class InventoryManager {
         const modal = document.getElementById('colorsModal');
         const modalContent = document.getElementById('colorsModalContent');
         
-        if (!modal || !modalContent) {
-            this.createColorsModal();
-            this.manageColorStock(productId); // Retry after creating modal
-            return;
-        }
-
         modalContent.innerHTML = this.generateColorStockManagementHTML(product);
         modal.style.display = 'block';
-    }
-
-    createColorsModal() {
-        const modalHTML = `
-            <div id="colorsModal" class="modal">
-                <div class="modal-content" style="max-width: 700px;">
-                    <span class="close" onclick="document.getElementById('colorsModal').style.display='none'">&times;</span>
-                    <h2>Manage Color Stock</h2>
-                    <div id="colorsModalContent">
-                        <!-- Color stock management content will be loaded here -->
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
 
     generateColorStockManagementHTML(product) {
@@ -268,10 +261,10 @@ class InventoryManager {
                         <strong>Total Stock:</strong> <span class="stock-total">${totalStock}</span> pcs
                     </div>
                     <div class="stock-controls">
-                        <button type="button" class="btn btn-sm btn-outline" onclick="inventoryManager.distributeStockEvenly('${product.id}')">
+                        <button type="button" class="btn btn-sm btn-outline" onclick="window.inventoryManager.distributeStockEvenly('${product.id}')">
                             Distribute Evenly
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline" onclick="inventoryManager.setAllStock('${product.id}', 0)">
+                        <button type="button" class="btn btn-sm btn-outline" onclick="window.inventoryManager.setAllStock('${product.id}', 0)">
                             Set All to 0
                         </button>
                     </div>
@@ -294,18 +287,18 @@ class InventoryManager {
                         <label class="availability-toggle">
                             <input type="checkbox" 
                                    ${isAvailable ? 'checked' : ''}
-                                   onchange="inventoryManager.toggleColorAvailability('${product.id}', '${color.name}', this.checked)">
+                                   onchange="window.inventoryManager.toggleColorAvailability('${product.id}', '${color.name}', this.checked)">
                             Available
                         </label>
                         <div class="stock-input-group">
-                            <button type="button" class="stock-btn minus" onclick="inventoryManager.adjustColorStock('${product.id}', '${color.name}', -1)">-</button>
+                            <button type="button" class="stock-btn minus" onclick="window.inventoryManager.adjustColorStock('${product.id}', '${color.name}', -1)">-</button>
                             <input type="number" 
                                    class="stock-input" 
                                    value="${currentStock}" 
                                    min="0"
-                                   onchange="inventoryManager.updateColorStock('${product.id}', '${color.name}', this.value)"
+                                   onchange="window.inventoryManager.updateColorStock('${product.id}', '${color.name}', this.value)"
                                    ${!isAvailable ? 'disabled' : ''}>
-                            <button type="button" class="stock-btn plus" onclick="inventoryManager.adjustColorStock('${product.id}', '${color.name}', 1)">+</button>
+                            <button type="button" class="stock-btn plus" onclick="window.inventoryManager.adjustColorStock('${product.id}', '${color.name}', 1)">+</button>
                         </div>
                         <span class="stock-display">${currentStock} pcs</span>
                     </div>
@@ -316,7 +309,7 @@ class InventoryManager {
         html += `
                 </div>
                 <div class="color-actions">
-                    <button type="button" class="btn btn-primary" onclick="inventoryManager.saveColorStock('${product.id}')">
+                    <button type="button" class="btn btn-primary" onclick="window.inventoryManager.saveColorStock('${product.id}')">
                         Save Stock Changes
                     </button>
                 </div>
@@ -341,7 +334,6 @@ class InventoryManager {
             }
         } else {
             product.availableColors = product.availableColors.filter(color => color !== colorName);
-            // Set stock to 0 when disabling a color
             if (product.colorStock) {
                 product.colorStock[colorName] = 0;
             }
@@ -388,12 +380,10 @@ class InventoryManager {
             product.colorStock = {};
         }
 
-        // Reset all to 0 first
         product.colors.forEach(color => {
             product.colorStock[color.name] = 0;
         });
 
-        // Distribute to available colors only
         availableColors.forEach((colorName, index) => {
             product.colorStock[colorName] = stockPerColor + (index < remainder ? 1 : 0);
         });
@@ -436,9 +426,44 @@ class InventoryManager {
         }
     }
 
-    // ... (keep all other existing methods like openModal, closeModal, etc.)
+    openModal(product = null) {
+        const modal = document.getElementById('productModal');
+        const title = document.getElementById('modalTitle');
+        
+        if (product) {
+            title.textContent = 'Edit Product';
+            this.populateForm(product);
+        } else {
+            title.textContent = 'Add New Product';
+            this.resetForm();
+        }
+        
+        modal.style.display = 'block';
+    }
 
-    // Update the saveProduct method to handle color stock
+    closeModal() {
+        document.getElementById('productModal').style.display = 'none';
+        this.resetForm();
+    }
+
+    resetForm() {
+        const form = document.getElementById('productForm');
+        if (form) {
+            form.reset();
+            document.getElementById('productId').value = '';
+        }
+    }
+
+    populateForm(product) {
+        document.getElementById('productId').value = product.id;
+        document.getElementById('productName').value = product.name;
+        document.getElementById('productPrice').value = product.price;
+        document.getElementById('productStock').value = product.stock;
+        document.getElementById('productCategory').value = product.category;
+        document.getElementById('productImage').value = product.image || '';
+        document.getElementById('productDescription').value = product.description || '';
+    }
+
     async saveProduct() {
         const productId = document.getElementById('productId').value;
         const formData = {
@@ -450,7 +475,6 @@ class InventoryManager {
             description: document.getElementById('productDescription').value.trim()
         };
 
-        // Validation
         if (!formData.name || !formData.category || isNaN(formData.price) || isNaN(formData.stock)) {
             this.showError('Please fill in all required fields with valid data.');
             return;
@@ -458,10 +482,8 @@ class InventoryManager {
 
         try {
             if (productId) {
-                // Update existing product
                 const index = this.products.findIndex(p => p.id === productId);
                 if (index !== -1) {
-                    // Preserve color stock when updating
                     const existingProduct = this.products[index];
                     formData.colorStock = existingProduct.colorStock;
                     formData.availableColors = existingProduct.availableColors;
@@ -470,7 +492,6 @@ class InventoryManager {
                     this.products[index] = { ...this.products[index], ...formData };
                 }
             } else {
-                // Add new product - initialize empty color stock
                 const newProduct = {
                     id: Date.now().toString(),
                     colorStock: {},
@@ -492,14 +513,75 @@ class InventoryManager {
         }
     }
 
-    // ... (keep all other existing methods)
+    editProduct(productId) {
+        const product = this.products.find(p => p.id === productId);
+        if (product) {
+            this.openModal(product);
+        }
+    }
+
+    async deleteProduct(productId) {
+        if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            this.products = this.products.filter(p => p.id !== productId);
+            await this.saveToBackend();
+            this.renderInventory();
+            this.showSuccess('Product deleted successfully!');
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            this.showError('Failed to delete product. Please try again.');
+        }
+    }
+
+    filterProducts(searchTerm) {
+        const filtered = this.products.filter(product => 
+            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.id.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+        const tbody = document.getElementById('inventoryBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 40px;">
+                        No products match your search.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        filtered.forEach(product => {
+            tbody.appendChild(this.createProductRow(product));
+        });
+    }
+
+    async saveToBackend() {
+        console.log('Current products:', this.products);
+        localStorage.setItem('inventory_products', JSON.stringify(this.products));
+    }
+
+    showError(message) {
+        alert('Error: ' + message);
+    }
+
+    showSuccess(message) {
+        alert('Success: ' + message);
+    }
 }
 
 // Make inventoryManager globally accessible
-let inventoryManager;
+window.inventoryManager = new InventoryManager();
 
-// Initialize inventory manager when page loads
+// Initialize when page loads
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Initializing Inventory Manager...');
-    inventoryManager = new InventoryManager();
 });
