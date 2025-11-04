@@ -528,109 +528,44 @@
 
     <script src="js/admin-orders.js"></script>
     <script>
-        // Check if admin is logged in
-        const adminToken = localStorage.getItem('admin_token');
-        const adminLoggedIn = localStorage.getItem('admin_logged_in');
+    // Check if admin is logged in
+    const adminToken = localStorage.getItem('admin_token');
+    const adminLoggedIn = localStorage.getItem('admin_logged_in');
+    
+    if (!adminLoggedIn || !adminToken) {
+        window.location.href = 'admin-login.html';
+    }
+
+    function logout() {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_logged_in');
+        localStorage.removeItem('admin_user');
+        window.location.href = 'admin-login.html';
+    }
+
+    // Add filter functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
         
-        if (!adminLoggedIn || !adminToken) {
-            window.location.href = 'admin-login.html';
-        }
-
-        function logout() {
-            localStorage.removeItem('admin_token');
-            localStorage.removeItem('admin_logged_in');
-            localStorage.removeItem('admin_user');
-            window.location.href = 'admin-login.html';
-        }
-
-        // Add filter functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            
-            filterButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // Remove active class from all buttons
-                    filterButtons.forEach(btn => btn.classList.remove('active'));
-                    // Add active class to clicked button
-                    this.classList.add('active');
-                    
-                    const filter = this.getAttribute('data-filter');
-                    adminManager.filterOrders(filter);
-                });
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                adminManager.filterOrders(filter);
             });
-
-            // Modal close functionality
-            const modals = document.querySelectorAll('.modal');
-            const closeButtons = document.querySelectorAll('.close');
-            
-            closeButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    modals.forEach(modal => {
-                        modal.style.display = 'none';
-                    });
-                });
-            });
-
-            // Close modal when clicking outside
-            modals.forEach(modal => {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        modal.style.display = 'none';
-                    }
-                });
-            });
-
-            // Status form submission
-            const statusForm = document.getElementById('statusForm');
-            if (statusForm) {
-                statusForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const orderId = document.getElementById('editOrderId').value;
-                    const newStatus = document.getElementById('orderStatus').value;
-                    adminManager.updateOrderStatus(orderId, newStatus);
-                });
-            }
-
-            // Auto-refresh orders every 30 seconds
-            setInterval(() => {
-                if (adminLoggedIn) {
-                    adminManager.loadOrders();
-                }
-            }, 30000);
         });
 
-        // Global error handler for orders
-        window.handleOrdersError = function(message) {
-            const errorElement = document.getElementById('errorMessage');
-            if (errorElement) {
-                errorElement.textContent = message || 'Failed to load orders. Please check your connection.';
-                errorElement.style.display = 'block';
-                
-                setTimeout(() => {
-                    errorElement.style.display = 'none';
-                }, 5000);
+        // Auto-refresh orders every 30 seconds
+        setInterval(() => {
+            if (adminLoggedIn) {
+                adminManager.loadOrders();
             }
-        };
-
-        // Global function to open order modal
-        window.openOrderModal = function(orderId) {
-            const order = adminManager.orders.find(o => o.id === orderId);
-            if (order) {
-                const modalContent = document.getElementById('orderModalContent');
-                modalContent.innerHTML = adminManager.generateOrderDetailsHTML(order);
-                document.getElementById('orderModal').style.display = 'block';
-            }
-        };
-
-        // Global function to open status modal
-        window.openStatusModal = function(orderId) {
-            const order = adminManager.orders.find(o => o.id === orderId);
-            if (order) {
-                document.getElementById('editOrderId').value = orderId;
-                document.getElementById('orderStatus').value = order.status;
-                document.getElementById('statusModal').style.display = 'block';
-            }
-        };
-    </script>
+        }, 30000);
+    });
+</script>
 </body>
 </html>
