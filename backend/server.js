@@ -191,6 +191,57 @@ app.post('/api/admin/login',
         }
     }
 );
+// Sync endpoint for user orders
+app.post('/api/orders/sync', (req, res) => {
+    try {
+        const { localOrders } = req.body;
+        
+        if (!localOrders || !Array.isArray(localOrders)) {
+            return res.status(400).json({ error: 'Local orders array required' });
+        }
+
+        // Get all orders that match the user's local orders by ID
+        const userOrderIds = localOrders.map(order => order.id);
+        const serverOrders = orders.filter(order => userOrderIds.includes(order.id));
+        
+        console.log('🔄 Sync request:', {
+            localOrdersCount: localOrders.length,
+            serverOrdersCount: serverOrders.length
+        });
+
+        res.json({
+            orders: serverOrders,
+            syncedAt: new Date().toISOString(),
+            message: `Synced ${serverOrders.length} orders`
+        });
+
+    } catch (error) {
+        console.error('Sync error:', error);
+        res.status(500).json({ error: 'Sync failed' });
+    }
+});
+
+// Get order updates since timestamp
+app.get('/api/orders/updates', (req, res) => {
+    try {
+        const { since } = req.query;
+        
+        let updatedOrders = orders;
+        if (since) {
+            updatedOrders = orders.filter(order => 
+                new Date(order.statusUpdated || order.orderDate) > new Date(since)
+            );
+        }
+        
+        res.json({
+            updatedOrders: updatedOrders,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Updates error:', error);
+        res.status(500).json({ error: 'Failed to get updates' });
+    }
+});
 
 // Delete order (protected)
 app.delete('/api/orders/:id', authenticateToken, checkSessionTimeout, (req, res) => {
