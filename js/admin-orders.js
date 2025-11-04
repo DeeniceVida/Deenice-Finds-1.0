@@ -123,11 +123,9 @@ class AdminOrderManager {
     }
 
     sendWhatsAppNotification(order, newStatus) {
-        const config = window.DEENICE_CONFIG || {};
-        const whatsappNumber = config.whatsappNumber ? config.whatsappNumber.replace('+', '') : '';
-        
-        if (!whatsappNumber) {
-            alert('WhatsApp number not configured in DEENICE_CONFIG');
+        const customerPhone = order.customer?.phone;
+        if (!customerPhone) {
+            alert('No customer phone number available for WhatsApp notification.');
             return;
         }
 
@@ -139,12 +137,6 @@ class AdminOrderManager {
 
         const message = statusMessages[newStatus] || 
                        `📢 Update on your order #${order.id}: Status changed to ${newStatus}`;
-
-        const customerPhone = order.customer?.phone;
-        if (!customerPhone) {
-            alert('No customer phone number available for WhatsApp notification.');
-            return;
-        }
 
         const encodedMessage = encodeURIComponent(message);
         const whatsappURL = `https://wa.me/${customerPhone}?text=${encodedMessage}`;
@@ -260,7 +252,7 @@ class AdminOrderManager {
         });
 
         // Add refresh button listener
-        const refreshBtn = document.getElementById('refreshOrders');
+        const refreshBtn = document.querySelector('.btn-primary');
         if (refreshBtn) {
             refreshBtn.addEventListener('click', async () => {
                 refreshBtn.disabled = true;
@@ -271,16 +263,8 @@ class AdminOrderManager {
                 this.renderOrders();
                 
                 refreshBtn.disabled = false;
-                refreshBtn.textContent = 'Refresh Orders';
+                refreshBtn.textContent = 'Refresh';
                 alert('Orders refreshed from backend!');
-            });
-        }
-
-        // Add search functionality
-        const searchInput = document.getElementById('searchOrders');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                this.searchOrders(e.target.value);
             });
         }
     }
@@ -293,33 +277,6 @@ class AdminOrderManager {
         });
 
         this.renderOrders();
-    }
-
-    searchOrders(query) {
-        const filteredOrders = this.orders.filter(order => 
-            order.id.toLowerCase().includes(query.toLowerCase()) ||
-            order.customer?.name?.toLowerCase().includes(query.toLowerCase()) ||
-            order.customer?.phone?.includes(query) ||
-            order.customer?.city?.toLowerCase().includes(query.toLowerCase())
-        );
-        
-        this.renderFilteredOrders(filteredOrders);
-    }
-
-    renderFilteredOrders(filteredOrders) {
-        const container = document.getElementById('ordersList') || document.getElementById('orders-list');
-        
-        if (filteredOrders.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <h3>No orders found</h3>
-                    <p>No orders match your search criteria.</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = filteredOrders.map(order => this.createOrderCard(order)).join('');
     }
 
     renderStats() {
@@ -361,9 +318,9 @@ class AdminOrderManager {
     }
 
     renderOrders() {
-        const container = document.getElementById('ordersList') || document.getElementById('orders-list');
+        const container = document.getElementById('ordersTableBody');
         
-        console.log('🎨 Rendering orders to container:', container);
+        console.log('🎨 Rendering orders to table body...');
         console.log('🔍 Current filter:', this.currentFilter);
         console.log('📋 Orders to render:', this.orders.length);
 
@@ -382,8 +339,8 @@ class AdminOrderManager {
             return;
         }
 
-        console.log('🖼️ Creating order cards...');
-        container.innerHTML = filteredOrders.map(order => this.createOrderCard(order)).join('');
+        console.log('🖼️ Creating order table rows...');
+        container.innerHTML = filteredOrders.map(order => this.createOrderRow(order)).join('');
         console.log('✅ Orders rendered successfully');
     }
 
@@ -394,95 +351,80 @@ class AdminOrderManager {
         return this.orders.filter(order => order.status === this.currentFilter);
     }
 
-    createOrderCard(order) {
-        console.log('🛠️ Creating card for order:', order.id);
+    createOrderRow(order) {
+        console.log('🛠️ Creating table row for order:', order.id);
         
         const orderDate = new Date(order.orderDate).toLocaleDateString('en-US', {
             year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            month: 'short',
+            day: 'numeric'
         });
 
+        const customerName = order.customer?.name || 'N/A';
+        const customerCity = order.customer?.city || 'N/A';
+        const customerPhone = order.customer?.phone || 'No phone';
+
         return `
-            <div class="order-card" data-order-id="${order.id}">
-                <div class="order-header">
-                    <div class="order-info">
-                        <h3>Order #${order.id}</h3>
-                        <div class="order-meta">
-                            <span>📅 ${orderDate}</span>
-                            <span>👤 ${order.customer?.name || 'N/A'}</span>
-                            <span>📍 ${order.customer?.city || 'N/A'}</span>
-                            <span>📞 ${order.customer?.phone || 'No phone'}</span>
-                            <span>🚚 ${this.getDeliveryText(order)}</span>
-                            ${order.delivery?.pickupCode ? `<span>🔑 ${order.delivery.pickupCode}</span>` : ''}
-                        </div>
+            <tr data-order-id="${order.id}">
+                <td>
+                    <strong>#${order.id}</strong>
+                </td>
+                <td>
+                    <div class="customer-info">
+                        <div class="customer-name">${customerName}</div>
+                        <div class="customer-email">${customerCity}</div>
+                        <div class="customer-email">${customerPhone}</div>
                     </div>
-                    <div>
-                        <select class="status-select ${this.getStatusClass(order.status)}" 
-                                onchange="adminManager.updateStatus('${order.id}', this.value)"
-                                style="color: inherit;">
-                            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
-                            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
-                            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
-                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-                        </select>
+                </td>
+                <td>${orderDate}</td>
+                <td>
+                    <div class="order-items-preview">
+                        ${(order.items || []).slice(0, 2).map(item => this.createOrderItemPreview(item)).join('')}
+                        ${(order.items || []).length > 2 ? 
+                            `<div class="item-name-small">+${(order.items || []).length - 2} more items</div>` : 
+                            ''}
                     </div>
-                </div>
-                
-                <div class="order-items">
-                    ${(order.items || []).map(item => this.createOrderItem(item)).join('')}
-                </div>
-                
-                <div class="order-footer">
-                    <div class="order-total">
-                        Total: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
-                    </div>
-                    <div class="order-actions">
-                        <button class="btn btn-secondary" onclick="adminManager.viewOrderDetails('${order.id}')">
-                            View Details
+                </td>
+                <td>
+                    <strong>${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}</strong>
+                </td>
+                <td>
+                    <select class="status-select ${this.getStatusClass(order.status)}" 
+                            onchange="adminManager.updateStatus('${order.id}', this.value)"
+                            style="border: none; background: transparent; color: inherit; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                        <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                        <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
+                        <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                    </select>
+                </td>
+                <td>
+                    <div class="actions">
+                        <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">
+                            View
                         </button>
-                        <button class="btn btn-primary" onclick="adminManager.contactCustomer('${order.id}')">
-                            Contact Customer
+                        <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">
+                            Contact
                         </button>
-                        <button class="btn btn-danger" onclick="adminManager.deleteOrder('${order.id}')" style="background-color: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-left: 5px;">
-                            🗑️ Delete
+                        <button class="btn-danger" onclick="adminManager.deleteOrder('${order.id}')" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            Delete
                         </button>
                     </div>
-                </div>
-            </div>
+                </td>
+            </tr>
         `;
     }
 
-    createOrderItem(item) {
-        const specs = [];
-        if (item.color) specs.push(`Color: ${item.color}`);
-        if (item.size) specs.push(`Size: ${item.size}`);
-        if (item.model && item.model !== 'Standard') specs.push(`Model: ${item.model}`);
-
+    createOrderItemPreview(item) {
         return `
-            <div class="order-item">
-                <img src="${item.img || 'https://via.placeholder.com/50'}" 
+            <div class="order-item-preview">
+                <img src="${item.img || 'https://via.placeholder.com/30'}" 
                      alt="${item.title}" 
-                     class="item-image"
-                     onerror="this.src='https://via.placeholder.com/50x50?text=No+Image'">
-                <div class="item-details">
-                    <h4>${item.title || 'Unknown Item'}</h4>
-                    ${specs.length > 0 ? `
-                        <div class="item-specs">${specs.join(' • ')}</div>
-                    ` : ''}
-                    <div class="item-price">
-                        ${item.qty || 1} × ${item.currency || 'KES'} ${(item.price || 0).toLocaleString()}
-                    </div>
-                </div>
+                     class="item-image-small"
+                     onerror="this.src='https://via.placeholder.com/30x30?text=No+Image'">
+                <div class="item-name-small">${item.title || 'Unknown Item'}</div>
             </div>
         `;
-    }
-
-    getDeliveryText(order) {
-        if (!order.delivery) return 'Delivery';
-        return order.delivery.method === 'pickup' ? 'Store Pickup' : 'Home Delivery';
     }
 
     getStatusClass(status) {
@@ -538,29 +480,100 @@ TOTAL: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
         }
     }
 
+    getDeliveryText(order) {
+        if (!order.delivery) return 'Delivery';
+        return order.delivery.method === 'pickup' ? 'Store Pickup' : 'Home Delivery';
+    }
+
     getEmptyState() {
         return `
-            <div class="empty-state">
-                <h3>No orders found</h3>
-                <p>There are no orders in the system yet.</p>
-                <button class="btn btn-primary" onclick="adminManager.loadOrdersFromBackend()">
-                    Refresh from Backend
-                </button>
-                <button class="btn btn-secondary" onclick="adminManager.loadOrdersFromBackend()">
-                    Check Local Storage
-                </button>
-            </div>
+            <tr>
+                <td colspan="7" class="empty-state">
+                    <h3>No orders found</h3>
+                    <p>There are no orders in the system yet.</p>
+                    <button class="btn btn-primary" onclick="adminManager.loadOrdersFromBackend()">
+                        Refresh from Backend
+                    </button>
+                </td>
+            </tr>
         `;
     }
 
     getNoResultsState() {
         return `
-            <div class="empty-state">
-                <h3>No orders match this filter</h3>
-                <p>Try selecting a different filter to see more orders.</p>
-                <button class="btn btn-primary" onclick="adminManager.setFilter('all')">
-                    Show All Orders
-                </button>
+            <tr>
+                <td colspan="7" class="empty-state">
+                    <h3>No orders match this filter</h3>
+                    <p>Try selecting a different filter to see more orders.</p>
+                    <button class="btn btn-primary" onclick="adminManager.setFilter('all')">
+                        Show All Orders
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+
+    // Debug function to check orders
+    debugOrders() {
+        console.log('=== DEBUG ORDERS ===');
+        console.log('Total orders:', this.orders.length);
+        console.log('Orders data:', this.orders);
+        console.log('Current filter:', this.currentFilter);
+        console.log('Backend URL:', this.baseURL);
+        console.log('Token exists:', !!this.token);
+        
+        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nCheck console for details.`);
+    }
+
+    // Load orders function for the refresh button
+    async loadOrders() {
+        await this.loadOrdersFromBackend();
+        this.renderStats();
+        this.renderOrders();
+    }
+
+    // Filter orders function for the filter buttons
+    filterOrders(filter) {
+        this.setFilter(filter);
+    }
+
+    // Update order status function for the modal
+    async updateOrderStatus(orderId, newStatus) {
+        await this.updateStatus(orderId, newStatus);
+        document.getElementById('statusModal').style.display = 'none';
+    }
+
+    // Generate order details HTML for modal
+    generateOrderDetailsHTML(order) {
+        return `
+            <div class="order-details">
+                <h3>Order #${order.id}</h3>
+                <div class="order-info">
+                    <p><strong>Customer:</strong> ${order.customer?.name || 'N/A'}</p>
+                    <p><strong>City:</strong> ${order.customer?.city || 'N/A'}</p>
+                    <p><strong>Phone:</strong> ${order.customer?.phone || 'Not provided'}</p>
+                    <p><strong>Order Date:</strong> ${new Date(order.orderDate).toLocaleString()}</p>
+                    <p><strong>Status:</strong> ${order.status}</p>
+                    <p><strong>Delivery:</strong> ${this.getDeliveryText(order)}</p>
+                    ${order.delivery?.pickupCode ? `<p><strong>Pickup Code:</strong> ${order.delivery.pickupCode}</p>` : ''}
+                </div>
+                <div class="order-items">
+                    <h4>Items (${order.items?.length || 0})</h4>
+                    ${order.items ? order.items.map(item => `
+                        <div class="order-item">
+                            <img src="${item.img || 'https://via.placeholder.com/50'}" alt="${item.title}" style="width: 50px; height: 50px; object-fit: cover;">
+                            <div>
+                                <strong>${item.title}</strong>
+                                <p>${item.qty} × ${item.currency} ${item.price}</p>
+                                ${item.color ? `<p>Color: ${item.color}</p>` : ''}
+                                ${item.size ? `<p>Size: ${item.size}</p>` : ''}
+                            </div>
+                        </div>
+                    `).join('') : 'No items'}
+                </div>
+                <div class="order-total">
+                    <h3>Total: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}</h3>
+                </div>
             </div>
         `;
     }
