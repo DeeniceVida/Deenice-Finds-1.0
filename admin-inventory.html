@@ -621,9 +621,14 @@
         </div>
 
         <div class="inventory-controls">
-            <button id="addProductBtn">+ Add New Product</button>
-            <input type="text" id="searchInventory" placeholder="Search products by name or category...">
-        </div>
+    <button id="addProductBtn">+ Add New Product</button>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="searchInventory" placeholder="Search products by name or category...">
+        <button id="refreshProductsBtn" class="btn btn-secondary" style="white-space: nowrap;">
+            🔄 Refresh from Source
+        </button>
+    </div>
+</div>
 
         <div class="inventory-table-container">
             <table id="inventoryTable">
