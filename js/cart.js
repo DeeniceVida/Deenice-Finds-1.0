@@ -1,5 +1,4 @@
 // --- Global Cart Logic ---
-// Use a function to manage data retrieval and saving
 function getCart() {
     return JSON.parse(localStorage.getItem('de_cart') || '[]');
 }
@@ -50,19 +49,238 @@ function selectDeliveryOption(option) {
 // 🟢 Item Removal Function
 function removeItemFromCart(itemTitle) {
     let cart = getCart();
-
-    // Find the index of the first item with the matching title
     const indexToRemove = cart.findIndex(item => item.title === itemTitle);
 
     if (indexToRemove > -1) {
-        // Remove only that item from the array
         cart.splice(indexToRemove, 1);
         saveCart(cart);
-        renderCart(); // Re-render the cart immediately
+        renderCart();
     }
 }
 
-// 🚀 UPDATED FUNCTION: Fixed WhatsApp Order Sender
+// --- Cart Renderer (Fixed for existing HTML) ---
+function renderCart() {
+    const list = document.getElementById('cart-contents');
+    const btn = document.getElementById('cart-send');
+    const cart = getCart();
+    const summaryContainer = document.getElementById('cart-summary');
+    const deliveryOptions = document.getElementById('delivery-options');
+
+    if (!list || !summaryContainer) {
+        console.error('Cart elements not found');
+        return;
+    }
+
+    if (cart.length === 0) {
+        list.innerHTML = '<p style="text-align: center; padding: 40px; color: #666;">Your cart is empty.</p>';
+        summaryContainer.innerHTML = '';
+        if (btn) btn.style.display = 'none';
+        if (deliveryOptions) deliveryOptions.style.display = 'none';
+        
+        // Hide form if it exists
+        const existingForm = document.getElementById('user-name')?.closest('.premium-form');
+        if (existingForm) {
+            existingForm.style.display = 'none';
+        }
+        return;
+    }
+
+    // --- Calculate Total and Display Summary ---
+    let total = 0;
+    const currency = cart[0].currency;
+    cart.forEach(item => {
+        total += item.price * item.qty;
+    });
+
+    summaryContainer.innerHTML = `
+        <div class="cart-summary">
+            <h2>Total: ${currency} ${total.toLocaleString()}</h2>
+        </div>
+    `;
+
+    // Build the cart HTML
+    let html = `
+        <div class="cart-items-container">
+            <ul class="cart-items-list">
+                ${cart.map(item => `
+                    <li class="cart-item" data-product-title="${item.title}">
+                        <img src="${item.img || 'https://via.placeholder.com/80'}" alt="${item.title}" class="cart-item-image" />
+                        <div class="cart-item-details">
+                            <strong class="cart-item-title">${item.title}</strong>
+                            <div class="cart-item-specs">
+                                ${item.color || ''} 
+                                ${item.size ? `/ ${item.size}` : ''}
+                                ${item.model && item.model !== 'Standard' ? `/ ${item.model}` : ''}
+                            </div>
+                            <div class="cart-item-price">
+                                ${item.qty} × ${currency} ${item.price.toLocaleString()}
+                            </div>
+                        </div>
+                        <button class="remove-from-cart-btn" data-item-title="${item.title}">
+                            Remove
+                        </button>
+                    </li>
+                `).join('')}
+            </ul>
+        </div>
+    `;
+
+    list.innerHTML = html;
+    if (btn) btn.style.display = 'block';
+
+    // Show delivery options
+    if (deliveryOptions) {
+        deliveryOptions.style.display = 'block';
+    }
+
+    // Check if form already exists
+    const existingForm = document.getElementById('user-name')?.closest('.premium-form');
+    
+    // Only insert the form if it doesn't already exist in the DOM
+    if (!existingForm) {
+        const form = document.createElement('div');
+        form.className = 'premium-form';
+        form.innerHTML = `
+            <h3>👤 Your Details</h3>
+            <div class="form-group input-icon name">
+                <input type="text" 
+                       id="user-name" 
+                       class="premium-input" 
+                       placeholder="Enter your full name" 
+                       required 
+                       pattern="[A-Za-z\\s]{2,}">
+            </div>
+            <div class="form-group input-icon city">
+                <input type="text" 
+                       id="user-city" 
+                       class="premium-input" 
+                       placeholder="Enter your city/town" 
+                       required 
+                       pattern="[A-Za-z\\s]{2,}">
+            </div>
+            <div class="form-group input-icon phone">
+                <input type="tel" 
+                       id="user-phone" 
+                       class="premium-input" 
+                       placeholder="e.g., 254712345678" 
+                       required 
+                       pattern="[0-9]{10,12}">
+                <small style="display:block; color:#666; margin-top:5px; font-size:12px;">
+                    Enter your WhatsApp number without + or 0 (e.g., 254712345678)
+                </small>
+            </div>
+        `;
+        
+        // Insert form after cart contents but before delivery options
+        if (deliveryOptions) {
+            deliveryOptions.insertAdjacentElement('beforebegin', form);
+        } else {
+            list.insertAdjacentElement('afterend', form);
+        }
+        
+        // Update the form completion check
+        const nameInput = document.getElementById('user-name');
+        const cityInput = document.getElementById('user-city');
+        const phoneInput = document.getElementById('user-phone');
+        
+        function checkFormCompletion() {
+            const nameValue = nameInput.value.trim();
+            const cityValue = cityInput.value.trim();
+            const phoneValue = phoneInput.value.trim();
+            
+            // Require ALL three fields to enable WhatsApp button
+            if (nameValue && cityValue && phoneValue) {
+                if (btn) btn.disabled = false;
+                // Auto-select home delivery by default if not already selected
+                if (!window.deliveryOptionsInitialized) {
+                    setTimeout(() => {
+                        selectDeliveryOption('delivery');
+                        window.deliveryOptionsInitialized = true;
+                    }, 100);
+                }
+            } else {
+                if (btn) btn.disabled = true;
+            }
+        }
+        
+        // Add event listeners to ALL three inputs
+        nameInput.addEventListener('input', checkFormCompletion);
+        cityInput.addEventListener('input', checkFormCompletion);
+        phoneInput.addEventListener('input', checkFormCompletion);
+        
+        // Also add validation feedback
+        const inputs = form.querySelectorAll('.premium-input');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.validity.valid) {
+                    this.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+                } else if (this.value.length > 0) {
+                    this.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                } else {
+                    this.style.borderColor = 'rgba(15, 20, 30, 0.1)';
+                }
+                checkFormCompletion();
+            });
+        });
+        
+        // Initial check
+        setTimeout(checkFormCompletion, 100);
+    } else {
+        // Form already exists, just check completion
+        const nameInput = document.getElementById('user-name');
+        const cityInput = document.getElementById('user-city');
+        const phoneInput = document.getElementById('user-phone');
+        
+        if (nameInput && cityInput && phoneInput && btn) {
+            function checkExistingForm() {
+                const nameValue = nameInput.value.trim();
+                const cityValue = cityInput.value.trim();
+                const phoneValue = phoneInput.value.trim();
+                
+                btn.disabled = !(nameValue && cityValue && phoneValue);
+            }
+            
+            nameInput.addEventListener('input', checkExistingForm);
+            cityInput.addEventListener('input', checkExistingForm);
+            phoneInput.addEventListener('input', checkExistingForm);
+            
+            checkExistingForm();
+        }
+    }
+    
+    // Initialize pickup code if not already done
+    if (!window.currentPickupCode) {
+        window.currentPickupCode = generatePickupCode();
+        const pickupCodeElement = document.getElementById('pickup-code');
+        if (pickupCodeElement) {
+            pickupCodeElement.textContent = window.currentPickupCode;
+        }
+    }
+    
+    // --- Attach Event Listeners ---
+    document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const titleToRemove = e.currentTarget.getAttribute('data-item-title');
+            if (confirm(`Are you sure you want to remove "${titleToRemove}" from your cart?`)) {
+                removeItemFromCart(titleToRemove);
+            }
+        });
+    });
+
+    // Attach the WhatsApp logic to the button
+    if (btn) {
+        btn.onclick = sendOrderViaWhatsApp;
+        // Initially disable the button until form is filled
+        btn.disabled = true;
+    }
+
+    // Auto-select delivery option if not already selected
+    if (!window.selectedDeliveryOption && window.deliveryOptionsInitialized) {
+        selectDeliveryOption('delivery');
+    }
+}
+
+// 🚀 WhatsApp Order Sender (keep the fixed version from previous response)
 async function sendOrderViaWhatsApp() {
     const cart = getCart();
     
@@ -166,18 +384,15 @@ async function sendOrderViaWhatsApp() {
     const encodedMessage = encodeURIComponent(message);
     const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
     
-    console.log('WhatsApp URL:', whatsappURL); // For debugging
+    console.log('WhatsApp URL:', whatsappURL);
     
-    // 9. Open WhatsApp with multiple fallback methods
+    // 9. Open WhatsApp
     let whatsappOpened = false;
-    
-    // Method 1: Try window.open (works on most devices)
     const newWindow = window.open(whatsappURL, '_blank');
     if (newWindow) {
         whatsappOpened = true;
     }
     
-    // Method 2: If window.open failed, try location.href after a delay
     setTimeout(() => {
         if (!whatsappOpened) {
             window.location.href = whatsappURL;
@@ -185,39 +400,25 @@ async function sendOrderViaWhatsApp() {
         }
     }, 100);
     
-    // Method 3: Final fallback - show manual instructions
     setTimeout(() => {
-        if (!whatsappOpened || window.location.href.indexOf('whatsapp') === -1) {
+        if (!whatsappOpened) {
             const manualSend = confirm(
-                "WhatsApp didn't open automatically.\n\n" +
-                "Click OK to copy the order message, then:\n" +
-                "1. Open WhatsApp manually\n" +
-                "2. Send the message to Deenice Finds\n" +
-                "3. We'll confirm your order shortly"
+                "WhatsApp didn't open automatically.\n\nClick OK to copy the order message."
             );
             
             if (manualSend) {
-                // Copy message to clipboard
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(message).then(() => {
-                        alert("✅ Order message copied to clipboard!\n\n📱 Now open WhatsApp and send it to Deenice Finds.");
-                    }).catch(() => {
-                        // Fallback if clipboard fails
-                        showManualCopyDialog(message);
-                    });
-                } else {
-                    // Fallback for browsers without clipboard API
-                    showManualCopyDialog(message);
-                }
+                navigator.clipboard.writeText(message).then(() => {
+                    alert("✅ Order message copied to clipboard!\n\n📱 Now open WhatsApp and send it to Deenice Finds.");
+                }).catch(() => {
+                    prompt("📋 Copy this order message to WhatsApp:", message);
+                });
             }
         }
     }, 2000);
     
-    // 10. Show success message
+    // 10. Show success message and clear cart
     setTimeout(() => {
-        alert(`✅ Order #${orderId} sent successfully!\n\n📋 Status: Pending\n\nWe'll notify you when your order status updates.`);
-        
-        // Clear the cart and redirect to home page
+        alert(`✅ Order #${orderId} sent!\n\nWe'll confirm your order shortly.`);
         localStorage.removeItem('de_cart');
         setTimeout(() => {
             window.location.href = 'index.html';
@@ -225,273 +426,7 @@ async function sendOrderViaWhatsApp() {
     }, 500);
 }
 
-// Helper function for manual copy fallback
-function showManualCopyDialog(message) {
-    const textarea = document.createElement('textarea');
-    textarea.value = message;
-    textarea.style.position = 'fixed';
-    textarea.style.left = '-9999px';
-    document.body.appendChild(textarea);
-    textarea.select();
-    
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            alert("✅ Order message copied to clipboard!\n\n📱 Now open WhatsApp and send it to Deenice Finds.");
-        } else {
-            prompt("📋 Please copy this order message and send it to Deenice Finds on WhatsApp:", message);
-        }
-    } catch (err) {
-        prompt("📋 Please copy this order message and send it to Deenice Finds on WhatsApp:", message);
-    }
-    
-    document.body.removeChild(textarea);
-}
-
-// --- Cart Renderer (Fixed version) ---
-function renderCart() {
-    const list = document.getElementById('cart-contents');
-    const btn = document.getElementById('cart-send');
-    const cart = getCart();
-    const summaryContainer = document.getElementById('cart-summary');
-
-    // Remove the mobile styles that were hiding content
-    document.body.style.padding = '';
-    document.body.style.maxWidth = '';
-    document.body.style.margin = '';
-
-    if (!list || !summaryContainer) {
-        console.error('Cart elements not found');
-        return;
-    }
-
-    if (cart.length === 0) {
-        list.innerHTML = '<p style="text-align: center; padding: 40px;">Your cart is empty.</p>';
-        summaryContainer.innerHTML = '';
-        if (btn) btn.style.display = 'none';
-        
-        // Hide delivery options if they exist
-        const deliveryOptions = document.getElementById('delivery-options');
-        if (deliveryOptions) {
-            deliveryOptions.style.display = 'none';
-            deliveryOptions.classList.remove('show');
-        }
-        
-        // Hide form if it exists
-        const existingForm = document.getElementById('user-name')?.closest('div');
-        if (existingForm) {
-            existingForm.style.display = 'none';
-        }
-        return;
-    }
-
-    // --- Calculate Total and Display Summary ---
-    let total = 0;
-    const currency = cart[0].currency;
-    cart.forEach(item => {
-        total += item.price * item.qty;
-    });
-
-    summaryContainer.innerHTML = `
-        <h2 style="text-align:right; margin:20px 0;">Total: ${currency} ${total.toLocaleString()}</h2>
-    `;
-
-    // Build the cart HTML
-    let html = `
-        <div class="cart-items-container">
-            <ul class="cart-items-list">
-                ${cart.map(item => `
-                    <li class="cart-item" data-product-title="${item.title}">
-                        <img src="${item.img || 'https://via.placeholder.com/60'}" alt="${item.title}" class="cart-item-image" />
-                        <div class="cart-item-details">
-                            <strong class="cart-item-title">${item.title}</strong>
-                            <div class="cart-item-specs">
-                                ${item.color || ''} 
-                                ${item.size ? `/ ${item.size}` : ''}
-                                ${item.model && item.model !== 'Standard' ? `/ ${item.model}` : ''}
-                            </div>
-                            <div class="cart-item-price">
-                                ${item.qty} × ${item.price.toLocaleString()} ${item.currency}
-                            </div>
-                        </div>
-                        <button class="remove-from-cart-btn" data-item-title="${item.title}">
-                            Remove
-                        </button>
-                    </li>
-                `).join('')}
-            </ul>
-        </div>
-    `;
-
-    list.innerHTML = html;
-    if (btn) btn.style.display = 'block';
-
-    // Hide delivery options initially
-    const deliveryOptions = document.getElementById('delivery-options');
-    if (deliveryOptions) {
-        deliveryOptions.style.display = 'none';
-        deliveryOptions.classList.remove('show');
-    }
-
-    // Check if form already exists
-    const existingForm = document.getElementById('user-name')?.closest('.premium-form');
-    
-    // Only insert the form if it doesn't already exist in the DOM
-    if (!existingForm) {
-        const form = document.createElement('div');
-        form.className = 'premium-form';
-        form.innerHTML = `
-            <h3>👤 Your Details</h3>
-            <div class="form-group input-icon name">
-                <input type="text" 
-                       id="user-name" 
-                       class="premium-input" 
-                       placeholder="Enter your full name" 
-                       required 
-                       pattern="[A-Za-z\\s]{2,}">
-            </div>
-            <div class="form-group input-icon city">
-                <input type="text" 
-                       id="user-city" 
-                       class="premium-input" 
-                       placeholder="Enter your city/town" 
-                       required 
-                       pattern="[A-Za-z\\s]{2,}">
-            </div>
-            <div class="form-group input-icon phone">
-                <input type="tel" 
-                       id="user-phone" 
-                       class="premium-input" 
-                       placeholder="e.g., 254712345678" 
-                       required 
-                       pattern="[0-9]{10,12}">
-                <small style="display:block; color:#666; margin-top:5px; font-size:12px;">
-                    Enter your WhatsApp number without + or 0 (e.g., 254712345678)
-                </small>
-            </div>
-        `;
-        list.insertAdjacentElement('afterend', form);
-        
-        // Add delivery options after the form
-        const deliveryOptionsHTML = `
-            <div id="delivery-options" style="display: none;">
-                <h3>🚚 Delivery Options</h3>
-                <div class="delivery-options-container">
-                    <div class="delivery-option selected" onclick="selectDeliveryOption('delivery')">
-                        <input type="radio" id="delivery-home" name="delivery" checked>
-                        <label for="delivery-home">
-                            <strong>Home Delivery</strong>
-                            <small>Get it delivered to your location</small>
-                        </label>
-                    </div>
-                    <div class="delivery-option" onclick="selectDeliveryOption('pickup')">
-                        <input type="radio" id="pickup-shop" name="delivery">
-                        <label for="pickup-shop">
-                            <strong>Pick Up in Shop</strong>
-                            <small>Collect from our store</small>
-                        </label>
-                    </div>
-                </div>
-                <div id="pickup-info" class="pickup-info">
-                    <div class="pickup-code">
-                        <strong>Your Pickup Code:</strong>
-                        <span id="pickup-code" class="code">${generatePickupCode()}</span>
-                    </div>
-                    <small>Show this code when collecting your order</small>
-                </div>
-            </div>
-        `;
-        form.insertAdjacentHTML('afterend', deliveryOptionsHTML);
-        
-        // Set initial pickup code
-        window.currentPickupCode = document.getElementById('pickup-code').textContent;
-        
-        // Update the form completion check
-        const nameInput = document.getElementById('user-name');
-        const cityInput = document.getElementById('user-city');
-        const phoneInput = document.getElementById('user-phone');
-        
-        function checkFormCompletion() {
-            const nameValue = nameInput.value.trim();
-            const cityValue = cityInput.value.trim();
-            const phoneValue = phoneInput.value.trim();
-            const deliveryOptions = document.getElementById('delivery-options');
-            
-            // Require ALL three fields to show delivery options
-            if (nameValue && cityValue && phoneValue && deliveryOptions) {
-                deliveryOptions.style.display = 'block';
-                deliveryOptions.classList.add('show');
-                // Auto-select home delivery by default
-                if (!window.deliveryOptionsInitialized) {
-                    setTimeout(() => {
-                        selectDeliveryOption('delivery');
-                        window.deliveryOptionsInitialized = true;
-                    }, 100);
-                }
-            } else if (deliveryOptions) {
-                deliveryOptions.style.display = 'none';
-                deliveryOptions.classList.remove('show');
-            }
-        }
-        
-        // Add event listeners to ALL three inputs
-        nameInput.addEventListener('input', checkFormCompletion);
-        cityInput.addEventListener('input', checkFormCompletion);
-        phoneInput.addEventListener('input', checkFormCompletion);
-        
-        // Also add validation feedback for phone
-        const inputs = form.querySelectorAll('.premium-input');
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                if (this.validity.valid) {
-                    this.style.borderColor = 'rgba(34, 197, 94, 0.3)';
-                } else if (this.value.length > 0) {
-                    this.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                } else {
-                    this.style.borderColor = 'rgba(15, 20, 30, 0.1)';
-                }
-                // Also check form completion on each input
-                checkFormCompletion();
-            });
-        });
-        
-        // Initial check in case there are existing values
-        setTimeout(checkFormCompletion, 100);
-    } else {
-        // Form already exists, just check completion
-        const nameInput = document.getElementById('user-name');
-        const cityInput = document.getElementById('user-city');
-        const phoneInput = document.getElementById('user-phone');
-        const deliveryOptions = document.getElementById('delivery-options');
-        
-        if (nameInput && cityInput && phoneInput && deliveryOptions) {
-            const nameValue = nameInput.value.trim();
-            const cityValue = cityInput.value.trim();
-            const phoneValue = phoneInput.value.trim();
-            
-            if (nameValue && cityValue && phoneValue) {
-                deliveryOptions.style.display = 'block';
-                deliveryOptions.classList.add('show');
-            }
-        }
-    }
-    
-    // --- Attach Event Listeners ---
-    document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const titleToRemove = e.currentTarget.getAttribute('data-item-title');
-            if (confirm(`Are you sure you want to remove ${titleToRemove} from your cart?`)) {
-                removeItemFromCart(titleToRemove);
-            }
-        });
-    });
-
-    // Attach the WhatsApp logic to the button
-    if (btn) {
-        btn.onclick = sendOrderViaWhatsApp;
-    }
-}
-
+// Keep the saveOrderToHistory function from previous response
 async function saveOrderToHistory(cart, deliveryInfo) {
     const orderData = {
         items: [...cart],
@@ -512,8 +447,6 @@ async function saveOrderToHistory(cart, deliveryInfo) {
     let orderId;
 
     try {
-        // Try to save to backend first
-        console.log('📦 Saving order to backend...');
         const response = await fetch('https://deenice-finds-1-0-1.onrender.com/api/orders', {
             method: 'POST',
             headers: {
@@ -531,11 +464,10 @@ async function saveOrderToHistory(cart, deliveryInfo) {
         }
     } catch (error) {
         console.error('❌ Backend save failed, using fallback:', error);
-        // Fallback: Generate local order ID
         orderId = 'ORD-' + Date.now().toString(36).toUpperCase();
     }
 
-    // Always save to localStorage for compatibility
+    // Save to localStorage
     const newOrder = {
         id: orderId,
         orderDate: new Date().toISOString(),
@@ -543,7 +475,6 @@ async function saveOrderToHistory(cart, deliveryInfo) {
         ...orderData
     };
 
-    // Save to order history (localStorage)
     const existingOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
     existingOrders.unshift(newOrder);
     localStorage.setItem('de_order_history', JSON.stringify(existingOrders));
@@ -551,5 +482,5 @@ async function saveOrderToHistory(cart, deliveryInfo) {
     return orderId;
 }
 
-// Ensure the rendering starts when the page is fully loaded
+// Initialize when page loads
 document.addEventListener('DOMContentLoaded', renderCart);
