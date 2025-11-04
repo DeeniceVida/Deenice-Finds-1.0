@@ -87,6 +87,27 @@ async function sendOrderViaWhatsApp() {
         city: city,
         customer: { name, city, phone }
     });
+    
+    // In sendOrderViaWhatsApp function, after order creation:
+function trackGoogleAnalyticsOrder(orderId, cart, total) {
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'purchase', {
+            transaction_id: orderId,
+            value: total,
+            currency: 'KES',
+            items: cart.map(item => ({
+                item_id: item.id || item.title,
+                item_name: item.title,
+                price: item.price,
+                quantity: item.qty,
+                currency: 'KES'
+            }))
+        });
+    }
+}
+
+// Call it after order creation:
+trackGoogleAnalyticsOrder(orderId, cart, total);
 
     // 3. Build message with order ID
     let total = 0;
