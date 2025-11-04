@@ -37,6 +37,78 @@
     fbq('init', 'PIXEL_ID');
     fbq('track', 'PageView');
   </script>
+    <!-- ✅ Facebook Pixel (replace PIXEL_ID with your ID) -->
+  <script>
+    !(function(f,b,e,v,n,t,s){
+      if(f.fbq)return;
+      n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;
+      n.push=n;
+      n.loaded=!0;
+      n.version='2.0';
+      n.queue=[];
+      t=b.createElement(e);
+      t.async=!0;
+      t.src=v;
+      s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)
+    })(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', 'PIXEL_ID');
+    fbq('track', 'PageView');
+  </script>
+
+  <!-- 🟢 ADD PRODUCTS PAGE STOCK CSS HERE 🟢 -->
+  <style>
+    /* Products page stock status */
+    .product-stock {
+        font-size: 0.85em;
+        margin-top: 5px;
+    }
+
+    .stock-in-stock {
+        color: #28a745;
+        font-weight: 500;
+    }
+
+    .stock-low-stock {
+        color: #ffc107;
+        font-weight: 500;
+    }
+
+    .stock-out-of-stock {
+        color: #dc3545;
+        font-weight: 500;
+    }
+
+    .product-card.out-of-stock {
+        opacity: 0.7;
+        position: relative;
+    }
+
+    .product-card.out-of-stock::after {
+        content: "Out of Stock";
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #dc3545;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: bold;
+    }
+
+    .out-of-stock-btn {
+        background: #6c757d !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+    }
+
+    .out-of-stock-btn:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+  </style>
 </head>
 
 <body>
