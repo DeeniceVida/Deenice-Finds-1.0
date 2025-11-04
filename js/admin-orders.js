@@ -22,6 +22,45 @@ class AdminOrderManager {
         this.setupEventListeners();
     }
 
+    // Add this method to your AdminOrderManager class in admin-orders.js
+async deleteOrder(orderId) {
+    try {
+        const confirmDelete = confirm(
+            `🗑️ DELETE ORDER #${orderId}\n\n` +
+            `Are you sure you want to delete this order?\n\n` +
+            `This will remove the order from:\n` +
+            `• Admin panel\n` +
+            `• Backend server\n` +
+            `• Customer's order history\n\n` +
+            `This action cannot be undone!`
+        );
+        
+        if (!confirmDelete) return;
+
+        console.log('🗑️ Deleting order:', orderId);
+        
+        // 1. Delete from backend
+        await this.makeRequest(`/orders/${orderId}`, {
+            method: 'DELETE'
+        });
+        
+        console.log('✅ Order deleted from backend');
+
+        // 2. Remove from local state
+        this.orders = this.orders.filter(order => order.id !== orderId);
+        
+        // 3. Update UI
+        this.renderStats();
+        this.renderOrders();
+        
+        alert(`✅ Order #${orderId} has been deleted successfully!`);
+        
+    } catch (error) {
+        console.error('Failed to delete order:', error);
+        alert('Failed to delete order: ' + error.message);
+    }
+}
+
     async makeRequest(endpoint, options = {}) {
         try {
             console.log(`🌐 Making request to: ${this.baseURL}${endpoint}`);
