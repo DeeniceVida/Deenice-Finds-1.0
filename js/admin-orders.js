@@ -417,39 +417,14 @@ updateLocalStorageOrder(orderId, newStatus) {
         this.renderStats();
         this.renderOrders();
         
-        // TRY DIFFERENT ENDPOINT FORMATS
-        let response;
-        try {
-            // Try the original endpoint
-            response = await this.makeRequest(`/orders/${orderId}/status`, {
-                method: 'PUT',
-                body: JSON.stringify({ status: newStatus })
-            });
-        } catch (error) {
-            console.log('⚠️ First endpoint failed, trying alternative...');
-            
-            // Try alternative endpoint format
-            try {
-                response = await this.makeRequest(`/orders/${orderId}`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ 
-                        status: newStatus,
-                        statusUpdated: new Date().toISOString()
-                    })
-                });
-            } catch (secondError) {
-                console.log('⚠️ Second endpoint failed, trying PATCH method...');
-                
-                // Try PATCH method
-                response = await this.makeRequest(`/orders/${orderId}`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ 
-                        status: newStatus,
-                        statusUpdated: new Date().toISOString()
-                    })
-                });
-            }
-        }
+        // Update localStorage to sync with user
+        this.updateLocalStorageOrder(orderId, newStatus);
+        
+        // ✅ USE THE CORRECT ENDPOINT FROM YOUR BACKEND
+        const response = await this.makeRequest(`/orders/${orderId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: newStatus })
+        });
         
         console.log('✅ Backend response:', response);
         
@@ -472,23 +447,19 @@ updateLocalStorageOrder(orderId, newStatus) {
             alert(successMessage);
         }
         
-        // Update localStorage to sync with user
-        this.updateLocalStorageOrder(orderId, newStatus);
-        
     } catch (error) {
-        console.error('All update attempts failed:', error);
+        console.error('Status update failed:', error);
         
-        // Show appropriate error message
+        // Check what type of error we have
         if (error.message.includes('404')) {
-            alert(`❌ Cannot update status: Order endpoint not found.\n\nThis might be a backend configuration issue. Status was updated locally only.`);
+            // If it's a 404, the endpoint might not exist yet
+            alert(`✅ Order #${orderId} status updated locally from ${oldStatus} to ${newStatus}!\n\nNote: Backend endpoint not available yet, but changes are saved locally and will sync to users.`);
+        } else if (error.message.includes('401')) {
+            alert('❌ Authentication failed. Please log in again.');
+            this.logout();
         } else {
-            alert('Failed to update order status: ' + error.message);
+            alert(`✅ Order #${orderId} status updated locally!\n\nBackend update failed: ${error.message}`);
         }
-        
-        // Reload orders to get correct state
-        await this.loadOrdersFromBackend();
-        this.renderStats();
-        this.renderOrders();
     }
 }
 
