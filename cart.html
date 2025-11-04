@@ -23,6 +23,13 @@
     <title>Cart — Deenice Finds</title>
     <link rel='stylesheet' href='css/styles.css' />
     <style>
+        /* Cart Page Specific Styles */
+        .cart-page {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
         .delivery-options {
             margin: 20px 0;
             padding: 20px;
@@ -106,6 +113,192 @@
             background: #fff3cd;
             border-radius: 6px;
             border: 1px solid #ffeaa7;
+        }
+
+        /* Cart Item Styles */
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .cart-item-image {
+            width: 80px !important;
+            height: 80px !important;
+            object-fit: cover !important;
+            border-radius: 8px;
+            border: 2px solid #f8f9fa;
+            flex-shrink: 0;
+        }
+
+        .cart-item-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cart-item-title {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1em;
+            word-wrap: break-word;
+        }
+
+        .cart-item-specs {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            font-weight: bold;
+            color: #2c5aa0;
+            font-size: 0.95em;
+        }
+
+        .remove-from-cart-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .remove-from-cart-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Cart Summary */
+        .cart-summary {
+            text-align: right;
+            margin: 30px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Premium Form Styles */
+        .premium-form {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            color: white;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .premium-form h3 {
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 1.4em;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .premium-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .premium-input:focus {
+            outline: none;
+            border-color: #fff;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+        }
+
+        /* WhatsApp Button */
+        #cart-send {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 30px auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        #cart-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
+        }
+
+        #cart-send:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .cart-page {
+                padding: 15px;
+            }
+            
+            .cart-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .cart-item-image {
+                width: 100px !important;
+                height: 100px !important;
+            }
+            
+            .premium-form {
+                padding: 20px;
+            }
+            
+            #cart-send {
+                max-width: 100%;
+                margin: 20px auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cart-page {
+                padding: 10px;
+            }
+            
+            .premium-form {
+                padding: 15px;
+            }
+            
+            .cart-item-image {
+                width: 80px !important;
+                height: 80px !important;
+            }
         }
     </style>
 </head>
