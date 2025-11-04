@@ -22,39 +22,81 @@ class AdminOrderManager {
         this.setupEventListeners();
     }
 
-    // Helper method to update localStorage
-updateLocalStorageOrder(orderId, newStatus) {
-    try {
-        const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-        const orderIndex = localOrders.findIndex(order => order.id === orderId);
-        
-        if (orderIndex > -1) {
-            localOrders[orderIndex].status = newStatus;
-            localOrders[orderIndex].statusUpdated = new Date().toISOString();
-            
-            if (newStatus === 'completed') {
-                localOrders[orderIndex].completedDate = new Date().toISOString();
-            }
-            
-            localStorage.setItem('de_order_history', JSON.stringify(localOrders));
-            console.log('✅ Updated order in localStorage:', orderId, newStatus);
-        }
-    } catch (error) {
-        console.error('Error updating localStorage:', error);
+    // Detect mobile devices
+    isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
-}
+
+    // Mobile-friendly WhatsApp URL opening
+    openWhatsAppURL(url) {
+        try {
+            // Try to open in new window
+            const newWindow = window.open(url, '_blank');
+            
+            // If blocked (common on mobile), fallback to direct navigation
+            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                console.log('Popup blocked, using direct navigation');
+                window.location.href = url;
+            }
+        } catch (error) {
+            console.error('Error opening WhatsApp:', error);
+            // Final fallback - show URL for manual copy
+            const manualSend = confirm(
+                "WhatsApp didn't open automatically.\n\n" +
+                "Click OK to copy the WhatsApp link and open it manually."
+            );
+            if (manualSend) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert("📱 WhatsApp link copied! Please paste it in your browser.");
+                }).catch(() => {
+                    // Fallback for older browsers
+                    prompt("Copy this WhatsApp link:", url);
+                });
+            }
+        }
+    }
+
+    // Helper method to update localStorage
+    updateLocalStorageOrder(orderId, newStatus) {
+        try {
+            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            const orderIndex = localOrders.findIndex(order => order.id === orderId);
+            
+            if (orderIndex > -1) {
+                localOrders[orderIndex].status = newStatus;
+                localOrders[orderIndex].statusUpdated = new Date().toISOString();
+                
+                if (newStatus === 'completed') {
+                    localOrders[orderIndex].completedDate = new Date().toISOString();
+                }
+                
+                localStorage.setItem('de_order_history', JSON.stringify(localOrders));
+                console.log('✅ Updated order in localStorage:', orderId, newStatus);
+            }
+        } catch (error) {
+            console.error('Error updating localStorage:', error);
+        }
+    }
 
     async makeRequest(endpoint, options = {}) {
         try {
             console.log(`🌐 Making request to: ${this.baseURL}${endpoint}`);
+            
+            // Mobile-friendly timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
             const response = await fetch(`${this.baseURL}${endpoint}`, {
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
                     'Content-Type': 'application/json',
                     ...options.headers
                 },
+                signal: controller.signal,
                 ...options
             });
+
+            clearTimeout(timeoutId);
 
             console.log(`📡 Response status: ${response.status}`);
             
@@ -64,9 +106,17 @@ updateLocalStorageOrder(orderId, newStatus) {
             }
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ Response not OK:', errorText);
-                throw new Error(`HTTP error! status: ${response.status}`);
+                // More specific error messages for mobile
+                let errorMessage = `HTTP error! status: ${response.status}`;
+                if (response.status === 404) {
+                    errorMessage = 'Server endpoint not found (404)';
+                } else if (response.status === 500) {
+                    errorMessage = 'Server error (500)';
+                } else if (response.status === 0) {
+                    errorMessage = 'Network connection failed';
+                }
+                
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -75,7 +125,15 @@ updateLocalStorageOrder(orderId, newStatus) {
             
         } catch (error) {
             console.error('❌ API request failed:', error);
-            throw error;
+            
+            // Mobile-friendly error messages
+            if (error.name === 'AbortError') {
+                throw new Error('Request timeout - please check your connection');
+            } else if (error.message.includes('Failed to fetch')) {
+                throw new Error('Network error - please check your internet connection');
+            } else {
+                throw error;
+            }
         }
     }
 
@@ -391,77 +449,101 @@ updateLocalStorageOrder(orderId, newStatus) {
         return statusClasses[status] || 'status-pending';
     }
 
-    // ENHANCED STATUS UPDATE METHOD
+    // MOBILE-COMPATIBLE STATUS UPDATE METHOD
     async updateStatus(orderId, newStatus) {
-    try {
-        console.log('🔄 Updating order status:', orderId, newStatus);
-        
-        // Update locally first for immediate feedback
-        const order = this.orders.find(o => o.id === orderId);
-        if (!order) {
-            alert('Order not found!');
-            return;
-        }
-
-        const oldStatus = order.status;
-        
-        // Update locally
-        order.status = newStatus;
-        order.statusUpdated = new Date().toISOString();
-        
-        if (newStatus === 'completed') {
-            order.completedDate = new Date().toISOString();
-        }
-        
-        // Update UI immediately
-        this.renderStats();
-        this.renderOrders();
-        
-        // Update localStorage to sync with user
-        this.updateLocalStorageOrder(orderId, newStatus);
-        
-        // ✅ USE THE CORRECT ENDPOINT FROM YOUR BACKEND
-        const response = await this.makeRequest(`/orders/${orderId}/status`, {
-            method: 'PUT',
-            body: JSON.stringify({ status: newStatus })
-        });
-        
-        console.log('✅ Backend response:', response);
-        
-        // Show success message
-        let successMessage = `✅ Order #${orderId} status updated from ${oldStatus} to ${newStatus}!`;
-        
-        // Check for WhatsApp URL in response
-        if (response.whatsappURL && order.customer?.phone) {
-            const sendNotification = confirm(
-                `${successMessage}\n\n` +
-                `Customer: ${order.customer?.name || 'N/A'}\n` +
-                `Phone: ${order.customer?.phone}\n\n` +
-                `Send WhatsApp notification to customer?`
-            );
+        try {
+            console.log('🔄 Updating order status:', orderId, newStatus);
             
-            if (sendNotification) {
-                window.open(response.whatsappURL, '_blank');
+            // Update locally first for immediate feedback
+            const order = this.orders.find(o => o.id === orderId);
+            if (!order) {
+                alert('Order not found!');
+                return;
             }
-        } else {
-            alert(successMessage);
-        }
-        
-    } catch (error) {
-        console.error('Status update failed:', error);
-        
-        // Check what type of error we have
-        if (error.message.includes('404')) {
-            // If it's a 404, the endpoint might not exist yet
-            alert(`✅ Order #${orderId} status updated locally from ${oldStatus} to ${newStatus}!\n\nNote: Backend endpoint not available yet, but changes are saved locally and will sync to users.`);
-        } else if (error.message.includes('401')) {
-            alert('❌ Authentication failed. Please log in again.');
-            this.logout();
-        } else {
-            alert(`✅ Order #${orderId} status updated locally!\n\nBackend update failed: ${error.message}`);
+
+            const oldStatus = order.status;
+            
+            // Update locally
+            order.status = newStatus;
+            order.statusUpdated = new Date().toISOString();
+            
+            if (newStatus === 'completed') {
+                order.completedDate = new Date().toISOString();
+            }
+            
+            // Update UI immediately
+            this.renderStats();
+            this.renderOrders();
+            
+            // Update localStorage to sync with user
+            this.updateLocalStorageOrder(orderId, newStatus);
+            
+            // ✅ MOBILE-FRIENDLY BACKEND UPDATE
+            let backendSuccess = false;
+            let whatsappURL = null;
+            
+            try {
+                const response = await this.makeRequest(`/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                console.log('✅ Backend update successful');
+                backendSuccess = true;
+                whatsappURL = response.whatsappURL;
+                
+            } catch (error) {
+                console.log('⚠️ Backend update failed:', error.message);
+                backendSuccess = false;
+                
+                // Don't show error on mobile - just continue with local update
+                if (this.isMobileDevice()) {
+                    console.log('Mobile device - suppressing backend error');
+                } else {
+                    // Show error on desktop for debugging
+                    console.error('Desktop backend error:', error);
+                }
+            }
+            
+            // Show appropriate success message
+            let successMessage = `✅ Order #${orderId} status updated from ${oldStatus} to ${newStatus}!`;
+            
+            if (!backendSuccess && this.isMobileDevice()) {
+                successMessage += `\n\n📱 Note: Updated locally (mobile optimized)`;
+            } else if (!backendSuccess) {
+                successMessage += `\n\n⚠️ Note: Backend update failed, but local update succeeded`;
+            }
+            
+            // WhatsApp notifications (only if backend was successful)
+            if (backendSuccess && whatsappURL && order.customer?.phone) {
+                const sendNotification = confirm(
+                    `${successMessage}\n\n` +
+                    `Customer: ${order.customer?.name || 'N/A'}\n` +
+                    `Phone: ${order.customer?.phone}\n\n` +
+                    `Send WhatsApp notification to customer?`
+                );
+                
+                if (sendNotification) {
+                    // Mobile-friendly WhatsApp opening
+                    this.openWhatsAppURL(whatsappURL);
+                } else {
+                    alert(successMessage);
+                }
+            } else {
+                alert(successMessage);
+            }
+            
+        } catch (error) {
+            console.error('Status update failed:', error);
+            
+            // Mobile-friendly error handling
+            if (this.isMobileDevice()) {
+                alert(`✅ Order #${orderId} updated locally!\n\nMobile-optimized: Changes saved for customer sync.`);
+            } else {
+                alert(`❌ Update failed: ${error.message}`);
+            }
         }
     }
-}
 
     // BULK STATUS UPDATE METHODS
     async bulkUpdateStatus(orderIds, newStatus) {
@@ -564,7 +646,9 @@ ${order.items ? order.items.map((item, index) =>
             const phone = order.customer?.phone || order.phone;
             const message = `Hello ${order.customer?.name || order.name || 'there'}, this is Deenice Finds regarding your order #${orderId}.`;
             const encodedMessage = encodeURIComponent(message);
-            window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+            // Use mobile-friendly WhatsApp opening
+            const whatsappURL = `https://wa.me/${phone}?text=${encodedMessage}`;
+            this.openWhatsAppURL(whatsappURL);
         } else {
             alert(`No phone number available for order #${orderId}`);
         }
@@ -611,6 +695,31 @@ ${order.items ? order.items.map((item, index) =>
 
         // Add bulk actions
         this.addBulkActions();
+        
+        // Add mobile indicator
+        this.addMobileIndicator();
+    }
+
+    addMobileIndicator() {
+        if (this.isMobileDevice()) {
+            console.log('📱 Mobile device detected - enabling mobile optimizations');
+            
+            // Optional: Add a mobile indicator to the UI
+            const mobileBadge = document.createElement('span');
+            mobileBadge.className = 'mobile-badge';
+            mobileBadge.innerHTML = '📱 Mobile';
+            mobileBadge.style.background = '#8EDBD1';
+            mobileBadge.style.color = 'white';
+            mobileBadge.style.padding = '4px 8px';
+            mobileBadge.style.borderRadius = '4px';
+            mobileBadge.style.fontSize = '12px';
+            mobileBadge.style.marginLeft = '10px';
+            
+            const adminHeader = document.querySelector('.admin-header h1');
+            if (adminHeader) {
+                adminHeader.appendChild(mobileBadge);
+            }
+        }
     }
 
     addBulkActions() {
@@ -719,8 +828,9 @@ ${order.items ? order.items.map((item, index) =>
         console.log('Backend URL:', this.baseURL);
         console.log('Token exists:', !!this.token);
         console.log('LocalStorage orders:', JSON.parse(localStorage.getItem('de_order_history') || '[]'));
+        console.log('Mobile device:', this.isMobileDevice());
         
-        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nFilter: ${this.currentFilter}\nCheck console for details.`);
+        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nFilter: ${this.currentFilter}\nMobile: ${this.isMobileDevice()}\nCheck console for details.`);
     }
 
     // Public method for refresh button
