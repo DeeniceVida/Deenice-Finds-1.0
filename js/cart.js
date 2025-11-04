@@ -58,13 +58,12 @@ function removeItemFromCart(itemTitle) {
     }
 }
 
-// --- Cart Renderer (Fixed for existing HTML) ---
+// --- Cart Renderer (Fixed for premium styling) ---
 function renderCart() {
     const list = document.getElementById('cart-contents');
     const btn = document.getElementById('cart-send');
     const cart = getCart();
     const summaryContainer = document.getElementById('cart-summary');
-    const deliveryOptions = document.getElementById('delivery-options');
 
     if (!list || !summaryContainer) {
         console.error('Cart elements not found');
@@ -72,19 +71,27 @@ function renderCart() {
     }
 
     if (cart.length === 0) {
-        list.innerHTML = '<p style="text-align: center; padding: 40px; color: #666;">Your cart is empty.</p>';
+        list.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px; color: #666;">
+                <h2 style="color: #333; margin-bottom: 10px;">Your cart is empty</h2>
+                <p style="margin-bottom: 30px;">Add some products to get started!</p>
+                <a href="index.html" style="display: inline-block; background: #007bff; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
+                    Continue Shopping
+                </a>
+            </div>
+        `;
         summaryContainer.innerHTML = '';
         if (btn) {
             btn.style.display = 'none';
             btn.disabled = true;
         }
+        
+        // Hide form and delivery options
+        const existingForm = document.getElementById('user-details-form');
+        const deliveryOptions = document.getElementById('delivery-options');
+        if (existingForm) existingForm.style.display = 'none';
         if (deliveryOptions) deliveryOptions.style.display = 'none';
         
-        // Hide form if it exists
-        const existingForm = document.getElementById('user-name')?.closest('.premium-form');
-        if (existingForm) {
-            existingForm.style.display = 'none';
-        }
         return;
     }
 
@@ -101,7 +108,7 @@ function renderCart() {
         </div>
     `;
 
-    // Build the cart HTML with proper image sizing
+    // Build the cart HTML with premium styling
     let html = `
         <div class="cart-items-container">
             ${cart.map(item => `
@@ -120,7 +127,7 @@ function renderCart() {
                         </div>
                     </div>
                     <button class="remove-from-cart-btn" data-item-title="${item.title}">
-                        Remove
+                        🗑️ Remove
                     </button>
                 </div>
             `).join('')}
@@ -133,17 +140,11 @@ function renderCart() {
         btn.disabled = true; // Disable until form is filled
     }
 
-    // Show delivery options
-    if (deliveryOptions) {
-        deliveryOptions.style.display = 'block';
-    }
-
-    // Check if form already exists
-    const existingForm = document.getElementById('user-name')?.closest('.premium-form');
-    
-    // Only insert the form if it doesn't already exist in the DOM
-    if (!existingForm) {
-        const form = document.createElement('div');
+    // Create or update premium user details form
+    let form = document.getElementById('user-details-form');
+    if (!form) {
+        form = document.createElement('div');
+        form.id = 'user-details-form';
         form.className = 'premium-form';
         form.innerHTML = `
             <h3>👤 Your Details</h3>
@@ -167,72 +168,110 @@ function renderCart() {
                        class="premium-input" 
                        placeholder="e.g., 254712345678" 
                        required>
-                <small style="display:block; color:#fff; margin-top:5px; font-size:12px; opacity:0.8;">
-                    Enter your WhatsApp number without + or 0 (e.g., 254712345678)
-                </small>
+                <span class="form-note">Enter your WhatsApp number without + or 0</span>
             </div>
         `;
         
-        // Insert form after cart contents but before delivery options
-        if (deliveryOptions) {
-            deliveryOptions.insertAdjacentElement('beforebegin', form);
-        } else {
-            list.insertAdjacentElement('afterend', form);
-        }
-        
-        // Update the form completion check
-        const nameInput = document.getElementById('user-name');
-        const cityInput = document.getElementById('user-city');
-        const phoneInput = document.getElementById('user-phone');
-        
-        function checkFormCompletion() {
-            const nameValue = nameInput.value.trim();
-            const cityValue = cityInput.value.trim();
-            const phoneValue = phoneInput.value.trim();
+        // Insert form after cart summary
+        summaryContainer.insertAdjacentElement('afterend', form);
+    }
+    form.classList.add('show');
+
+    // Create or update delivery options
+    let deliveryOptions = document.getElementById('delivery-options');
+    if (!deliveryOptions) {
+        deliveryOptions = document.createElement('div');
+        deliveryOptions.id = 'delivery-options';
+        deliveryOptions.className = 'delivery-options';
+        deliveryOptions.innerHTML = `
+            <h3>🚚 Delivery Options</h3>
+            <div class="delivery-options-container">
+                <div class="delivery-option" onclick="selectDeliveryOption('delivery')">
+                    <input type="radio" id="delivery-home" name="delivery" value="delivery">
+                    <div class="delivery-label">
+                        <strong>🚚 Home Delivery</strong>
+                        <small>Get your order delivered to your address</small>
+                    </div>
+                </div>
+                
+                <div class="delivery-option" onclick="selectDeliveryOption('pickup')">
+                    <input type="radio" id="pickup-shop" name="delivery" value="pickup">
+                    <div class="delivery-label">
+                        <strong>🏪 Pick Up in Shop</strong>
+                        <small>Collect your order from our store</small>
+                    </div>
+                </div>
+            </div>
             
-            // Require ALL three fields to enable WhatsApp button
-            if (nameValue && cityValue && phoneValue) {
-                if (btn) btn.disabled = false;
-                // Auto-select home delivery by default if not already selected
-                if (!window.deliveryOptionsInitialized) {
-                    setTimeout(() => {
-                        selectDeliveryOption('delivery');
-                        window.deliveryOptionsInitialized = true;
-                    }, 100);
-                }
-            } else {
-                if (btn) btn.disabled = true;
-            }
-        }
+            <!-- Pickup Information -->
+            <div id="pickup-info" class="pickup-info">
+                <h4>📍 Store Pickup Information</h4>
+                
+                <div class="pickup-code" id="pickup-code">
+                    <!-- Unique code will be generated here -->
+                </div>
+                
+                <div class="shop-address">
+                    <strong>🏬 Our Store Location:</strong><br>
+                    Dynamic Mall, Shop ML 135, 3rd Floor<br>
+                    Along Tom Mboya Street<br>
+                    Behind The National Archives<br>
+                    Opposite AMBASSADEUR<br>
+                    Nairobi, Kenya
+                </div>
+                
+                <a href="https://maps.google.com/maps?q=Dynamic+Mall+Tom+Mboya+Street+Nairobi" 
+                   target="_blank" class="map-link">
+                   📍 Open in Google Maps
+                </a>
+                
+                <div class="instructions">
+                    <strong>📋 Pickup Instructions:</strong><br>
+                    1. Save or screenshot your unique pickup code above<br>
+                    2. Visit our store during business hours (Mon-Sat, 9AM-6PM)<br>
+                    3. Show your pickup code to our staff<br>
+                    4. Collect your order - no waiting!<br>
+                    <em>Please bring valid ID for verification</em>
+                </div>
+            </div>
+        `;
         
-        // Add event listeners to ALL three inputs
+        // Insert delivery options after form
+        form.insertAdjacentElement('afterend', deliveryOptions);
+    }
+    deliveryOptions.classList.add('show');
+    
+    // Update the form completion check
+    const nameInput = document.getElementById('user-name');
+    const cityInput = document.getElementById('user-city');
+    const phoneInput = document.getElementById('user-phone');
+    
+    function checkFormCompletion() {
+        const nameValue = nameInput.value.trim();
+        const cityValue = cityInput.value.trim();
+        const phoneValue = phoneInput.value.trim();
+        
+        // Require ALL three fields to enable WhatsApp button
+        const isFormComplete = nameValue && cityValue && phoneValue;
+        if (btn) btn.disabled = !isFormComplete;
+        
+        // Auto-select home delivery by default if not already selected
+        if (isFormComplete && !window.deliveryOptionsInitialized) {
+            setTimeout(() => {
+                selectDeliveryOption('delivery');
+                window.deliveryOptionsInitialized = true;
+            }, 100);
+        }
+    }
+    
+    // Add event listeners to ALL three inputs
+    if (nameInput && cityInput && phoneInput) {
         nameInput.addEventListener('input', checkFormCompletion);
         cityInput.addEventListener('input', checkFormCompletion);
         phoneInput.addEventListener('input', checkFormCompletion);
         
         // Initial check
         setTimeout(checkFormCompletion, 100);
-    } else {
-        // Form already exists, just check completion
-        const nameInput = document.getElementById('user-name');
-        const cityInput = document.getElementById('user-city');
-        const phoneInput = document.getElementById('user-phone');
-        
-        if (nameInput && cityInput && phoneInput && btn) {
-            function checkExistingForm() {
-                const nameValue = nameInput.value.trim();
-                const cityValue = cityInput.value.trim();
-                const phoneValue = phoneInput.value.trim();
-                
-                btn.disabled = !(nameValue && cityValue && phoneValue);
-            }
-            
-            nameInput.addEventListener('input', checkExistingForm);
-            cityInput.addEventListener('input', checkExistingForm);
-            phoneInput.addEventListener('input', checkExistingForm);
-            
-            checkExistingForm();
-        }
     }
     
     // Initialize pickup code if not already done
@@ -258,14 +297,9 @@ function renderCart() {
     if (btn) {
         btn.onclick = sendOrderViaWhatsApp;
     }
-
-    // Auto-select delivery option if not already selected
-    if (!window.selectedDeliveryOption && window.deliveryOptionsInitialized) {
-        selectDeliveryOption('delivery');
-    }
 }
 
-// 🚀 WhatsApp Order Sender
+// 🚀 WhatsApp Order Sender (keep the same as before)
 async function sendOrderViaWhatsApp() {
     const cart = getCart();
     
