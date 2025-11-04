@@ -8,11 +8,14 @@ class AdminOrderManager {
     }
 
     async init() {
-        console.log('🔄 AdminOrderManager initializing with backend...');
+        console.log('🔄 AdminOrderManager initializing...');
+        console.log('🔑 Token exists:', !!this.token);
+        
         if (!this.token) {
             window.location.href = 'admin-login.html';
             return;
         }
+        
         await this.loadOrdersFromBackend();
         this.renderStats();
         this.renderOrders();
@@ -21,6 +24,7 @@ class AdminOrderManager {
 
     async makeRequest(endpoint, options = {}) {
         try {
+            console.log(`🌐 Making request to: ${this.baseURL}${endpoint}`);
             const response = await fetch(`${this.baseURL}${endpoint}`, {
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
@@ -30,18 +34,25 @@ class AdminOrderManager {
                 ...options
             });
 
+            console.log(`📡 Response status: ${response.status}`);
+            
             if (response.status === 401) {
                 this.logout();
                 throw new Error('Session expired');
             }
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Response not OK:', errorText);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            return await response.json();
+            const data = await response.json();
+            console.log('✅ Response data:', data);
+            return data;
+            
         } catch (error) {
-            console.error('API request failed:', error);
+            console.error('❌ API request failed:', error);
             throw error;
         }
     }
@@ -52,231 +63,63 @@ class AdminOrderManager {
             const data = await this.makeRequest('/orders');
             
             // Handle different response structures
-            if (data.orders) {
+            if (data.orders && Array.isArray(data.orders)) {
                 this.orders = data.orders;
+                console.log('✅ Loaded orders from data.orders:', this.orders.length);
             } else if (Array.isArray(data)) {
                 this.orders = data;
-            } else {
-                this.orders = [];
+                console.log('✅ Loaded orders from direct array:', this.orders.length);
+            } else if (data && typeof data === 'object') {
+                // Try to find orders array in the response object
+                const possibleKeys = ['orders', 'order', 'data', 'items'];
+                for (const key of possibleKeys) {
+                    if (Array.isArray(data[key])) {
+                        this.orders = data[key];
+                        console.log(`✅ Loaded orders from data.${key}:`, this.orders.length);
+                        break;
+                    }
+                }
+                
+                if (this.orders.length === 0) {
+                    console.log('⚠️ No array found in response, checking if single order:', data);
+                    // Check if it's a single order object
+                    if (data.id && data.items) {
+                        this.orders = [data];
+                        console.log('✅ Loaded single order:', this.orders.length);
+                    }
+                }
             }
             
-            console.log('✅ Backend orders loaded:', this.orders.length);
-            console.log('📋 Orders data:', this.orders);
+            if (this.orders.length === 0) {
+                console.log('⚠️ No orders found in backend response, using localStorage fallback');
+                this.loadOrdersFromLocalStorage();
+            }
+            
+            console.log('📋 Final orders array:', this.orders);
             
         } catch (error) {
             console.error('❌ Failed to load orders from backend:', error);
+            console.log('🔄 Falling back to localStorage...');
+            this.loadOrdersFromLocalStorage();
+        }
+    }
+
+    loadOrdersFromLocalStorage() {
+        try {
+            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            console.log('📥 Loading from localStorage:', localOrders.length, 'orders');
             
-            // Fallback: Try to load from localStorage as backup
-            try {
-                const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            if (localOrders.length > 0) {
                 this.orders = localOrders;
-                console.log('🔄 Using localStorage orders as fallback:', this.orders.length);
-            } catch (fallbackError) {
-                console.error('❌ Fallback also failed:', fallbackError);
+                console.log('✅ Loaded orders from localStorage:', this.orders.length);
+            } else {
+                console.log('📭 No orders found in localStorage either');
                 this.orders = [];
             }
-            
-            alert('Failed to load orders from backend. Using local data.');
-        }
-    }
-
-    async updateStatus(orderId, newStatus) {
-        try {
-            console.log('🔄 Updating order status:', orderId, newStatus);
-            
-            // Update in backend
-            const response = await this.makeRequest(`/orders/${orderId}/status`, {
-                method: 'PUT',
-                body: JSON.stringify({ status: newStatus })
-            });
-            
-            // Reload orders to get fresh data
-            await this.loadOrdersFromBackend();
-            this.renderStats();
-            this.renderOrders();
-            
-            console.log('📱 Full server response:', response);
-            
-            // Find the updated order
-            const updatedOrder = this.orders.find(order => order.id === orderId);
-            
-            // Show WhatsApp notification option
-            if (updatedOrder && updatedOrder.customer?.phone) {
-                console.log('✅ Customer phone available, showing confirm dialog');
-                const sendMsg = confirm(
-                    `✅ Order #${orderId} updated to ${newStatus}!\n\n` +
-                    `Customer: ${updatedOrder.customer?.name || 'N/A'}\n` +
-                    `Phone: ${updatedOrder.customer?.phone || 'No phone'}\n\n` +
-                    `Send WhatsApp notification to customer?`
-                );
-                
-                if (sendMsg) {
-                    this.sendWhatsAppNotification(updatedOrder, newStatus);
-                }
-            } else {
-                alert(`✅ Order #${orderId} updated to ${newStatus}!`);
-            }
         } catch (error) {
-            console.error('Failed to update status:', error);
-            alert('Failed to update order status: ' + error.message);
+            console.error('❌ Error loading from localStorage:', error);
+            this.orders = [];
         }
-    }
-
-    sendWhatsAppNotification(order, newStatus) {
-        const customerPhone = order.customer?.phone;
-        if (!customerPhone) {
-            alert('No customer phone number available for WhatsApp notification.');
-            return;
-        }
-
-        const statusMessages = {
-            'processing': `🔄 Your order #${order.id} is now being processed. We'll update you when it's ready!`,
-            'completed': `✅ Your order #${order.id} has been completed! ${order.delivery?.method === 'pickup' ? 'Ready for pickup!' : 'On its way to you!'}`,
-            'cancelled': `❌ Your order #${order.id} has been cancelled. Contact us for details.`
-        };
-
-        const message = statusMessages[newStatus] || 
-                       `📢 Update on your order #${order.id}: Status changed to ${newStatus}`;
-
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappURL = `https://wa.me/${customerPhone}?text=${encodedMessage}`;
-        
-        console.log('🔄 Opening WhatsApp URL:', whatsappURL);
-        
-        // Open WhatsApp
-        const newWindow = window.open(whatsappURL, '_blank');
-        
-        if (!newWindow) {
-            // Fallback for blocked popups
-            setTimeout(() => {
-                const manualOpen = confirm(
-                    "WhatsApp didn't open automatically.\n\n" +
-                    "Click OK to copy the WhatsApp link and open it manually."
-                );
-                if (manualOpen) {
-                    navigator.clipboard.writeText(whatsappURL).then(() => {
-                        alert("📱 WhatsApp link copied! Please paste it in your browser to send the notification.");
-                    });
-                }
-            }, 1000);
-        }
-    }
-
-    async deleteOrder(orderId) {
-        try {
-            const confirmDelete = confirm(
-                `🗑️ DELETE ORDER #${orderId}\n\n` +
-                `Are you sure you want to delete this order?\n\n` +
-                `This will remove the order from:\n` +
-                `• Admin panel\n` +
-                `• Backend server memory\n` +
-                `• Customer's order history\n\n` +
-                `This action cannot be undone!`
-            );
-            
-            if (!confirmDelete) return;
-
-            console.log('🗑️ Deleting order from backend:', orderId);
-            
-            // 1. Call backend API to delete from server memory
-            await this.makeRequest(`/orders/${orderId}`, {
-                method: 'DELETE'
-            });
-            
-            console.log('✅ Order deleted from backend');
-
-            // 2. Remove from frontend memory
-            const orderIndex = this.orders.findIndex(o => o.id === orderId);
-            if (orderIndex > -1) {
-                this.orders.splice(orderIndex, 1);
-                console.log('✅ Removed from frontend memory');
-            }
-
-            // 3. Remove from ALL localStorage instances
-            this.removeOrderFromAllClients(orderId);
-
-            // 4. Update the UI
-            this.renderStats();
-            this.renderOrders();
-            
-            alert(`✅ Order #${orderId} has been deleted successfully!`);
-            
-        } catch (error) {
-            console.error('Failed to delete order:', error);
-            alert('Failed to delete order: ' + error.message);
-        }
-    }
-
-    removeOrderFromAllClients(orderId) {
-        try {
-            // Remove from the main order history
-            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-            const updatedLocalOrders = localOrders.filter(order => order.id !== orderId);
-            localStorage.setItem('de_order_history', JSON.stringify(updatedLocalOrders));
-            console.log('✅ Removed from client localStorage');
-
-            // Also remove from any other potential storage locations
-            const storageKeys = ['de_order_history', 'deenice_orders', 'cart_orders'];
-            storageKeys.forEach(key => {
-                try {
-                    const storedData = localStorage.getItem(key);
-                    if (storedData) {
-                        const data = JSON.parse(storedData);
-                        if (Array.isArray(data)) {
-                            const filteredData = data.filter(item => item.id !== orderId);
-                            localStorage.setItem(key, JSON.stringify(filteredData));
-                        }
-                    }
-                } catch (e) {
-                    console.log(`No data found in ${key}`);
-                }
-            });
-
-        } catch (error) {
-            console.error('Error removing from client storage:', error);
-        }
-    }
-
-    logout() {
-        localStorage.removeItem('admin_token');
-        localStorage.removeItem('admin_logged_in');
-        window.location.href = 'admin-login.html';
-    }
-
-    setupEventListeners() {
-        // Filter buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.setFilter(e.target.dataset.filter);
-            });
-        });
-
-        // Add refresh button listener
-        const refreshBtn = document.querySelector('.btn-primary');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', async () => {
-                refreshBtn.disabled = true;
-                refreshBtn.textContent = 'Refreshing...';
-                
-                await this.loadOrdersFromBackend();
-                this.renderStats();
-                this.renderOrders();
-                
-                refreshBtn.disabled = false;
-                refreshBtn.textContent = 'Refresh';
-                alert('Orders refreshed from backend!');
-            });
-        }
-    }
-
-    setFilter(filter) {
-        this.currentFilter = filter;
-        
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.filter === filter);
-        });
-
-        this.renderOrders();
     }
 
     renderStats() {
@@ -320,26 +163,31 @@ class AdminOrderManager {
     renderOrders() {
         const container = document.getElementById('ordersTableBody');
         
-        console.log('🎨 Rendering orders to table body...');
+        console.log('🎨 Rendering orders to table...');
+        console.log('📋 Orders count:', this.orders.length);
         console.log('🔍 Current filter:', this.currentFilter);
-        console.log('📋 Orders to render:', this.orders.length);
+
+        if (!container) {
+            console.error('❌ ordersTableBody container not found!');
+            return;
+        }
 
         if (this.orders.length === 0) {
-            console.log('🔄 Showing empty state');
+            console.log('📭 No orders to display');
             container.innerHTML = this.getEmptyState();
             return;
         }
 
         const filteredOrders = this.filterOrders();
-        console.log('✅ Filtered orders:', filteredOrders.length);
+        console.log('✅ Filtered orders count:', filteredOrders.length);
         
         if (filteredOrders.length === 0) {
-            console.log('🔄 Showing no results state');
+            console.log('🔍 No orders match current filter');
             container.innerHTML = this.getNoResultsState();
             return;
         }
 
-        console.log('🖼️ Creating order table rows...');
+        console.log('🖼️ Creating table rows for orders...');
         container.innerHTML = filteredOrders.map(order => this.createOrderRow(order)).join('');
         console.log('✅ Orders rendered successfully');
     }
@@ -352,22 +200,40 @@ class AdminOrderManager {
     }
 
     createOrderRow(order) {
-        console.log('🛠️ Creating table row for order:', order.id);
+        console.log('🛠️ Creating row for order:', order);
         
-        const orderDate = new Date(order.orderDate).toLocaleDateString('en-US', {
+        if (!order) {
+            console.error('❌ Invalid order object');
+            return '';
+        }
+
+        const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
         });
 
-        const customerName = order.customer?.name || 'N/A';
-        const customerCity = order.customer?.city || 'N/A';
-        const customerPhone = order.customer?.phone || 'No phone';
+        const customerName = order.customer?.name || order.name || 'N/A';
+        const customerCity = order.customer?.city || order.city || 'N/A';
+        const customerPhone = order.customer?.phone || order.phone || 'No phone';
+        const totalAmount = order.totalAmount || order.total || 0;
+        const currency = order.currency || 'KES';
+        const status = order.status || 'pending';
+        const items = order.items || [];
+
+        console.log(`📦 Order ${order.id}:`, {
+            customerName,
+            customerCity,
+            customerPhone,
+            totalAmount,
+            status,
+            itemsCount: items.length
+        });
 
         return `
             <tr data-order-id="${order.id}">
                 <td>
-                    <strong>#${order.id}</strong>
+                    <strong>#${order.id || 'N/A'}</strong>
                 </td>
                 <td>
                     <div class="customer-info">
@@ -379,23 +245,29 @@ class AdminOrderManager {
                 <td>${orderDate}</td>
                 <td>
                     <div class="order-items-preview">
-                        ${(order.items || []).slice(0, 2).map(item => this.createOrderItemPreview(item)).join('')}
-                        ${(order.items || []).length > 2 ? 
-                            `<div class="item-name-small">+${(order.items || []).length - 2} more items</div>` : 
+                        ${items.slice(0, 2).map(item => this.createOrderItemPreview(item)).join('')}
+                        ${items.length > 2 ? 
+                            `<div class="item-name-small">+${items.length - 2} more items</div>` : 
+                            ''}
+                        ${items.length === 0 ? 
+                            `<div class="item-name-small">No items</div>` : 
                             ''}
                     </div>
                 </td>
                 <td>
-                    <strong>${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}</strong>
+                    <strong>${currency} ${totalAmount.toLocaleString()}</strong>
                 </td>
                 <td>
-                    <select class="status-select ${this.getStatusClass(order.status)}" 
+                    <span class="status-badge ${this.getStatusClass(status)}">
+                        ${status}
+                    </span>
+                    <select class="status-select" 
                             onchange="adminManager.updateStatus('${order.id}', this.value)"
-                            style="border: none; background: transparent; color: inherit; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
-                        <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
-                        <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
-                        <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
-                        <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            style="display: none; margin-top: 5px;">
+                        <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pending</option>
+                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>Processing</option>
+                        <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
+                        <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                     </select>
                 </td>
                 <td>
@@ -406,7 +278,8 @@ class AdminOrderManager {
                         <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">
                             Contact
                         </button>
-                        <button class="btn-danger" onclick="adminManager.deleteOrder('${order.id}')" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        <button class="btn-danger" onclick="adminManager.deleteOrder('${order.id}')" 
+                                style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
                             Delete
                         </button>
                     </div>
@@ -416,13 +289,18 @@ class AdminOrderManager {
     }
 
     createOrderItemPreview(item) {
+        if (!item) return '';
+        
+        const title = item.title || item.name || 'Unknown Item';
+        const imageUrl = item.img || item.image || 'https://via.placeholder.com/30x30?text=No+Image';
+        
         return `
             <div class="order-item-preview">
-                <img src="${item.img || 'https://via.placeholder.com/30'}" 
-                     alt="${item.title}" 
+                <img src="${imageUrl}" 
+                     alt="${title}" 
                      class="item-image-small"
                      onerror="this.src='https://via.placeholder.com/30x30?text=No+Image'">
-                <div class="item-name-small">${item.title || 'Unknown Item'}</div>
+                <div class="item-name-small">${title}</div>
             </div>
         `;
     }
@@ -437,6 +315,37 @@ class AdminOrderManager {
         return statusClasses[status] || 'status-pending';
     }
 
+    async updateStatus(orderId, newStatus) {
+        try {
+            console.log('🔄 Updating order status:', orderId, newStatus);
+            
+            // Update locally first for immediate feedback
+            const order = this.orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = newStatus;
+                this.renderStats();
+                this.renderOrders();
+            }
+            
+            // Then update in backend
+            await this.makeRequest(`/orders/${orderId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: newStatus })
+            });
+            
+            alert(`✅ Order #${orderId} status updated to ${newStatus}!`);
+            
+        } catch (error) {
+            console.error('Failed to update status:', error);
+            alert('Failed to update order status: ' + error.message);
+            
+            // Reload orders to get correct state
+            await this.loadOrdersFromBackend();
+            this.renderStats();
+            this.renderOrders();
+        }
+    }
+
     viewOrderDetails(orderId) {
         const order = this.orders.find(o => o.id === orderId);
         if (order) {
@@ -444,26 +353,19 @@ class AdminOrderManager {
 Order #${order.id} - Details
 
 CUSTOMER INFORMATION:
-Name: ${order.customer?.name || 'N/A'}
-City: ${order.customer?.city || 'N/A'}
-Phone: ${order.customer?.phone || 'Not provided'}
+Name: ${order.customer?.name || order.name || 'N/A'}
+City: ${order.customer?.city || order.city || 'N/A'}
+Phone: ${order.customer?.phone || order.phone || 'Not provided'}
 
 ORDER INFORMATION:
-Status: ${order.status}
-Order Date: ${new Date(order.orderDate).toLocaleString()}
-Last Updated: ${order.statusUpdated ? new Date(order.statusUpdated).toLocaleString() : 'N/A'}
-${order.completedDate ? `Completed: ${new Date(order.completedDate).toLocaleString()}` : ''}
+Status: ${order.status || 'pending'}
+Order Date: ${new Date(order.orderDate || order.date).toLocaleString()}
+Total: ${order.currency || 'KES'} ${(order.totalAmount || order.total || 0).toLocaleString()}
 
-DELIVERY:
-Method: ${this.getDeliveryText(order)}
-${order.delivery?.pickupCode ? `Pickup Code: ${order.delivery.pickupCode}` : ''}
-
-ITEMS (${order.items?.length || 0}):
+ITEMS (${(order.items || []).length}):
 ${order.items ? order.items.map((item, index) => 
-    `${index + 1}. ${item.title} - ${item.qty} × ${item.currency} ${item.price}`
+    `${index + 1}. ${item.title || item.name} - ${item.qty || 1} × ${item.currency || 'KES'} ${(item.price || 0).toLocaleString()}`
 ).join('\n') : 'No items'}
-
-TOTAL: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
             `;
             alert(details);
         }
@@ -471,18 +373,14 @@ TOTAL: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
 
     contactCustomer(orderId) {
         const order = this.orders.find(o => o.id === orderId);
-        if (order && order.customer?.phone) {
-            const message = `Hello ${order.customer?.name || 'there'}, this is Deenice Finds regarding your order #${orderId}.`;
+        if (order && (order.customer?.phone || order.phone)) {
+            const phone = order.customer?.phone || order.phone;
+            const message = `Hello ${order.customer?.name || order.name || 'there'}, this is Deenice Finds regarding your order #${orderId}.`;
             const encodedMessage = encodeURIComponent(message);
-            window.open(`https://wa.me/${order.customer.phone}?text=${encodedMessage}`, '_blank');
+            window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
         } else {
             alert(`No phone number available for order #${orderId}`);
         }
-    }
-
-    getDeliveryText(order) {
-        if (!order.delivery) return 'Delivery';
-        return order.delivery.method === 'pickup' ? 'Store Pickup' : 'Home Delivery';
     }
 
     getEmptyState() {
@@ -491,8 +389,11 @@ TOTAL: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
                 <td colspan="7" class="empty-state">
                     <h3>No orders found</h3>
                     <p>There are no orders in the system yet.</p>
-                    <button class="btn btn-primary" onclick="adminManager.loadOrdersFromBackend()">
-                        Refresh from Backend
+                    <button class="btn btn-primary" onclick="adminManager.debugOrders()">
+                        Debug Info
+                    </button>
+                    <button class="btn btn-secondary" onclick="adminManager.loadOrdersFromBackend()">
+                        Retry Backend
                     </button>
                 </td>
             </tr>
@@ -513,69 +414,43 @@ TOTAL: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
         `;
     }
 
-    // Debug function to check orders
+    setupEventListeners() {
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.setFilter(e.target.dataset.filter);
+            });
+        });
+    }
+
+    setFilter(filter) {
+        this.currentFilter = filter;
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter === filter);
+        });
+
+        this.renderOrders();
+    }
+
+    // Debug function
     debugOrders() {
         console.log('=== DEBUG ORDERS ===');
         console.log('Total orders:', this.orders.length);
-        console.log('Orders data:', this.orders);
+        console.log('Orders array:', this.orders);
         console.log('Current filter:', this.currentFilter);
         console.log('Backend URL:', this.baseURL);
         console.log('Token exists:', !!this.token);
+        console.log('LocalStorage orders:', JSON.parse(localStorage.getItem('de_order_history') || '[]'));
         
-        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nCheck console for details.`);
+        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nFilter: ${this.currentFilter}\nCheck console for details.`);
     }
 
-    // Load orders function for the refresh button
+    // Public method for refresh button
     async loadOrders() {
         await this.loadOrdersFromBackend();
         this.renderStats();
         this.renderOrders();
-    }
-
-    // Filter orders function for the filter buttons
-    filterOrders(filter) {
-        this.setFilter(filter);
-    }
-
-    // Update order status function for the modal
-    async updateOrderStatus(orderId, newStatus) {
-        await this.updateStatus(orderId, newStatus);
-        document.getElementById('statusModal').style.display = 'none';
-    }
-
-    // Generate order details HTML for modal
-    generateOrderDetailsHTML(order) {
-        return `
-            <div class="order-details">
-                <h3>Order #${order.id}</h3>
-                <div class="order-info">
-                    <p><strong>Customer:</strong> ${order.customer?.name || 'N/A'}</p>
-                    <p><strong>City:</strong> ${order.customer?.city || 'N/A'}</p>
-                    <p><strong>Phone:</strong> ${order.customer?.phone || 'Not provided'}</p>
-                    <p><strong>Order Date:</strong> ${new Date(order.orderDate).toLocaleString()}</p>
-                    <p><strong>Status:</strong> ${order.status}</p>
-                    <p><strong>Delivery:</strong> ${this.getDeliveryText(order)}</p>
-                    ${order.delivery?.pickupCode ? `<p><strong>Pickup Code:</strong> ${order.delivery.pickupCode}</p>` : ''}
-                </div>
-                <div class="order-items">
-                    <h4>Items (${order.items?.length || 0})</h4>
-                    ${order.items ? order.items.map(item => `
-                        <div class="order-item">
-                            <img src="${item.img || 'https://via.placeholder.com/50'}" alt="${item.title}" style="width: 50px; height: 50px; object-fit: cover;">
-                            <div>
-                                <strong>${item.title}</strong>
-                                <p>${item.qty} × ${item.currency} ${item.price}</p>
-                                ${item.color ? `<p>Color: ${item.color}</p>` : ''}
-                                ${item.size ? `<p>Size: ${item.size}</p>` : ''}
-                            </div>
-                        </div>
-                    `).join('') : 'No items'}
-                </div>
-                <div class="order-total">
-                    <h3>Total: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}</h3>
-                </div>
-            </div>
-        `;
     }
 }
 
