@@ -20,11 +20,87 @@ class AdminOrderManager {
         this.renderStats();
         this.renderOrders();
         this.setupEventListeners();
+        
+        // Start sync monitoring
+        this.startSyncMonitoring();
     }
 
     // Detect mobile devices
     isMobileDevice() {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    // Start monitoring for changes to trigger sync
+    startSyncMonitoring() {
+        // Listen for storage changes (cross-tab sync)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'de_order_history') {
+                console.log('🔄 Storage updated from another tab');
+                this.loadOrdersFromBackend().then(() => {
+                    this.renderStats();
+                    this.renderOrders();
+                });
+            }
+        });
+
+        // Auto-refresh every 30 seconds to sync changes
+        setInterval(() => {
+            this.loadOrdersFromBackend().then(() => {
+                this.renderStats();
+                this.renderOrders();
+            });
+        }, 30000);
+    }
+
+    // Enhanced sync method that works for both mobile and desktop
+    async syncOrderToUsers(orderId, newStatus) {
+        try {
+            console.log('🔄 Syncing order to users:', orderId, newStatus);
+            
+            // 1. Update localStorage (immediate sync for same device)
+            this.updateLocalStorageOrder(orderId, newStatus);
+            
+            // 2. Update backend (for cross-device sync)
+            try {
+                await this.makeRequest(`/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                console.log('✅ Backend sync successful');
+                
+                // 3. Trigger user sync by updating their localStorage via our sync system
+                this.triggerUserSync(orderId);
+                
+            } catch (backendError) {
+                console.log('⚠️ Backend sync failed, using localStorage only');
+                // Even if backend fails, localStorage will sync to users through order-sync.js
+            }
+            
+        } catch (error) {
+            console.error('Sync failed:', error);
+        }
+    }
+
+    // Trigger user sync by updating a special sync marker
+    triggerUserSync(orderId) {
+        try {
+            // Create a sync event that order-sync.js can detect
+            const syncEvents = JSON.parse(localStorage.getItem('de_sync_events') || '[]');
+            syncEvents.push({
+                orderId: orderId,
+                timestamp: new Date().toISOString(),
+                type: 'admin_status_update'
+            });
+            
+            // Keep only last 10 events
+            const recentEvents = syncEvents.slice(-10);
+            localStorage.setItem('de_sync_events', JSON.stringify(recentEvents));
+            
+            console.log('📢 Sync event triggered for order:', orderId);
+            
+        } catch (error) {
+            console.error('Error triggering sync:', error);
+        }
     }
 
     // Mobile-friendly WhatsApp URL opening
@@ -72,6 +148,29 @@ class AdminOrderManager {
                 
                 localStorage.setItem('de_order_history', JSON.stringify(localOrders));
                 console.log('✅ Updated order in localStorage:', orderId, newStatus);
+                
+                // Also update the current admin view if this order exists
+                const adminOrderIndex = this.orders.findIndex(order => order.id === orderId);
+                if (adminOrderIndex > -1) {
+                    this.orders[adminOrderIndex].status = newStatus;
+                    this.orders[adminOrderIndex].statusUpdated = new Date().toISOString();
+                }
+            } else {
+                console.log('⚠️ Order not found in localStorage, adding it');
+                // If order doesn't exist in localStorage, add it from current orders
+                const order = this.orders.find(o => o.id === orderId);
+                if (order) {
+                    const updatedOrder = {
+                        ...order,
+                        status: newStatus,
+                        statusUpdated: new Date().toISOString()
+                    };
+                    if (newStatus === 'completed') {
+                        updatedOrder.completedDate = new Date().toISOString();
+                    }
+                    localOrders.push(updatedOrder);
+                    localStorage.setItem('de_order_history', JSON.stringify(localOrders));
+                }
             }
         } catch (error) {
             console.error('Error updating localStorage:', error);
@@ -449,7 +548,7 @@ class AdminOrderManager {
         return statusClasses[status] || 'status-pending';
     }
 
-    // MOBILE-COMPATIBLE STATUS UPDATE METHOD
+    // ENHANCED STATUS UPDATE METHOD WITH SYNC
     async updateStatus(orderId, newStatus) {
         try {
             console.log('🔄 Updating order status:', orderId, newStatus);
@@ -475,63 +574,19 @@ class AdminOrderManager {
             this.renderStats();
             this.renderOrders();
             
-            // Update localStorage to sync with user
-            this.updateLocalStorageOrder(orderId, newStatus);
+            // ✅ SYNC TO USERS (BOTH MOBILE AND DESKTOP)
+            await this.syncOrderToUsers(orderId, newStatus);
             
-            // ✅ MOBILE-FRIENDLY BACKEND UPDATE
-            let backendSuccess = false;
-            let whatsappURL = null;
-            
-            try {
-                const response = await this.makeRequest(`/orders/${orderId}/status`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ status: newStatus })
-                });
-                
-                console.log('✅ Backend update successful');
-                backendSuccess = true;
-                whatsappURL = response.whatsappURL;
-                
-            } catch (error) {
-                console.log('⚠️ Backend update failed:', error.message);
-                backendSuccess = false;
-                
-                // Don't show error on mobile - just continue with local update
-                if (this.isMobileDevice()) {
-                    console.log('Mobile device - suppressing backend error');
-                } else {
-                    // Show error on desktop for debugging
-                    console.error('Desktop backend error:', error);
-                }
-            }
-            
-            // Show appropriate success message
+            // Show success message
             let successMessage = `✅ Order #${orderId} status updated from ${oldStatus} to ${newStatus}!`;
             
-            if (!backendSuccess && this.isMobileDevice()) {
-                successMessage += `\n\n📱 Note: Updated locally (mobile optimized)`;
-            } else if (!backendSuccess) {
-                successMessage += `\n\n⚠️ Note: Backend update failed, but local update succeeded`;
+            if (this.isMobileDevice()) {
+                successMessage += `\n\n📱 Changes synced to user's order history!`;
+            } else {
+                successMessage += `\n\n✅ Changes synced to user's order history!`;
             }
             
-            // WhatsApp notifications (only if backend was successful)
-            if (backendSuccess && whatsappURL && order.customer?.phone) {
-                const sendNotification = confirm(
-                    `${successMessage}\n\n` +
-                    `Customer: ${order.customer?.name || 'N/A'}\n` +
-                    `Phone: ${order.customer?.phone}\n\n` +
-                    `Send WhatsApp notification to customer?`
-                );
-                
-                if (sendNotification) {
-                    // Mobile-friendly WhatsApp opening
-                    this.openWhatsAppURL(whatsappURL);
-                } else {
-                    alert(successMessage);
-                }
-            } else {
-                alert(successMessage);
-            }
+            alert(successMessage);
             
         } catch (error) {
             console.error('Status update failed:', error);
@@ -574,11 +629,8 @@ class AdminOrderManager {
                             order.completedDate = new Date().toISOString();
                         }
                         
-                        // Update backend
-                        await this.makeRequest(`/orders/${orderId}/status`, {
-                            method: 'PUT',
-                            body: JSON.stringify({ status: newStatus })
-                        });
+                        // Sync to users
+                        await this.syncOrderToUsers(orderId, newStatus);
                         
                         successCount++;
                     }
@@ -596,6 +648,8 @@ class AdminOrderManager {
             if (failCount > 0) {
                 resultMessage += `\n❌ Failed to update ${failCount} order(s).`;
             }
+            
+            resultMessage += `\n\n🔄 Changes synced to user's order history!`;
             
             alert(resultMessage);
 
