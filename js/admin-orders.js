@@ -9,9 +9,8 @@ class AdminOrderManager {
 
     async init() {
         console.log('🔄 AdminOrderManager initializing...');
-        console.log('🔑 Token exists:', !!this.token);
         
-        if (!this.token) {
+        if (!this.token || !this.isValidToken(this.token)) {
             window.location.href = 'admin-login.html';
             return;
         }
@@ -20,100 +19,205 @@ class AdminOrderManager {
         this.renderStats();
         this.renderOrders();
         this.setupEventListeners();
-        
-        // Start sync monitoring
         this.startSyncMonitoring();
     }
 
-    // Detect mobile devices
-    isMobileDevice() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
-
-    // Start monitoring for changes to trigger sync
-    startSyncMonitoring() {
-        // Listen for storage changes (cross-tab sync)
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'de_order_history') {
-                console.log('🔄 Storage updated from another tab');
-                this.loadOrdersFromBackend().then(() => {
-                    this.renderStats();
-                    this.renderOrders();
-                });
-            }
-        });
-
-        // Auto-refresh every 30 seconds to sync changes
-        setInterval(() => {
-            this.loadOrdersFromBackend().then(() => {
-                this.renderStats();
-                this.renderOrders();
-            });
-        }, 30000);
-    }
-
-    // FIXED: ENHANCED SYNC METHOD WITH BETTER DEBUGGING
-    async syncOrderToUsers(orderId, newStatus) {
+    // Validate token structure
+    isValidToken(token) {
         try {
-            console.log('🔄 Syncing order to users:', orderId, newStatus);
+            // JWT tokens are in format: header.payload.signature
+            const parts = token.split('.');
+            if (parts.length !== 3) return false;
             
-            // 1. First verify the order exists locally
+            const payload = JSON.parse(atob(parts[1]));
+            return payload && payload.username && payload.role === 'admin';
+        } catch (e) {
+            console.error('Invalid token format:', e);
+            return false;
+        }
+    }
+
+    // Enhanced API request with better error handling
+    async makeRequest(endpoint, options = {}) {
+        try {
+            console.log(`🌐 API Call: ${options.method || 'GET'} ${endpoint}`);
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            
+            const config = {
+                method: options.method || 'GET',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                signal: controller.signal
+            };
+
+            if (options.body && (config.method === 'POST' || config.method === 'PUT' || config.method === 'PATCH')) {
+                config.body = options.body;
+            }
+
+            const response = await fetch(`${this.baseURL}${endpoint}`, config);
+            clearTimeout(timeoutId);
+
+            console.log(`📡 Response: ${response.status} for ${endpoint}`);
+
+            if (response.status === 401) {
+                this.showNotification('Session expired. Please login again.', 'error');
+                this.logout();
+                throw new Error('Session expired');
+            }
+
+            if (!response.ok) {
+                let errorData = { error: `HTTP ${response.status}` };
+                try {
+                    errorData = await response.json();
+                } catch (e) {
+                    // Ignore JSON parse errors
+                }
+                
+                const errorMessage = errorData.error || `HTTP error! status: ${response.status}`;
+                throw new Error(errorMessage);
+            }
+
+            return await response.json();
+            
+        } catch (error) {
+            console.error(`❌ API Request Failed for ${endpoint}:`, error);
+            
+            if (error.name === 'AbortError') {
+                throw new Error('Request timeout - server is not responding');
+            } else if (error.message.includes('Failed to fetch')) {
+                throw new Error('Network error - check your internet connection');
+            } else {
+                throw error;
+            }
+        }
+    }
+
+    // FIXED: Load orders with proper error handling
+    async loadOrdersFromBackend() {
+        try {
+            console.log('📥 Loading orders from backend...');
+            const data = await this.makeRequest('/orders');
+            
+            // Handle different response structures
+            if (data.orders && Array.isArray(data.orders)) {
+                this.orders = data.orders;
+                console.log('✅ Loaded orders from backend:', this.orders.length);
+            } else if (Array.isArray(data)) {
+                this.orders = data;
+                console.log('✅ Loaded orders as direct array:', this.orders.length);
+            } else {
+                console.warn('⚠️ Unexpected response format:', data);
+                this.orders = [];
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to load orders from backend:', error);
+            this.showNotification('Backend unavailable. Using local data.', 'error');
+            this.loadOrdersFromLocalStorage();
+        }
+    }
+
+    // Load from localStorage as fallback
+    loadOrdersFromLocalStorage() {
+        try {
+            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            if (localOrders.length > 0) {
+                this.orders = localOrders;
+                console.log('✅ Loaded orders from localStorage:', this.orders.length);
+            } else {
+                console.log('📭 No orders found anywhere');
+                this.orders = [];
+            }
+        } catch (error) {
+            console.error('❌ Error loading from localStorage:', error);
+            this.orders = [];
+        }
+    }
+
+    // FIXED: Status update with comprehensive error handling
+    async updateStatus(orderId, newStatus) {
+        try {
+            console.log(`🔄 Updating order ${orderId} to ${newStatus}`);
+            
+            // 1. Find the order locally
             const order = this.orders.find(o => o.id === orderId);
             if (!order) {
-                throw new Error(`Order ${orderId} not found in local orders`);
+                throw new Error(`Order ${orderId} not found locally`);
             }
 
-            console.log('✅ Order found locally:', order.id, order.customer?.name);
-
-            // 2. Update backend first (source of truth)
+            const oldStatus = order.status;
+            
+            // 2. Update locally first for immediate feedback
+            order.status = newStatus;
+            order.statusUpdated = new Date().toISOString();
+            if (newStatus === 'completed') {
+                order.completedDate = new Date().toISOString();
+            }
+            
+            // 3. Update UI immediately
+            this.renderStats();
+            this.renderOrders();
+            
+            // 4. Try to update backend
             try {
-                console.log(`🌐 Calling backend: PUT /orders/${orderId}/status`);
-                
-                const response = await this.makeRequest(`/orders/${orderId}/status`, {
+                await this.makeRequest(`/orders/${orderId}/status`, {
                     method: 'PUT',
                     body: JSON.stringify({ status: newStatus })
                 });
-                
-                console.log('✅ Backend update successful:', response);
+                console.log('✅ Backend update successful');
                 
             } catch (backendError) {
                 console.error('❌ Backend update failed:', backendError);
                 
-                // Check if it's a 404 error specifically
-                if (backendError.message.includes('404')) {
-                    console.log('🔄 404 detected - order might not exist on server, creating it...');
-                    
-                    // Try to create the order on the server first
+                // If it's a 404, the order might not exist on server
+                if (backendError.message.includes('404') || backendError.message.includes('not found')) {
+                    console.log('🔄 Order not found on server, attempting to create it...');
                     await this.createOrderOnServer(order);
                     
-                    // Then try to update status again
-                    console.log('🔄 Retrying status update after creation...');
+                    // Retry the status update
                     await this.makeRequest(`/orders/${orderId}/status`, {
                         method: 'PUT',
                         body: JSON.stringify({ status: newStatus })
                     });
-                    
                     console.log('✅ Order created and status updated on server');
                 } else {
-                    throw new Error('Backend sync failed: ' + backendError.message);
+                    throw backendError;
                 }
             }
 
-            // 3. Update localStorage for immediate effect
+            // 5. Update localStorage
             this.updateLocalStorageOrder(orderId, newStatus);
             
-            // 4. Trigger multiple sync methods for mobile compatibility
-            await this.triggerMobileSync(orderId);
-            
-            console.log('✅ Order sync completed for mobile');
+            // 6. Show success
+            this.showNotification(
+                `Order #${orderId} updated from ${oldStatus} to ${newStatus}`,
+                'success'
+            );
             
         } catch (error) {
-            console.error('❌ Sync failed:', error);
-            throw error;
+            console.error('❌ Status update failed:', error);
+            
+            // Revert local changes if backend failed
+            const order = this.orders.find(o => o.id === orderId);
+            if (order) {
+                // Keep the new status but mark as unsynced
+                order.unsynced = true;
+                this.renderOrders();
+            }
+            
+            this.showNotification(
+                `Update failed: ${error.message}. Changes saved locally.`,
+                'error'
+            );
         }
     }
 
-    // NEW: Method to create order on server if it doesn't exist
+    // Create order on server if it doesn't exist
     async createOrderOnServer(order) {
         try {
             console.log('🔄 Creating order on server:', order.id);
@@ -133,130 +237,20 @@ class AdminOrderManager {
                 delivery: order.delivery || { method: 'home' }
             };
 
-            const response = await this.makeRequest('/orders', {
+            await this.makeRequest('/orders', {
                 method: 'POST',
                 body: JSON.stringify(orderData)
             });
             
-            console.log('✅ Order created on server:', response);
-            return response;
+            console.log('✅ Order created on server');
             
         } catch (error) {
             console.error('❌ Failed to create order on server:', error);
-            throw new Error('Failed to create order on server: ' + error.message);
+            throw new Error('Could not create order on server: ' + error.message);
         }
     }
 
-    // NEW: Debug method to check order existence
-    async debugOrderExistence(orderId) {
-        try {
-            console.log('🔍 Debugging order existence:', orderId);
-            
-            // Check local orders
-            const localOrder = this.orders.find(o => o.id === orderId);
-            console.log('📋 Local order:', localOrder);
-            
-            // Check backend for this specific order
-            try {
-                const allOrders = await this.makeRequest('/orders');
-                const backendOrder = allOrders.orders?.find(o => o.id === orderId) || 
-                                   allOrders.find(o => o.id === orderId);
-                console.log('🌐 Backend order:', backendOrder);
-                
-                if (!backendOrder) {
-                    console.log('❌ Order not found on backend - this is the issue!');
-                    console.log('Available backend order IDs:', 
-                        allOrders.orders?.map(o => o.id) || 
-                        allOrders.map(o => o.id));
-                } else {
-                    console.log('✅ Order found on backend');
-                }
-                
-            } catch (error) {
-                console.error('❌ Error checking backend:', error);
-            }
-            
-        } catch (error) {
-            console.error('Debug failed:', error);
-        }
-    }
-
-    // NEW: Enhanced mobile sync trigger
-    async triggerMobileSync(orderId) {
-        try {
-            // Method 1: Update sync events (for order-sync.js)
-            const syncEvents = JSON.parse(localStorage.getItem('de_sync_events') || '[]');
-            syncEvents.push({
-                orderId: orderId,
-                timestamp: new Date().toISOString(),
-                type: 'admin_status_update',
-                forceRefresh: true
-            });
-            localStorage.setItem('de_sync_events', JSON.stringify(syncEvents.slice(-10)));
-
-            // Method 2: Create a sync marker specifically for this order
-            const orderSyncMarkers = JSON.parse(localStorage.getItem('de_order_sync_markers') || '{}');
-            orderSyncMarkers[orderId] = {
-                lastAdminUpdate: new Date().toISOString(),
-                requiresSync: true
-            };
-            localStorage.setItem('de_order_sync_markers', JSON.stringify(orderSyncMarkers));
-
-            // Method 3: Trigger storage event manually (cross-tab sync)
-            this.triggerStorageEvent('de_order_history_updated', { orderId: orderId });
-
-            console.log('📢 Multiple sync methods triggered for order:', orderId);
-
-        } catch (error) {
-            console.error('Error triggering mobile sync:', error);
-        }
-    }
-
-    // NEW: Trigger custom storage event
-    triggerStorageEvent(key, data) {
-        try {
-            const event = new StorageEvent('storage', {
-                key: key,
-                newValue: JSON.stringify(data),
-                oldValue: localStorage.getItem(key),
-                url: window.location.href
-            });
-            window.dispatchEvent(event);
-        } catch (error) {
-            console.error('Error triggering storage event:', error);
-        }
-    }
-
-    // Mobile-friendly WhatsApp URL opening
-    openWhatsAppURL(url) {
-        try {
-            // Try to open in new window
-            const newWindow = window.open(url, '_blank');
-            
-            // If blocked (common on mobile), fallback to direct navigation
-            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-                console.log('Popup blocked, using direct navigation');
-                window.location.href = url;
-            }
-        } catch (error) {
-            console.error('Error opening WhatsApp:', error);
-            // Final fallback - show URL for manual copy
-            const manualSend = confirm(
-                "WhatsApp didn't open automatically.\n\n" +
-                "Click OK to copy the WhatsApp link and open it manually."
-            );
-            if (manualSend) {
-                navigator.clipboard.writeText(url).then(() => {
-                    alert("📱 WhatsApp link copied! Please paste it in your browser.");
-                }).catch(() => {
-                    // Fallback for older browsers
-                    prompt("Copy this WhatsApp link:", url);
-                });
-            }
-        }
-    }
-
-    // Helper method to update localStorage
+    // Update localStorage
     updateLocalStorageOrder(orderId, newStatus) {
         try {
             const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
@@ -265,234 +259,43 @@ class AdminOrderManager {
             if (orderIndex > -1) {
                 localOrders[orderIndex].status = newStatus;
                 localOrders[orderIndex].statusUpdated = new Date().toISOString();
-                
                 if (newStatus === 'completed') {
                     localOrders[orderIndex].completedDate = new Date().toISOString();
                 }
-                
                 localStorage.setItem('de_order_history', JSON.stringify(localOrders));
-                console.log('✅ Updated order in localStorage:', orderId, newStatus);
-                
-                // Also update the current admin view if this order exists
-                const adminOrderIndex = this.orders.findIndex(order => order.id === orderId);
-                if (adminOrderIndex > -1) {
-                    this.orders[adminOrderIndex].status = newStatus;
-                    this.orders[adminOrderIndex].statusUpdated = new Date().toISOString();
-                }
-            } else {
-                console.log('⚠️ Order not found in localStorage, adding it');
-                // If order doesn't exist in localStorage, add it from current orders
-                const order = this.orders.find(o => o.id === orderId);
-                if (order) {
-                    const updatedOrder = {
-                        ...order,
-                        status: newStatus,
-                        statusUpdated: new Date().toISOString()
-                    };
-                    if (newStatus === 'completed') {
-                        updatedOrder.completedDate = new Date().toISOString();
-                    }
-                    localOrders.push(updatedOrder);
-                    localStorage.setItem('de_order_history', JSON.stringify(localOrders));
-                }
             }
         } catch (error) {
             console.error('Error updating localStorage:', error);
         }
     }
 
-    // IMPROVED: API request method with better error handling
-    async makeRequest(endpoint, options = {}) {
-        try {
-            console.log(`🌐 Making request to: ${this.baseURL}${endpoint}`);
-            console.log(`🔑 Using token:`, this.token ? 'Yes' : 'No');
-            
-            // Mobile-friendly timeout
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-            
-            const config = {
-                method: options.method || 'GET',
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                },
-                signal: controller.signal
-            };
-
-            // Add body for non-GET requests
-            if (options.body && (config.method === 'POST' || config.method === 'PUT' || config.method === 'PATCH')) {
-                config.body = options.body;
-            }
-
-            const response = await fetch(`${this.baseURL}${endpoint}`, config);
-
-            clearTimeout(timeoutId);
-
-            console.log(`📡 Response status: ${response.status}`);
-            
-            if (response.status === 401) {
-                this.logout();
-                throw new Error('Session expired - please login again');
-            }
-
-            if (!response.ok) {
-                let errorMessage = `HTTP error! status: ${response.status}`;
-                
-                // More specific error messages
-                if (response.status === 404) {
-                    errorMessage = 'Server endpoint not found (404) - check API URL';
-                } else if (response.status === 500) {
-                    errorMessage = 'Server error (500) - backend issue';
-                } else if (response.status === 0) {
-                    errorMessage = 'Network connection failed - check internet connection';
-                } else if (response.status === 400) {
-                    errorMessage = 'Bad request (400) - check request data';
-                } else if (response.status === 403) {
-                    errorMessage = 'Forbidden (403) - check permissions';
-                }
-                
-                // Try to get error details from response
-                try {
-                    const errorData = await response.json();
-                    if (errorData.error) {
-                        errorMessage += ` - ${errorData.error}`;
-                    }
-                } catch (e) {
-                    // Ignore if no JSON error response
-                }
-                
-                throw new Error(errorMessage);
-            }
-
-            const data = await response.json();
-            console.log('✅ Response data received');
-            return data;
-            
-        } catch (error) {
-            console.error('❌ API request failed:', error);
-            
-            // Better error messages for different scenarios
-            if (error.name === 'AbortError') {
-                throw new Error('Request timeout (15s) - server is slow or connection is poor');
-            } else if (error.message.includes('Failed to fetch')) {
-                throw new Error('Network error - please check your internet connection');
-            } else if (error.message.includes('CORS')) {
-                throw new Error('CORS error - check server configuration');
-            } else {
-                throw error;
-            }
-        }
-    }
-
-    async loadOrdersFromBackend() {
-        try {
-            console.log('📥 Loading orders from backend...');
-            const data = await this.makeRequest('/orders');
-            
-            // Handle different response structures
-            if (data.orders && Array.isArray(data.orders)) {
-                this.orders = data.orders;
-                console.log('✅ Loaded orders from data.orders:', this.orders.length);
-            } else if (Array.isArray(data)) {
-                this.orders = data;
-                console.log('✅ Loaded orders from direct array:', this.orders.length);
-            } else if (data && typeof data === 'object') {
-                // Try to find orders array in the response object
-                const possibleKeys = ['orders', 'order', 'data', 'items'];
-                for (const key of possibleKeys) {
-                    if (Array.isArray(data[key])) {
-                        this.orders = data[key];
-                        console.log(`✅ Loaded orders from data.${key}:`, this.orders.length);
-                        break;
-                    }
-                }
-                
-                if (this.orders.length === 0) {
-                    console.log('⚠️ No array found in response, checking if single order:', data);
-                    // Check if it's a single order object
-                    if (data.id && data.items) {
-                        this.orders = [data];
-                        console.log('✅ Loaded single order:', this.orders.length);
-                    }
-                }
-            }
-            
-            if (this.orders.length === 0) {
-                console.log('⚠️ No orders found in backend response, using localStorage fallback');
-                this.loadOrdersFromLocalStorage();
-            }
-            
-            console.log('📋 Final orders array:', this.orders);
-            
-        } catch (error) {
-            console.error('❌ Failed to load orders from backend:', error);
-            console.log('🔄 Falling back to localStorage...');
-            this.loadOrdersFromLocalStorage();
-        }
-    }
-
-    loadOrdersFromLocalStorage() {
-        try {
-            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-            console.log('📥 Loading from localStorage:', localOrders.length, 'orders');
-            
-            if (localOrders.length > 0) {
-                this.orders = localOrders;
-                console.log('✅ Loaded orders from localStorage:', this.orders.length);
-            } else {
-                console.log('📭 No orders found in localStorage either');
-                this.orders = [];
-            }
-        } catch (error) {
-            console.error('❌ Error loading from localStorage:', error);
-            this.orders = [];
-        }
-    }
-
-    // FIXED DELETE METHOD
+    // Delete order
     async deleteOrder(orderId) {
-        try {
-            const confirmDelete = confirm(
-                `🗑️ DELETE ORDER #${orderId}\n\n` +
-                `Are you sure you want to delete this order?\n\n` +
-                `This will remove the order from:\n` +
-                `• Admin panel\n` +
-                `• Backend server\n` +
-                `• Customer's order history\n\n` +
-                `This action cannot be undone!`
-            );
-            
-            if (!confirmDelete) return;
+        if (!confirm(`Are you sure you want to delete order #${orderId}? This cannot be undone.`)) {
+            return;
+        }
 
-            console.log('🗑️ Deleting order:', orderId);
-            
-            // Remove from local state first for immediate feedback
+        try {
+            // Remove locally first
             this.orders = this.orders.filter(order => order.id !== orderId);
-            
-            // Update UI immediately
             this.renderStats();
             this.renderOrders();
             
             // Try to delete from backend
             try {
-                await this.makeRequest(`/orders/${orderId}`, {
-                    method: 'DELETE'
-                });
-                console.log('✅ Order deleted from backend');
+                await this.makeRequest(`/orders/${orderId}`, { method: 'DELETE' });
             } catch (error) {
                 console.log('⚠️ Backend delete failed, but removed locally');
             }
             
-            // Remove from localStorage (affects user's order history)
+            // Remove from localStorage
             this.removeOrderFromLocalStorage(orderId);
             
-            alert(`✅ Order #${orderId} has been deleted!`);
+            this.showNotification(`Order #${orderId} deleted`, 'success');
             
         } catch (error) {
-            console.error('Failed to delete order:', error);
-            alert('Failed to delete order: ' + error.message);
+            console.error('Delete failed:', error);
+            this.showNotification('Delete failed: ' + error.message, 'error');
         }
     }
 
@@ -501,12 +304,58 @@ class AdminOrderManager {
             const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
             const updatedOrders = localOrders.filter(order => order.id !== orderId);
             localStorage.setItem('de_order_history', JSON.stringify(updatedOrders));
-            console.log('✅ Removed from localStorage');
         } catch (error) {
             console.error('Error removing from localStorage:', error);
         }
     }
 
+    // Enhanced notification system
+    showNotification(message, type = 'info') {
+        // Remove existing notification
+        const existingNotification = document.querySelector('.admin-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+
+        const notification = document.createElement('div');
+        notification.className = `admin-notification ${type}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            max-width: 400px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: ${type === 'success' ? '#28a745' : type === 'error' ? '#FF3B30' : '#007AFF'};
+            word-break: break-word;
+        `;
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        // Animate in
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            notification.style.transform = 'translateX(400px)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }, 5000);
+    }
+
+    // Render methods (same as before)
     renderStats() {
         const stats = {
             total: this.orders.length,
@@ -515,8 +364,6 @@ class AdminOrderManager {
             completed: this.orders.filter(o => o.status === 'completed').length,
             cancelled: this.orders.filter(o => o.status === 'cancelled').length
         };
-
-        console.log('📊 Rendering stats:', stats);
 
         const statsGrid = document.getElementById('statsGrid');
         if (statsGrid) {
@@ -547,103 +394,53 @@ class AdminOrderManager {
 
     renderOrders() {
         const container = document.getElementById('ordersTableBody');
-        
-        console.log('🎨 Rendering orders to table...');
-        console.log('📋 Orders count:', this.orders.length);
-        console.log('🔍 Current filter:', this.currentFilter);
-
-        if (!container) {
-            console.error('❌ ordersTableBody container not found!');
-            return;
-        }
+        if (!container) return;
 
         if (this.orders.length === 0) {
-            console.log('📭 No orders to display');
             container.innerHTML = this.getEmptyState();
             return;
         }
 
         const filteredOrders = this.filterOrders();
-        console.log('✅ Filtered orders count:', filteredOrders.length);
-        
         if (filteredOrders.length === 0) {
-            console.log('🔍 No orders match current filter');
             container.innerHTML = this.getNoResultsState();
             return;
         }
 
-        console.log('🖼️ Creating table rows for orders...');
         container.innerHTML = filteredOrders.map(order => this.createOrderRow(order)).join('');
-        console.log('✅ Orders rendered successfully');
-    }
-
-    filterOrders() {
-        if (this.currentFilter === 'all') {
-            return this.orders;
-        }
-        return this.orders.filter(order => order.status === this.currentFilter);
     }
 
     createOrderRow(order) {
-        console.log('🛠️ Creating row for order:', order);
-        
-        if (!order) {
-            console.error('❌ Invalid order object');
-            return '';
-        }
-
-        const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-
+        const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString();
         const customerName = order.customer?.name || order.name || 'N/A';
         const customerCity = order.customer?.city || order.city || 'N/A';
-        const customerPhone = order.customer?.phone || order.phone || 'No phone';
         const totalAmount = order.totalAmount || order.total || 0;
         const currency = order.currency || 'KES';
         const status = order.status || 'pending';
         const items = order.items || [];
 
-        console.log(`📦 Order ${order.id}:`, {
-            customerName,
-            customerCity,
-            customerPhone,
-            totalAmount,
-            status,
-            itemsCount: items.length
-        });
-
         return `
             <tr data-order-id="${order.id}">
-                <td>
-                    <strong>#${order.id || 'N/A'}</strong>
-                </td>
+                <td><strong>#${order.id}</strong></td>
                 <td>
                     <div class="customer-info">
                         <div class="customer-name">${customerName}</div>
                         <div class="customer-email">${customerCity}</div>
-                        <div class="customer-email">${customerPhone}</div>
                     </div>
                 </td>
                 <td>${orderDate}</td>
                 <td>
                     <div class="order-items-preview">
-                        ${items.slice(0, 2).map(item => this.createOrderItemPreview(item)).join('')}
-                        ${items.length > 2 ? 
-                            `<div class="item-name-small">+${items.length - 2} more items</div>` : 
-                            ''}
-                        ${items.length === 0 ? 
-                            `<div class="item-name-small">No items</div>` : 
-                            ''}
+                        ${items.slice(0, 2).map(item => 
+                            `<div class="order-item-preview">
+                                <div class="item-name-small">${item.title || item.name}</div>
+                            </div>`
+                        ).join('')}
+                        ${items.length > 2 ? `<div class="item-name-small">+${items.length - 2} more</div>` : ''}
                     </div>
                 </td>
+                <td><strong>${currency} ${totalAmount.toLocaleString()}</strong></td>
                 <td>
-                    <strong>${currency} ${totalAmount.toLocaleString()}</strong>
-                </td>
-                <td>
-                    <!-- VISIBLE STATUS DROPDOWN -->
                     <select class="status-select ${this.getStatusClass(status)}" 
                             onchange="adminManager.updateStatus('${order.id}', this.value)"
                             style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer; background: white; min-width: 120px;">
@@ -652,46 +449,20 @@ class AdminOrderManager {
                         <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Completed</option>
                         <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
                     </select>
+                    ${order.unsynced ? '<br><small style="color: orange;">⚠️ Not synced</small>' : ''}
                 </td>
                 <td>
                     <div class="actions">
-                        <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">
-                            View
-                        </button>
-                        <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">
-                            Contact
-                        </button>
-                        <button class="btn-danger" onclick="adminManager.deleteOrder('${order.id}')" 
-                                style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                            Delete
-                        </button>
-                        <button class="debug-btn" onclick="adminManager.debugOrderExistence('${order.id}')" 
-                                style="background-color: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 10px; margin-top: 5px;">
-                            Debug
-                        </button>
+                        <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">View</button>
+                        <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">Contact</button>
+                        <button class="btn-danger" onclick="adminManager.deleteOrder('${order.id}')">Delete</button>
                     </div>
                 </td>
             </tr>
         `;
     }
 
-    createOrderItemPreview(item) {
-        if (!item) return '';
-        
-        const title = item.title || item.name || 'Unknown Item';
-        const imageUrl = item.img || item.image || 'https://via.placeholder.com/30x30?text=No+Image';
-        
-        return `
-            <div class="order-item-preview">
-                <img src="${imageUrl}" 
-                     alt="${title}" 
-                     class="item-image-small"
-                     onerror="this.src='https://via.placeholder.com/30x30?text=No+Image'">
-                <div class="item-name-small">${title}</div>
-            </div>
-        `;
-    }
-
+    // ... include the rest of your helper methods (getStatusClass, filterOrders, etc.)
     getStatusClass(status) {
         const statusClasses = {
             'pending': 'status-pending',
@@ -702,377 +473,43 @@ class AdminOrderManager {
         return statusClasses[status] || 'status-pending';
     }
 
-    // FIXED: ENHANCED STATUS UPDATE METHOD WITH DEBUGGING
-    async updateStatus(orderId, newStatus) {
-        try {
-            console.log('🔄 Updating order status:', orderId, newStatus);
-            
-            // Update locally first for immediate feedback
-            const order = this.orders.find(o => o.id === orderId);
-            if (!order) {
-                console.error('❌ Order not found locally:', orderId);
-                await this.debugOrderExistence(orderId);
-                alert('Order not found locally! Check console for details.');
-                return;
-            }
-
-            const oldStatus = order.status;
-            
-            // Update locally
-            order.status = newStatus;
-            order.statusUpdated = new Date().toISOString();
-            
-            if (newStatus === 'completed') {
-                order.completedDate = new Date().toISOString();
-            }
-            
-            // Update UI immediately
-            this.renderStats();
-            this.renderOrders();
-            
-            // ✅ FIXED: SYNC TO USERS (BOTH MOBILE AND DESKTOP)
-            await this.syncOrderToUsers(orderId, newStatus);
-            
-            // Show success message
-            let successMessage = `✅ Order #${orderId} status updated from ${oldStatus} to ${newStatus}!`;
-            
-            if (this.isMobileDevice()) {
-                successMessage += `\n\n📱 Changes synced to user's order history!`;
-            } else {
-                successMessage += `\n\n✅ Changes synced to user's order history!`;
-            }
-            
-            alert(successMessage);
-            
-        } catch (error) {
-            console.error('Status update failed:', error);
-            
-            // Run debug to understand the issue
-            await this.debugOrderExistence(orderId);
-            
-            // Mobile-friendly error handling
-            if (this.isMobileDevice()) {
-                alert(`❌ Update failed: ${error.message}\n\nCheck console for details.`);
-            } else {
-                alert(`❌ Update failed: ${error.message}\n\nCheck console for details.`);
-            }
-        }
-    }
-
-    // BULK STATUS UPDATE METHODS
-    async bulkUpdateStatus(orderIds, newStatus) {
-        try {
-            if (!orderIds || orderIds.length === 0) {
-                alert('Please select at least one order to update.');
-                return;
-            }
-
-            const confirmUpdate = confirm(
-                `Update ${orderIds.length} order(s) to "${newStatus}"?`
-            );
-            
-            if (!confirmUpdate) return;
-
-            let successCount = 0;
-            let failCount = 0;
-
-            for (const orderId of orderIds) {
-                try {
-                    const order = this.orders.find(o => o.id === orderId);
-                    if (order) {
-                        // Update locally
-                        order.status = newStatus;
-                        order.statusUpdated = new Date().toISOString();
-                        
-                        if (newStatus === 'completed') {
-                            order.completedDate = new Date().toISOString();
-                        }
-                        
-                        // Sync to users
-                        await this.syncOrderToUsers(orderId, newStatus);
-                        
-                        successCount++;
-                    }
-                } catch (error) {
-                    console.error(`Failed to update order ${orderId}:`, error);
-                    failCount++;
-                }
-            }
-
-            // Update UI
-            this.renderStats();
-            this.renderOrders();
-
-            let resultMessage = `✅ Updated ${successCount} order(s) to ${newStatus}!`;
-            if (failCount > 0) {
-                resultMessage += `\n❌ Failed to update ${failCount} order(s).`;
-            }
-            
-            resultMessage += `\n\n🔄 Changes synced to user's order history!`;
-            
-            alert(resultMessage);
-
-        } catch (error) {
-            console.error('Bulk update failed:', error);
-            alert('Bulk update failed. Check console for details.');
-        }
-    }
-
-    // TEST METHOD: Test with a specific order
-    async testOrderSync() {
-        if (this.orders.length === 0) {
-            alert('No orders available to test');
-            return;
-        }
-        
-        const testOrder = this.orders[0];
-        const testOrderId = testOrder.id;
-        
-        console.log('🧪 Testing order sync with:', testOrderId);
-        await this.debugOrderExistence(testOrderId);
-        
-        // Try to update status
-        try {
-            await this.updateStatus(testOrderId, 'processing');
-        } catch (error) {
-            console.error('Test failed:', error);
-        }
-    }
-
-    viewOrderDetails(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            const details = `
-Order #${order.id} - Details
-
-CUSTOMER INFORMATION:
-Name: ${order.customer?.name || order.name || 'N/A'}
-City: ${order.customer?.city || order.city || 'N/A'}
-Phone: ${order.customer?.phone || order.phone || 'Not provided'}
-
-ORDER INFORMATION:
-Status: ${order.status || 'pending'}
-Order Date: ${new Date(order.orderDate || order.date).toLocaleString()}
-Last Updated: ${order.statusUpdated ? new Date(order.statusUpdated).toLocaleString() : 'N/A'}
-Total: ${order.currency || 'KES'} ${(order.totalAmount || order.total || 0).toLocaleString()}
-
-DELIVERY:
-Method: ${order.delivery?.method || 'Home Delivery'}
-${order.delivery?.pickupCode ? `Pickup Code: ${order.delivery.pickupCode}` : ''}
-
-ITEMS (${(order.items || []).length}):
-${order.items ? order.items.map((item, index) => 
-    `${index + 1}. ${item.title || item.name} - ${item.qty || 1} × ${item.currency || 'KES'} ${(item.price || 0).toLocaleString()}`
-).join('\n') : 'No items'}
-            `;
-            alert(details);
-        }
-    }
-
-    contactCustomer(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order && (order.customer?.phone || order.phone)) {
-            const phone = order.customer?.phone || order.phone;
-            const message = `Hello ${order.customer?.name || order.name || 'there'}, this is Deenice Finds regarding your order #${orderId}.`;
-            const encodedMessage = encodeURIComponent(message);
-            // Use mobile-friendly WhatsApp opening
-            const whatsappURL = `https://wa.me/${phone}?text=${encodedMessage}`;
-            this.openWhatsAppURL(whatsappURL);
-        } else {
-            alert(`No phone number available for order #${orderId}`);
-        }
+    filterOrders() {
+        if (this.currentFilter === 'all') return this.orders;
+        return this.orders.filter(order => order.status === this.currentFilter);
     }
 
     getEmptyState() {
-        return `
-            <tr>
-                <td colspan="7" class="empty-state">
-                    <h3>No orders found</h3>
-                    <p>There are no orders in the system yet.</p>
-                    <button class="btn btn-primary" onclick="adminManager.debugOrders()">
-                        Debug Info
-                    </button>
-                    <button class="btn btn-secondary" onclick="adminManager.loadOrdersFromBackend()">
-                        Retry Backend
-                    </button>
-                    <button class="btn btn-info" onclick="adminManager.testOrderSync()" style="margin-top: 10px;">
-                        Test Order Sync
-                    </button>
-                </td>
-            </tr>
-        `;
+        return `<tr><td colspan="7" class="empty-state"><h3>No orders found</h3></td></tr>`;
     }
 
     getNoResultsState() {
-        return `
-            <tr>
-                <td colspan="7" class="empty-state">
-                    <h3>No orders match this filter</h3>
-                    <p>Try selecting a different filter to see more orders.</p>
-                    <button class="btn btn-primary" onclick="adminManager.setFilter('all')">
-                        Show All Orders
-                    </button>
-                </td>
-            </tr>
-        `;
+        return `<tr><td colspan="7" class="empty-state"><h3>No orders match this filter</h3></td></tr>`;
     }
 
     setupEventListeners() {
-        // Filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.setFilter(e.target.dataset.filter);
             });
         });
-
-        // Add bulk actions
-        this.addBulkActions();
-        
-        // Add mobile indicator
-        this.addMobileIndicator();
-    }
-
-    addMobileIndicator() {
-        if (this.isMobileDevice()) {
-            console.log('📱 Mobile device detected - enabling mobile optimizations');
-            
-            // Optional: Add a mobile indicator to the UI
-            const mobileBadge = document.createElement('span');
-            mobileBadge.className = 'mobile-badge';
-            mobileBadge.innerHTML = '📱 Mobile';
-            mobileBadge.style.background = '#8EDBD1';
-            mobileBadge.style.color = 'white';
-            mobileBadge.style.padding = '4px 8px';
-            mobileBadge.style.borderRadius = '4px';
-            mobileBadge.style.fontSize = '12px';
-            mobileBadge.style.marginLeft = '10px';
-            
-            const adminHeader = document.querySelector('.admin-header h1');
-            if (adminHeader) {
-                adminHeader.appendChild(mobileBadge);
-            }
-        }
-    }
-
-    addBulkActions() {
-        // Create bulk actions container if it doesn't exist
-        if (document.querySelector('.bulk-actions')) return;
-
-        const bulkActions = document.createElement('div');
-        bulkActions.className = 'bulk-actions';
-        bulkActions.style.margin = '15px 0';
-        bulkActions.style.padding = '15px';
-        bulkActions.style.background = '#f8f9fa';
-        bulkActions.style.borderRadius = '8px';
-        bulkActions.style.border = '1px solid #dee2e6';
-        
-        bulkActions.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                <strong>📦 Bulk Actions:</strong>
-                <button class="btn btn-secondary" onclick="adminManager.bulkUpdateSelected('processing')" style="font-size: 12px;">
-                    Mark as Processing
-                </button>
-                <button class="btn btn-secondary" onclick="adminManager.bulkUpdateSelected('completed')" style="font-size: 12px;">
-                    Mark as Completed
-                </button>
-                <button class="btn btn-secondary" onclick="adminManager.selectAllOrders()" style="font-size: 12px;">
-                    Select All
-                </button>
-                <button class="btn btn-secondary" onclick="adminManager.clearSelection()" style="font-size: 12px;">
-                    Clear Selection
-                </button>
-                <button class="btn btn-info" onclick="adminManager.testOrderSync()" style="font-size: 12px;">
-                    Test Sync
-                </button>
-                <small style="color: #666; margin-left: 10px;">Select orders using checkboxes</small>
-            </div>
-        `;
-        
-        // Insert before the table
-        const tableContainer = document.querySelector('.orders-table-container');
-        if (tableContainer) {
-            tableContainer.parentNode.insertBefore(bulkActions, tableContainer);
-        }
-        
-        // Add checkboxes to each row
-        this.addCheckboxesToRows();
-    }
-
-    addCheckboxesToRows() {
-        // This will be called after rendering orders
-        setTimeout(() => {
-            const rows = document.querySelectorAll('#ordersTableBody tr');
-            rows.forEach(row => {
-                // Skip if checkbox already exists
-                if (row.querySelector('.order-checkbox')) return;
-
-                const orderId = row.getAttribute('data-order-id');
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.className = 'order-checkbox';
-                checkbox.value = orderId;
-                checkbox.style.marginRight = '10px';
-                checkbox.style.cursor = 'pointer';
-                
-                const firstCell = row.querySelector('td:first-child');
-                if (firstCell) {
-                    firstCell.innerHTML = checkbox.outerHTML + ' ' + firstCell.innerHTML;
-                }
-            });
-        }, 100);
-    }
-
-    // Bulk update selected orders
-    async bulkUpdateSelected(newStatus) {
-        const selectedCheckboxes = document.querySelectorAll('.order-checkbox:checked');
-        const selectedOrderIds = Array.from(selectedCheckboxes).map(cb => cb.value);
-        
-        await this.bulkUpdateStatus(selectedOrderIds, newStatus);
-    }
-
-    // Select all orders
-    selectAllOrders() {
-        document.querySelectorAll('.order-checkbox').forEach(checkbox => {
-            checkbox.checked = true;
-        });
-    }
-
-    // Clear selection
-    clearSelection() {
-        document.querySelectorAll('.order-checkbox').forEach(checkbox => {
-            checkbox.checked = false;
-        });
     }
 
     setFilter(filter) {
         this.currentFilter = filter;
-        
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.filter === filter);
         });
-
         this.renderOrders();
     }
 
-    // Debug function
-    debugOrders() {
-        console.log('=== DEBUG ORDERS ===');
-        console.log('Total orders:', this.orders.length);
-        console.log('Orders array:', this.orders);
-        console.log('Current filter:', this.currentFilter);
-        console.log('Backend URL:', this.baseURL);
-        console.log('Token exists:', !!this.token);
-        console.log('LocalStorage orders:', JSON.parse(localStorage.getItem('de_order_history') || '[]'));
-        console.log('Mobile device:', this.isMobileDevice());
-        
-        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nFilter: ${this.currentFilter}\nMobile: ${this.isMobileDevice()}\nCheck console for details.`);
-    }
-
-    // Public method for refresh button
-    async loadOrders() {
-        await this.loadOrdersFromBackend();
-        this.renderStats();
-        this.renderOrders();
+    startSyncMonitoring() {
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            this.loadOrdersFromBackend().then(() => {
+                this.renderStats();
+                this.renderOrders();
+            });
+        }, 30000);
     }
 
     logout() {
@@ -1080,7 +517,26 @@ ${order.items ? order.items.map((item, index) =>
         localStorage.removeItem('admin_logged_in');
         window.location.href = 'admin-login.html';
     }
+
+    viewOrderDetails(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (order) {
+            alert(`Order #${order.id}\nCustomer: ${order.customer?.name}\nStatus: ${order.status}`);
+        }
+    }
+
+    contactCustomer(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (order && order.customer?.phone) {
+            const phone = order.customer.phone;
+            const message = `Hello ${order.customer.name}, this is Deenice Finds regarding your order #${orderId}.`;
+            const whatsappURL = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappURL, '_blank');
+        } else {
+            alert('No phone number available for this order');
+        }
+    }
 }
 
-// Initialize admin manager
+// Initialize the single admin manager
 const adminManager = new AdminOrderManager();
