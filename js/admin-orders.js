@@ -15,6 +15,9 @@ class AdminOrderManager {
             return;
         }
         
+        // Show loading state
+        this.showLoadingState();
+        
         await this.loadOrdersFromBackend();
         this.renderStats();
         this.renderOrders();
@@ -22,10 +25,53 @@ class AdminOrderManager {
         this.startSyncMonitoring();
     }
 
+    // Show loading state while data loads
+    showLoadingState() {
+        const statsGrid = document.getElementById('statsGrid');
+        const ordersTable = document.getElementById('ordersTableBody');
+        
+        if (statsGrid) {
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number stat-total">...</div>
+                    <div>Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number stat-pending">...</div>
+                    <div>Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number stat-processing">...</div>
+                    <div>Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number stat-completed">...</div>
+                    <div>Loading...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number stat-cancelled">...</div>
+                    <div>Loading...</div>
+                </div>
+            `;
+        }
+        
+        if (ordersTable) {
+            ordersTable.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px;">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <div class="loading-spinner"></div>
+                            <span>Loading orders...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
     // Validate token structure
     isValidToken(token) {
         try {
-            // JWT tokens are in format: header.payload.signature
             const parts = token.split('.');
             if (parts.length !== 3) return false;
             
@@ -355,7 +401,7 @@ class AdminOrderManager {
         }, 5000);
     }
 
-    // Render methods (same as before)
+    // Render statistics
     renderStats() {
         const stats = {
             total: this.orders.length,
@@ -394,7 +440,10 @@ class AdminOrderManager {
 
     renderOrders() {
         const container = document.getElementById('ordersTableBody');
-        if (!container) return;
+        if (!container) {
+            console.error('❌ ordersTableBody container not found!');
+            return;
+        }
 
         if (this.orders.length === 0) {
             container.innerHTML = this.getEmptyState();
@@ -414,6 +463,7 @@ class AdminOrderManager {
         const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString();
         const customerName = order.customer?.name || order.name || 'N/A';
         const customerCity = order.customer?.city || order.city || 'N/A';
+        const customerPhone = order.customer?.phone || order.phone || 'No phone';
         const totalAmount = order.totalAmount || order.total || 0;
         const currency = order.currency || 'KES';
         const status = order.status || 'pending';
@@ -425,7 +475,8 @@ class AdminOrderManager {
                 <td>
                     <div class="customer-info">
                         <div class="customer-name">${customerName}</div>
-                        <div class="customer-email">${customerCity}</div>
+                        <div class="customer-city">${customerCity}</div>
+                        <div class="customer-phone" style="color: #666; font-size: 12px;">📞 ${customerPhone}</div>
                     </div>
                 </td>
                 <td>${orderDate}</td>
@@ -462,7 +513,6 @@ class AdminOrderManager {
         `;
     }
 
-    // ... include the rest of your helper methods (getStatusClass, filterOrders, etc.)
     getStatusClass(status) {
         const statusClasses = {
             'pending': 'status-pending',
@@ -479,11 +529,28 @@ class AdminOrderManager {
     }
 
     getEmptyState() {
-        return `<tr><td colspan="7" class="empty-state"><h3>No orders found</h3></td></tr>`;
+        return `
+            <tr>
+                <td colspan="7" class="empty-state">
+                    <h3>No orders found</h3>
+                    <p>There are no orders in the system yet.</p>
+                </td>
+            </tr>
+        `;
     }
 
     getNoResultsState() {
-        return `<tr><td colspan="7" class="empty-state"><h3>No orders match this filter</h3></td></tr>`;
+        return `
+            <tr>
+                <td colspan="7" class="empty-state">
+                    <h3>No orders match this filter</h3>
+                    <p>Try selecting a different filter to see more orders.</p>
+                    <button class="btn btn-primary" onclick="adminManager.setFilter('all')">
+                        Show All Orders
+                    </button>
+                </td>
+            </tr>
+        `;
     }
 
     setupEventListeners() {
@@ -518,27 +585,27 @@ class AdminOrderManager {
         window.location.href = 'admin-login.html';
     }
 
-    // FIXED: Enhanced order details with phone number and complete information
-viewOrderDetails(orderId) {
-    const order = this.orders.find(o => o.id === orderId);
-    if (order) {
-        const customerName = order.customer?.name || order.name || 'N/A';
-        const customerCity = order.customer?.city || order.city || 'N/A';
-        const customerPhone = order.customer?.phone || order.phone || 'Not provided';
-        const customerEmail = order.customer?.email || order.email || 'Not provided';
-        
-        const orderDate = new Date(order.orderDate || order.date).toLocaleString();
-        const statusUpdated = order.statusUpdated ? new Date(order.statusUpdated).toLocaleString() : 'N/A';
-        const totalAmount = order.totalAmount || order.total || 0;
-        const currency = order.currency || 'KES';
-        
-        const deliveryMethod = order.delivery?.method || 'Home Delivery';
-        const pickupCode = order.delivery?.pickupCode || 'N/A';
-        const deliveryAddress = order.delivery?.address || 'Not specified';
-        
-        const items = order.items || [];
-        
-        let details = `
+    // Enhanced order details with phone number and complete information
+    viewOrderDetails(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (order) {
+            const customerName = order.customer?.name || order.name || 'N/A';
+            const customerCity = order.customer?.city || order.city || 'N/A';
+            const customerPhone = order.customer?.phone || order.phone || 'Not provided';
+            const customerEmail = order.customer?.email || order.email || 'Not provided';
+            
+            const orderDate = new Date(order.orderDate || order.date).toLocaleString();
+            const statusUpdated = order.statusUpdated ? new Date(order.statusUpdated).toLocaleString() : 'N/A';
+            const totalAmount = order.totalAmount || order.total || 0;
+            const currency = order.currency || 'KES';
+            
+            const deliveryMethod = order.delivery?.method || 'Home Delivery';
+            const pickupCode = order.delivery?.pickupCode || 'N/A';
+            const deliveryAddress = order.delivery?.address || 'Not specified';
+            
+            const items = order.items || [];
+            
+            let details = `
 ORDER #${order.id} - DETAILS
 
 📋 CUSTOMER INFORMATION:
@@ -558,126 +625,129 @@ ORDER #${order.id} - DETAILS
 🛍️ ITEMS (${items.length}):
 `;
 
-        if (items.length > 0) {
-            items.forEach((item, index) => {
-                const itemName = item.title || item.name || 'Unknown Item';
-                const itemPrice = item.price || 0;
-                const itemQty = item.qty || 1;
-                const itemTotal = itemPrice * itemQty;
-                const itemCurrency = item.currency || 'KES';
-                
-                details += `\n${index + 1}. ${itemName}
+            if (items.length > 0) {
+                items.forEach((item, index) => {
+                    const itemName = item.title || item.name || 'Unknown Item';
+                    const itemPrice = item.price || 0;
+                    const itemQty = item.qty || 1;
+                    const itemTotal = itemPrice * itemQty;
+                    const itemCurrency = item.currency || 'KES';
+                    
+                    details += `\n${index + 1}. ${itemName}
    ├── Quantity: ${itemQty}
    ├── Price: ${itemCurrency} ${itemPrice.toLocaleString()}
    └── Total: ${itemCurrency} ${itemTotal.toLocaleString()}`;
+                    
+                    // Show color/model if available
+                    if (item.color) details += `\n   ├── Color: ${item.color}`;
+                    if (item.model) details += `\n   ├── Model: ${item.model}`;
+                    if (item.size) details += `\n   ├── Size: ${item.size}`;
+                });
                 
-                // Show color/model if available
-                if (item.color) details += `\n   ├── Color: ${item.color}`;
-                if (item.model) details += `\n   ├── Model: ${item.model}`;
-                if (item.size) details += `\n   ├── Size: ${item.size}`;
-            });
-            
-            // Calculate subtotal
-            const subtotal = items.reduce((sum, item) => {
-                return sum + ((item.price || 0) * (item.qty || 1));
-            }, 0);
-            
-            details += `\n\n💰 ORDER SUMMARY:
+                // Calculate subtotal
+                const subtotal = items.reduce((sum, item) => {
+                    return sum + ((item.price || 0) * (item.qty || 1));
+                }, 0);
+                
+                details += `\n\n💰 ORDER SUMMARY:
 ├── Subtotal: ${currency} ${subtotal.toLocaleString()}
 ├── Delivery: ${currency} 0
 └── TOTAL: ${currency} ${totalAmount.toLocaleString()}`;
-            
-        } else {
-            details += '\nNo items in this order';
-        }
+                
+            } else {
+                details += '\nNo items in this order';
+            }
 
-        // Add quick actions
-        details += `\n\n⚡ QUICK ACTIONS:
+            // Add quick actions
+            details += `\n\n⚡ QUICK ACTIONS:
 • Click "Contact" to message customer on WhatsApp
 • Use dropdown to change order status
 • Click "Delete" to remove this order`;
 
-        alert(details);
-    } else {
-        alert(`Order #${orderId} not found!`);
+            alert(details);
+        } else {
+            alert(`Order #${orderId} not found!`);
+        }
+    }
+
+    // Enhanced contact customer with better phone number handling
+    contactCustomer(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (order) {
+            // Try multiple possible phone number locations
+            const phone = order.customer?.phone || 
+                         order.phone || 
+                         order.customer?.mobile || 
+                         order.mobile;
+            
+            const customerName = order.customer?.name || order.name || 'there';
+            
+            if (phone) {
+                const cleanPhone = phone.replace(/\D/g, '');
+                
+                // Check if phone number looks valid (at least 9 digits)
+                if (cleanPhone.length >= 9) {
+                    const message = `Hello ${customerName}, this is Deenice Finds regarding your order #${orderId}. How can we assist you today?`;
+                    const encodedMessage = encodeURIComponent(message);
+                    const whatsappURL = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+                    
+                    console.log('📱 Contacting customer:', {
+                        orderId: orderId,
+                        customerName: customerName,
+                        phone: phone,
+                        cleanPhone: cleanPhone
+                    });
+                    
+                    this.openWhatsAppURL(whatsappURL);
+                } else {
+                    alert(`Phone number for order #${orderId} appears invalid: ${phone}`);
+                }
+            } else {
+                // Show detailed info about what phone fields were checked
+                console.log('🔍 Phone number search failed for order:', {
+                    orderId: orderId,
+                    customerPhone: order.customer?.phone,
+                    orderPhone: order.phone,
+                    customerMobile: order.customer?.mobile,
+                    orderMobile: order.mobile
+                });
+                
+                alert(`No valid phone number found for order #${orderId}\n\nAvailable contact info:\n• Name: ${customerName}\n• Check browser console for details.`);
+            }
+        } else {
+            alert(`Order #${orderId} not found!`);
+        }
+    }
+
+    // Mobile-friendly WhatsApp URL opening
+    openWhatsAppURL(url) {
+        try {
+            // Try to open in new window
+            const newWindow = window.open(url, '_blank');
+            
+            // If blocked (common on mobile), fallback to direct navigation
+            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                console.log('Popup blocked, using direct navigation');
+                window.location.href = url;
+            }
+        } catch (error) {
+            console.error('Error opening WhatsApp:', error);
+            // Final fallback - show URL for manual copy
+            const manualSend = confirm(
+                "WhatsApp didn't open automatically.\n\n" +
+                "Click OK to copy the WhatsApp link and open it manually."
+            );
+            if (manualSend) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert("📱 WhatsApp link copied! Please paste it in your browser.");
+                }).catch(() => {
+                    // Fallback for older browsers
+                    prompt("Copy this WhatsApp link:", url);
+                });
+            }
+        }
     }
 }
 
-// ENHANCED: Contact customer with better phone number handling
-contactCustomer(orderId) {
-    const order = this.orders.find(o => o.id === orderId);
-    if (order) {
-        // Try multiple possible phone number locations
-        const phone = order.customer?.phone || 
-                     order.phone || 
-                     order.customer?.mobile || 
-                     order.mobile;
-        
-        const customerName = order.customer?.name || order.name || 'there';
-        
-        if (phone) {
-            const cleanPhone = phone.replace(/\D/g, '');
-            
-            // Check if phone number looks valid (at least 9 digits)
-            if (cleanPhone.length >= 9) {
-                const message = `Hello ${customerName}, this is Deenice Finds regarding your order #${orderId}. How can we assist you today?`;
-                const encodedMessage = encodeURIComponent(message);
-                const whatsappURL = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
-                
-                console.log('📱 Contacting customer:', {
-                    orderId: orderId,
-                    customerName: customerName,
-                    phone: phone,
-                    cleanPhone: cleanPhone
-                });
-                
-                this.openWhatsAppURL(whatsappURL);
-            } else {
-                alert(`Phone number for order #${orderId} appears invalid: ${phone}`);
-            }
-        } else {
-            // Show detailed info about what phone fields were checked
-            console.log('🔍 Phone number search failed for order:', {
-                orderId: orderId,
-                customerPhone: order.customer?.phone,
-                orderPhone: order.phone,
-                customerMobile: order.customer?.mobile,
-                orderMobile: order.mobile
-            });
-            
-            alert(`No valid phone number found for order #${orderId}\n\nAvailable contact info:\n• Name: ${customerName}\n• Check browser console for details.`);
-        }
-    } else {
-        alert(`Order #${orderId} not found!`);
-    }
-}
-    // Mobile-friendly WhatsApp URL opening
-openWhatsAppURL(url) {
-    try {
-        // Try to open in new window
-        const newWindow = window.open(url, '_blank');
-        
-        // If blocked (common on mobile), fallback to direct navigation
-        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-            console.log('Popup blocked, using direct navigation');
-            window.location.href = url;
-        }
-    } catch (error) {
-        console.error('Error opening WhatsApp:', error);
-        // Final fallback - show URL for manual copy
-        const manualSend = confirm(
-            "WhatsApp didn't open automatically.\n\n" +
-            "Click OK to copy the WhatsApp link and open it manually."
-        );
-        if (manualSend) {
-            navigator.clipboard.writeText(url).then(() => {
-                alert("📱 WhatsApp link copied! Please paste it in your browser.");
-            }).catch(() => {
-                // Fallback for older browsers
-                prompt("Copy this WhatsApp link:", url);
-            });
-        }
-    }
-}
 // Initialize the single admin manager
 const adminManager = new AdminOrderManager();
