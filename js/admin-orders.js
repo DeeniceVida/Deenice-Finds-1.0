@@ -52,27 +52,57 @@ class AdminOrderManager {
         }, 30000);
     }
 
-    // FIXED: ENHANCED SYNC METHOD FOR MOBILE
+    // FIXED: ENHANCED SYNC METHOD WITH BETTER DEBUGGING
     async syncOrderToUsers(orderId, newStatus) {
         try {
             console.log('🔄 Syncing order to users:', orderId, newStatus);
             
-            // 1. Update backend first (source of truth) - FIXED
+            // 1. First verify the order exists locally
+            const order = this.orders.find(o => o.id === orderId);
+            if (!order) {
+                throw new Error(`Order ${orderId} not found in local orders`);
+            }
+
+            console.log('✅ Order found locally:', order.id, order.customer?.name);
+
+            // 2. Update backend first (source of truth)
             try {
+                console.log(`🌐 Calling backend: PUT /orders/${orderId}/status`);
+                
                 const response = await this.makeRequest(`/orders/${orderId}/status`, {
                     method: 'PUT',
                     body: JSON.stringify({ status: newStatus })
                 });
+                
                 console.log('✅ Backend update successful:', response);
+                
             } catch (backendError) {
                 console.error('❌ Backend update failed:', backendError);
-                throw new Error('Backend sync failed: ' + backendError.message);
+                
+                // Check if it's a 404 error specifically
+                if (backendError.message.includes('404')) {
+                    console.log('🔄 404 detected - order might not exist on server, creating it...');
+                    
+                    // Try to create the order on the server first
+                    await this.createOrderOnServer(order);
+                    
+                    // Then try to update status again
+                    console.log('🔄 Retrying status update after creation...');
+                    await this.makeRequest(`/orders/${orderId}/status`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    
+                    console.log('✅ Order created and status updated on server');
+                } else {
+                    throw new Error('Backend sync failed: ' + backendError.message);
+                }
             }
 
-            // 2. Update localStorage for immediate effect
+            // 3. Update localStorage for immediate effect
             this.updateLocalStorageOrder(orderId, newStatus);
             
-            // 3. Trigger multiple sync methods for mobile compatibility
+            // 4. Trigger multiple sync methods for mobile compatibility
             await this.triggerMobileSync(orderId);
             
             console.log('✅ Order sync completed for mobile');
@@ -80,6 +110,74 @@ class AdminOrderManager {
         } catch (error) {
             console.error('❌ Sync failed:', error);
             throw error;
+        }
+    }
+
+    // NEW: Method to create order on server if it doesn't exist
+    async createOrderOnServer(order) {
+        try {
+            console.log('🔄 Creating order on server:', order.id);
+            
+            const orderData = {
+                id: order.id,
+                customer: order.customer || {
+                    name: order.name,
+                    city: order.city,
+                    phone: order.phone
+                },
+                items: order.items || [],
+                totalAmount: order.totalAmount || order.total || 0,
+                currency: order.currency || 'KES',
+                orderDate: order.orderDate || new Date().toISOString(),
+                status: order.status || 'pending',
+                delivery: order.delivery || { method: 'home' }
+            };
+
+            const response = await this.makeRequest('/orders', {
+                method: 'POST',
+                body: JSON.stringify(orderData)
+            });
+            
+            console.log('✅ Order created on server:', response);
+            return response;
+            
+        } catch (error) {
+            console.error('❌ Failed to create order on server:', error);
+            throw new Error('Failed to create order on server: ' + error.message);
+        }
+    }
+
+    // NEW: Debug method to check order existence
+    async debugOrderExistence(orderId) {
+        try {
+            console.log('🔍 Debugging order existence:', orderId);
+            
+            // Check local orders
+            const localOrder = this.orders.find(o => o.id === orderId);
+            console.log('📋 Local order:', localOrder);
+            
+            // Check backend for this specific order
+            try {
+                const allOrders = await this.makeRequest('/orders');
+                const backendOrder = allOrders.orders?.find(o => o.id === orderId) || 
+                                   allOrders.find(o => o.id === orderId);
+                console.log('🌐 Backend order:', backendOrder);
+                
+                if (!backendOrder) {
+                    console.log('❌ Order not found on backend - this is the issue!');
+                    console.log('Available backend order IDs:', 
+                        allOrders.orders?.map(o => o.id) || 
+                        allOrders.map(o => o.id));
+                } else {
+                    console.log('✅ Order found on backend');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error checking backend:', error);
+            }
+            
+        } catch (error) {
+            console.error('Debug failed:', error);
         }
     }
 
@@ -567,6 +665,10 @@ class AdminOrderManager {
                                 style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
                             Delete
                         </button>
+                        <button class="debug-btn" onclick="adminManager.debugOrderExistence('${order.id}')" 
+                                style="background-color: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 10px; margin-top: 5px;">
+                            Debug
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -600,7 +702,7 @@ class AdminOrderManager {
         return statusClasses[status] || 'status-pending';
     }
 
-    // FIXED: ENHANCED STATUS UPDATE METHOD WITH SYNC
+    // FIXED: ENHANCED STATUS UPDATE METHOD WITH DEBUGGING
     async updateStatus(orderId, newStatus) {
         try {
             console.log('🔄 Updating order status:', orderId, newStatus);
@@ -608,7 +710,9 @@ class AdminOrderManager {
             // Update locally first for immediate feedback
             const order = this.orders.find(o => o.id === orderId);
             if (!order) {
-                alert('Order not found!');
+                console.error('❌ Order not found locally:', orderId);
+                await this.debugOrderExistence(orderId);
+                alert('Order not found locally! Check console for details.');
                 return;
             }
 
@@ -643,11 +747,14 @@ class AdminOrderManager {
         } catch (error) {
             console.error('Status update failed:', error);
             
+            // Run debug to understand the issue
+            await this.debugOrderExistence(orderId);
+            
             // Mobile-friendly error handling
             if (this.isMobileDevice()) {
-                alert(`✅ Order #${orderId} updated locally!\n\nMobile-optimized: Changes saved for customer sync.`);
+                alert(`❌ Update failed: ${error.message}\n\nCheck console for details.`);
             } else {
-                alert(`❌ Update failed: ${error.message}`);
+                alert(`❌ Update failed: ${error.message}\n\nCheck console for details.`);
             }
         }
     }
@@ -711,9 +818,25 @@ class AdminOrderManager {
         }
     }
 
-    // QUICK STATUS UPDATE BUTTONS (Alternative method)
-    quickUpdateStatus(orderId, newStatus) {
-        this.updateStatus(orderId, newStatus);
+    // TEST METHOD: Test with a specific order
+    async testOrderSync() {
+        if (this.orders.length === 0) {
+            alert('No orders available to test');
+            return;
+        }
+        
+        const testOrder = this.orders[0];
+        const testOrderId = testOrder.id;
+        
+        console.log('🧪 Testing order sync with:', testOrderId);
+        await this.debugOrderExistence(testOrderId);
+        
+        // Try to update status
+        try {
+            await this.updateStatus(testOrderId, 'processing');
+        } catch (error) {
+            console.error('Test failed:', error);
+        }
     }
 
     viewOrderDetails(orderId) {
@@ -771,6 +894,9 @@ ${order.items ? order.items.map((item, index) =>
                     </button>
                     <button class="btn btn-secondary" onclick="adminManager.loadOrdersFromBackend()">
                         Retry Backend
+                    </button>
+                    <button class="btn btn-info" onclick="adminManager.testOrderSync()" style="margin-top: 10px;">
+                        Test Order Sync
                     </button>
                 </td>
             </tr>
@@ -854,6 +980,9 @@ ${order.items ? order.items.map((item, index) =>
                 </button>
                 <button class="btn btn-secondary" onclick="adminManager.clearSelection()" style="font-size: 12px;">
                     Clear Selection
+                </button>
+                <button class="btn btn-info" onclick="adminManager.testOrderSync()" style="font-size: 12px;">
+                    Test Sync
                 </button>
                 <small style="color: #666; margin-left: 10px;">Select orders using checkboxes</small>
             </div>
