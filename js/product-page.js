@@ -1,4 +1,4 @@
-// product-page.js - FOR SINGLE PRODUCT DETAIL PAGE (FIXED FOR DESKTOP)
+// product-page.js - FOR SINGLE PRODUCT DETAIL PAGE (WITH DESCRIPTION COLLAPSE)
 (async () => {
     // 1. Initial Setup and Parameter Retrieval
     const params = new URLSearchParams(location.search);
@@ -123,8 +123,15 @@
                     ${hasDiscount ? `<span class="discount-tag">${saveText}</span>` : ""}
                 </div>
 
-                <div id="product-description-container" class="long-description">
-                    <p>${product.description}</p>
+                <!-- Description with collapse feature -->
+                <div id="product-description-container" class="description-container">
+                    <div class="description-header" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <h3 style="margin: 0; font-size: 1.1em;">Description</h3>
+                        <span id="description-toggle" style="font-size: 1.2em;">−</span>
+                    </div>
+                    <div id="description-content" class="description-content" style="padding: 15px 0; max-height: 200px; overflow: hidden; transition: max-height 0.3s ease;">
+                        <p style="margin: 0; line-height: 1.6;">${product.description}</p>
+                    </div>
                 </div>
 
                 ${product.colors && product.colors.length > 0 ? `
@@ -231,9 +238,51 @@ function validateQuantity(input, maxStock) {
     }
 }
 
+// Description collapse/expand function
+function toggleDescription() {
+    const descriptionContent = document.getElementById('description-content');
+    const descriptionToggle = document.getElementById('description-toggle');
+    
+    if (descriptionContent && descriptionToggle) {
+        if (descriptionContent.style.maxHeight === '0px' || !descriptionContent.style.maxHeight) {
+            // Expand
+            descriptionContent.style.maxHeight = '200px';
+            descriptionContent.style.padding = '15px 0';
+            descriptionToggle.textContent = '−';
+        } else {
+            // Collapse
+            descriptionContent.style.maxHeight = '0px';
+            descriptionContent.style.padding = '0';
+            descriptionToggle.textContent = '+';
+        }
+    }
+}
+
+// Auto-collapse description when color is selected
+function collapseDescriptionOnColorSelect() {
+    const descriptionContent = document.getElementById('description-content');
+    const descriptionToggle = document.getElementById('description-toggle');
+    
+    if (descriptionContent && descriptionToggle) {
+        // Only collapse if not already collapsed
+        if (descriptionContent.style.maxHeight !== '0px') {
+            descriptionContent.style.maxHeight = '0px';
+            descriptionContent.style.padding = '0';
+            descriptionToggle.textContent = '+';
+        }
+    }
+}
+
 function setupProductInteractions() {
     console.log('🔄 Setting up product interactions...');
     
+    // Description toggle
+    const descriptionHeader = document.querySelector('.description-header');
+    if (descriptionHeader) {
+        descriptionHeader.addEventListener('click', toggleDescription);
+        console.log('✅ Description toggle listener added');
+    }
+
     // Thumbnail switching
     const thumbnails = document.querySelectorAll('.product-thumbs img');
     if (thumbnails.length > 0) {
@@ -243,7 +292,10 @@ function setupProductInteractions() {
                 if (mainImage) {
                     mainImage.src = img.dataset.src;
                 }
-                thumbnails.forEach(i => i.classList.remove('selected'));
+                thumbnails.forEach(i => {
+                    i.classList.remove('selected');
+                    i.style.borderColor = 'transparent';
+                });
                 img.classList.add('selected');
                 img.style.borderColor = '#007bff';
             });
@@ -251,7 +303,7 @@ function setupProductInteractions() {
         console.log('✅ Thumbnail listeners added');
     }
 
-    // Color selection
+    // Color selection with auto-collapse
     const colorOptions = document.querySelectorAll('.color-option:not(.disabled)');
     if (colorOptions.length > 0) {
         colorOptions.forEach(opt => {
@@ -269,6 +321,9 @@ function setupProductInteractions() {
                 if (mainImage && opt.dataset.img) {
                     mainImage.src = opt.dataset.img;
                 }
+                
+                // Auto-collapse description when color is selected
+                collapseDescriptionOnColorSelect();
             });
         });
         console.log('✅ Color option listeners added');
