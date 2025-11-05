@@ -52,102 +52,80 @@ class AdminOrderManager {
         }, 30000);
     }
 
-    // ENHANCED SYNC METHOD FOR MOBILE
-async syncOrderToUsers(orderId, newStatus) {
-    try {
-        console.log('🔄 Syncing order to users:', orderId, newStatus);
-        
-        // 1. Update backend first (source of truth)
+    // FIXED: ENHANCED SYNC METHOD FOR MOBILE
+    async syncOrderToUsers(orderId, newStatus) {
         try {
-            await this.makeRequest(`/orders/${orderId}/status`, {
-                method: 'PUT',
-                body: JSON.stringify({ status: newStatus })
-            });
-            console.log('✅ Backend update successful');
-        } catch (backendError) {
-            console.error('❌ Backend update failed:', backendError);
-            throw new Error('Backend sync failed');
+            console.log('🔄 Syncing order to users:', orderId, newStatus);
+            
+            // 1. Update backend first (source of truth) - FIXED
+            try {
+                const response = await this.makeRequest(`/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                console.log('✅ Backend update successful:', response);
+            } catch (backendError) {
+                console.error('❌ Backend update failed:', backendError);
+                throw new Error('Backend sync failed: ' + backendError.message);
+            }
+
+            // 2. Update localStorage for immediate effect
+            this.updateLocalStorageOrder(orderId, newStatus);
+            
+            // 3. Trigger multiple sync methods for mobile compatibility
+            await this.triggerMobileSync(orderId);
+            
+            console.log('✅ Order sync completed for mobile');
+            
+        } catch (error) {
+            console.error('❌ Sync failed:', error);
+            throw error;
         }
-
-        // 2. Update localStorage for immediate effect
-        this.updateLocalStorageOrder(orderId, newStatus);
-        
-        // 3. Trigger multiple sync methods for mobile compatibility
-        await this.triggerMobileSync(orderId);
-        
-        console.log('✅ Order sync completed for mobile');
-        
-    } catch (error) {
-        console.error('❌ Sync failed:', error);
-        throw error;
     }
-}
 
-// NEW: Enhanced mobile sync trigger
-async triggerMobileSync(orderId) {
-    try {
-        // Method 1: Update sync events (for order-sync.js)
-        const syncEvents = JSON.parse(localStorage.getItem('de_sync_events') || '[]');
-        syncEvents.push({
-            orderId: orderId,
-            timestamp: new Date().toISOString(),
-            type: 'admin_status_update',
-            forceRefresh: true
-        });
-        localStorage.setItem('de_sync_events', JSON.stringify(syncEvents.slice(-10)));
-
-        // Method 2: Create a sync marker specifically for this order
-        const orderSyncMarkers = JSON.parse(localStorage.getItem('de_order_sync_markers') || '{}');
-        orderSyncMarkers[orderId] = {
-            lastAdminUpdate: new Date().toISOString(),
-            requiresSync: true
-        };
-        localStorage.setItem('de_order_sync_markers', JSON.stringify(orderSyncMarkers));
-
-        // Method 3: Trigger storage event manually (cross-tab sync)
-        this.triggerStorageEvent('de_order_history_updated', { orderId: orderId });
-
-        console.log('📢 Multiple sync methods triggered for order:', orderId);
-
-    } catch (error) {
-        console.error('Error triggering mobile sync:', error);
-    }
-}
-
-// NEW: Trigger custom storage event
-triggerStorageEvent(key, data) {
-    try {
-        const event = new StorageEvent('storage', {
-            key: key,
-            newValue: JSON.stringify(data),
-            oldValue: localStorage.getItem(key),
-            url: window.location.href
-        });
-        window.dispatchEvent(event);
-    } catch (error) {
-        console.error('Error triggering storage event:', error);
-    }
-}
-
-    // Trigger user sync by updating a special sync marker
-    triggerUserSync(orderId) {
+    // NEW: Enhanced mobile sync trigger
+    async triggerMobileSync(orderId) {
         try {
-            // Create a sync event that order-sync.js can detect
+            // Method 1: Update sync events (for order-sync.js)
             const syncEvents = JSON.parse(localStorage.getItem('de_sync_events') || '[]');
             syncEvents.push({
                 orderId: orderId,
                 timestamp: new Date().toISOString(),
-                type: 'admin_status_update'
+                type: 'admin_status_update',
+                forceRefresh: true
             });
-            
-            // Keep only last 10 events
-            const recentEvents = syncEvents.slice(-10);
-            localStorage.setItem('de_sync_events', JSON.stringify(recentEvents));
-            
-            console.log('📢 Sync event triggered for order:', orderId);
-            
+            localStorage.setItem('de_sync_events', JSON.stringify(syncEvents.slice(-10)));
+
+            // Method 2: Create a sync marker specifically for this order
+            const orderSyncMarkers = JSON.parse(localStorage.getItem('de_order_sync_markers') || '{}');
+            orderSyncMarkers[orderId] = {
+                lastAdminUpdate: new Date().toISOString(),
+                requiresSync: true
+            };
+            localStorage.setItem('de_order_sync_markers', JSON.stringify(orderSyncMarkers));
+
+            // Method 3: Trigger storage event manually (cross-tab sync)
+            this.triggerStorageEvent('de_order_history_updated', { orderId: orderId });
+
+            console.log('📢 Multiple sync methods triggered for order:', orderId);
+
         } catch (error) {
-            console.error('Error triggering sync:', error);
+            console.error('Error triggering mobile sync:', error);
+        }
+    }
+
+    // NEW: Trigger custom storage event
+    triggerStorageEvent(key, data) {
+        try {
+            const event = new StorageEvent('storage', {
+                key: key,
+                newValue: JSON.stringify(data),
+                oldValue: localStorage.getItem(key),
+                url: window.location.href
+            });
+            window.dispatchEvent(event);
+        } catch (error) {
+            console.error('Error triggering storage event:', error);
         }
     }
 
@@ -225,23 +203,32 @@ triggerStorageEvent(key, data) {
         }
     }
 
+    // IMPROVED: API request method with better error handling
     async makeRequest(endpoint, options = {}) {
         try {
             console.log(`🌐 Making request to: ${this.baseURL}${endpoint}`);
+            console.log(`🔑 Using token:`, this.token ? 'Yes' : 'No');
             
             // Mobile-friendly timeout
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
             
-            const response = await fetch(`${this.baseURL}${endpoint}`, {
+            const config = {
+                method: options.method || 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
                     'Content-Type': 'application/json',
                     ...options.headers
                 },
-                signal: controller.signal,
-                ...options
-            });
+                signal: controller.signal
+            };
+
+            // Add body for non-GET requests
+            if (options.body && (config.method === 'POST' || config.method === 'PUT' || config.method === 'PATCH')) {
+                config.body = options.body;
+            }
+
+            const response = await fetch(`${this.baseURL}${endpoint}`, config);
 
             clearTimeout(timeoutId);
 
@@ -249,35 +236,52 @@ triggerStorageEvent(key, data) {
             
             if (response.status === 401) {
                 this.logout();
-                throw new Error('Session expired');
+                throw new Error('Session expired - please login again');
             }
 
             if (!response.ok) {
-                // More specific error messages for mobile
                 let errorMessage = `HTTP error! status: ${response.status}`;
+                
+                // More specific error messages
                 if (response.status === 404) {
-                    errorMessage = 'Server endpoint not found (404)';
+                    errorMessage = 'Server endpoint not found (404) - check API URL';
                 } else if (response.status === 500) {
-                    errorMessage = 'Server error (500)';
+                    errorMessage = 'Server error (500) - backend issue';
                 } else if (response.status === 0) {
-                    errorMessage = 'Network connection failed';
+                    errorMessage = 'Network connection failed - check internet connection';
+                } else if (response.status === 400) {
+                    errorMessage = 'Bad request (400) - check request data';
+                } else if (response.status === 403) {
+                    errorMessage = 'Forbidden (403) - check permissions';
+                }
+                
+                // Try to get error details from response
+                try {
+                    const errorData = await response.json();
+                    if (errorData.error) {
+                        errorMessage += ` - ${errorData.error}`;
+                    }
+                } catch (e) {
+                    // Ignore if no JSON error response
                 }
                 
                 throw new Error(errorMessage);
             }
 
             const data = await response.json();
-            console.log('✅ Response data:', data);
+            console.log('✅ Response data received');
             return data;
             
         } catch (error) {
             console.error('❌ API request failed:', error);
             
-            // Mobile-friendly error messages
+            // Better error messages for different scenarios
             if (error.name === 'AbortError') {
-                throw new Error('Request timeout - please check your connection');
+                throw new Error('Request timeout (15s) - server is slow or connection is poor');
             } else if (error.message.includes('Failed to fetch')) {
                 throw new Error('Network error - please check your internet connection');
+            } else if (error.message.includes('CORS')) {
+                throw new Error('CORS error - check server configuration');
             } else {
                 throw error;
             }
@@ -596,7 +600,7 @@ triggerStorageEvent(key, data) {
         return statusClasses[status] || 'status-pending';
     }
 
-    // ENHANCED STATUS UPDATE METHOD WITH SYNC
+    // FIXED: ENHANCED STATUS UPDATE METHOD WITH SYNC
     async updateStatus(orderId, newStatus) {
         try {
             console.log('🔄 Updating order status:', orderId, newStatus);
@@ -622,7 +626,7 @@ triggerStorageEvent(key, data) {
             this.renderStats();
             this.renderOrders();
             
-            // ✅ SYNC TO USERS (BOTH MOBILE AND DESKTOP)
+            // ✅ FIXED: SYNC TO USERS (BOTH MOBILE AND DESKTOP)
             await this.syncOrderToUsers(orderId, newStatus);
             
             // Show success message
