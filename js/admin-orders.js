@@ -518,25 +518,138 @@ class AdminOrderManager {
         window.location.href = 'admin-login.html';
     }
 
-    viewOrderDetails(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            alert(`Order #${order.id}\nCustomer: ${order.customer?.name}\nStatus: ${order.status}`);
-        }
-    }
+    // FIXED: Enhanced order details with phone number and complete information
+viewOrderDetails(orderId) {
+    const order = this.orders.find(o => o.id === orderId);
+    if (order) {
+        const customerName = order.customer?.name || order.name || 'N/A';
+        const customerCity = order.customer?.city || order.city || 'N/A';
+        const customerPhone = order.customer?.phone || order.phone || 'Not provided';
+        const customerEmail = order.customer?.email || order.email || 'Not provided';
+        
+        const orderDate = new Date(order.orderDate || order.date).toLocaleString();
+        const statusUpdated = order.statusUpdated ? new Date(order.statusUpdated).toLocaleString() : 'N/A';
+        const totalAmount = order.totalAmount || order.total || 0;
+        const currency = order.currency || 'KES';
+        
+        const deliveryMethod = order.delivery?.method || 'Home Delivery';
+        const pickupCode = order.delivery?.pickupCode || 'N/A';
+        const deliveryAddress = order.delivery?.address || 'Not specified';
+        
+        const items = order.items || [];
+        
+        let details = `
+ORDER #${order.id} - DETAILS
 
-    contactCustomer(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order && order.customer?.phone) {
-            const phone = order.customer.phone;
-            const message = `Hello ${order.customer.name}, this is Deenice Finds regarding your order #${orderId}.`;
-            const whatsappURL = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappURL, '_blank');
+📋 CUSTOMER INFORMATION:
+├── Name: ${customerName}
+├── City: ${customerCity}
+├── Phone: ${customerPhone}
+└── Email: ${customerEmail}
+
+📦 ORDER INFORMATION:
+├── Status: ${order.status.toUpperCase()}
+├── Order Date: ${orderDate}
+├── Last Updated: ${statusUpdated}
+├── Total: ${currency} ${totalAmount.toLocaleString()}
+└── Delivery: ${deliveryMethod}
+   ${deliveryMethod === 'pickup' ? `├── Pickup Code: ${pickupCode}` : `├── Address: ${deliveryAddress}`}
+
+🛍️ ITEMS (${items.length}):
+`;
+
+        if (items.length > 0) {
+            items.forEach((item, index) => {
+                const itemName = item.title || item.name || 'Unknown Item';
+                const itemPrice = item.price || 0;
+                const itemQty = item.qty || 1;
+                const itemTotal = itemPrice * itemQty;
+                const itemCurrency = item.currency || 'KES';
+                
+                details += `\n${index + 1}. ${itemName}
+   ├── Quantity: ${itemQty}
+   ├── Price: ${itemCurrency} ${itemPrice.toLocaleString()}
+   └── Total: ${itemCurrency} ${itemTotal.toLocaleString()}`;
+                
+                // Show color/model if available
+                if (item.color) details += `\n   ├── Color: ${item.color}`;
+                if (item.model) details += `\n   ├── Model: ${item.model}`;
+                if (item.size) details += `\n   ├── Size: ${item.size}`;
+            });
+            
+            // Calculate subtotal
+            const subtotal = items.reduce((sum, item) => {
+                return sum + ((item.price || 0) * (item.qty || 1));
+            }, 0);
+            
+            details += `\n\n💰 ORDER SUMMARY:
+├── Subtotal: ${currency} ${subtotal.toLocaleString()}
+├── Delivery: ${currency} 0
+└── TOTAL: ${currency} ${totalAmount.toLocaleString()}`;
+            
         } else {
-            alert('No phone number available for this order');
+            details += '\nNo items in this order';
         }
+
+        // Add quick actions
+        details += `\n\n⚡ QUICK ACTIONS:
+• Click "Contact" to message customer on WhatsApp
+• Use dropdown to change order status
+• Click "Delete" to remove this order`;
+
+        alert(details);
+    } else {
+        alert(`Order #${orderId} not found!`);
     }
 }
 
+// ENHANCED: Contact customer with better phone number handling
+contactCustomer(orderId) {
+    const order = this.orders.find(o => o.id === orderId);
+    if (order) {
+        // Try multiple possible phone number locations
+        const phone = order.customer?.phone || 
+                     order.phone || 
+                     order.customer?.mobile || 
+                     order.mobile;
+        
+        const customerName = order.customer?.name || order.name || 'there';
+        
+        if (phone) {
+            const cleanPhone = phone.replace(/\D/g, '');
+            
+            // Check if phone number looks valid (at least 9 digits)
+            if (cleanPhone.length >= 9) {
+                const message = `Hello ${customerName}, this is Deenice Finds regarding your order #${orderId}. How can we assist you today?`;
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappURL = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+                
+                console.log('📱 Contacting customer:', {
+                    orderId: orderId,
+                    customerName: customerName,
+                    phone: phone,
+                    cleanPhone: cleanPhone
+                });
+                
+                this.openWhatsAppURL(whatsappURL);
+            } else {
+                alert(`Phone number for order #${orderId} appears invalid: ${phone}`);
+            }
+        } else {
+            // Show detailed info about what phone fields were checked
+            console.log('🔍 Phone number search failed for order:', {
+                orderId: orderId,
+                customerPhone: order.customer?.phone,
+                orderPhone: order.phone,
+                customerMobile: order.customer?.mobile,
+                orderMobile: order.mobile
+            });
+            
+            alert(`No valid phone number found for order #${orderId}\n\nAvailable contact info:\n• Name: ${customerName}\n• Check browser console for details.`);
+        }
+    } else {
+        alert(`Order #${orderId} not found!`);
+    }
+}
 // Initialize the single admin manager
 const adminManager = new AdminOrderManager();
