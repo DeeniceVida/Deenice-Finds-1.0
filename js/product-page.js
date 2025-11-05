@@ -119,7 +119,7 @@
                 <div class="price-section" style="margin: 20px 0;">
                     <span id="product-price" class="current-price" style="font-size: 1.4em; font-weight: 700; color: #1d1d1f;">${product.currency} ${currentPrice.toLocaleString()}</span>
                     ${hasDiscount ? `<span class="old-price" style="text-decoration: line-through; color: #86868b; margin-left: 10px;">${product.currency} ${product.originalPrice.toLocaleString()}</span>` : ""}
-                    ${hasDiscount ? `<span class="discount-tag" style="background: #ff3b30; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.9em; margin-left: 10px;">${saveText}</span>` : ""}
+                    ${hasDiscount ? `<span class="discount-tag" style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.9em; margin-left: 10px; font-weight: 500;">${saveText}</span>` : ""}
                 </div>
 
                 <!-- Description with collapse feature -->
@@ -393,7 +393,7 @@ function showNotification(message, type = 'info') {
         box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         transform: translateX(400px);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        background: ${type === 'success' ? '#34C759' : type === 'error' ? '#FF3B30' : '#007AFF'};
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#FF3B30' : '#007AFF'};
     `;
     
     notification.textContent = message;
