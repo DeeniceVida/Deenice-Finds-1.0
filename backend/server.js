@@ -34,8 +34,7 @@ const ipRestriction = (req, res, next) => {
 
 // In-memory store (replace with database in production)
 let orders = [];
-
-let orders = [];
+let adminSessions = {};
 
 // 🟢 NEW: Auto-load orders on server start and auto-save periodically
 (async () => {
@@ -53,7 +52,6 @@ let orders = [];
         process.exit(0);
     });
 })();
-let adminSessions = {};
 
 // JWT authentication middleware
 const authenticateToken = (req, res, next) => {
