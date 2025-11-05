@@ -34,6 +34,25 @@ const ipRestriction = (req, res, next) => {
 
 // In-memory store (replace with database in production)
 let orders = [];
+
+let orders = [];
+
+// 🟢 NEW: Auto-load orders on server start and auto-save periodically
+(async () => {
+    await loadOrders();
+    
+    // Auto-save every 5 minutes
+    setInterval(async () => {
+        await saveOrders();
+    }, 5 * 60 * 1000);
+    
+    // Auto-save on graceful shutdown
+    process.on('SIGINT', async () => {
+        console.log('💾 Saving orders before shutdown...');
+        await saveOrders();
+        process.exit(0);
+    });
+})();
 let adminSessions = {};
 
 // JWT authentication middleware
