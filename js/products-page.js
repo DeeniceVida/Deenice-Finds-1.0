@@ -1,4 +1,4 @@
-// UNIVERSAL products-page.js - Fixed loading states
+// products-page.js - FOR PRODUCTS LISTING PAGE
 (async function(){
     const grid = document.getElementById('products-grid');
     if (!grid) {
@@ -31,7 +31,7 @@ async function loadAndRenderProducts() {
     
     console.log('📱 Loading products for:', isMobile() ? 'Mobile' : 'Desktop');
 
-    // UNIVERSAL LOADING STRATEGY - Same for all devices
+    // Load products
     let products = await loadProductsUniversal();
     
     if (!products || products.length === 0) {
@@ -49,14 +49,13 @@ async function loadAndRenderProducts() {
     console.log('✅ Rendered', products.length, 'products');
 }
 
-// UNIVERSAL product loading - Same logic for all devices
+// Product loading logic
 async function loadProductsUniversal() {
     let products = [];
     
     // STRATEGY 1: Try storefront_products (admin updates)
     try {
         const storefrontProducts = localStorage.getItem('storefront_products');
-        const storefrontUpdated = localStorage.getItem('storefront_products_updated');
         
         if (storefrontProducts) {
             products = JSON.parse(storefrontProducts);
@@ -130,7 +129,7 @@ function convertInventoryToStorefront(inventoryProducts) {
     });
 }
 
-// Render products grid - Same for all devices
+// Render products grid
 function renderProductsGrid(products) {
     const grid = document.getElementById('products-grid');
     grid.innerHTML = '';
