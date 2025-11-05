@@ -651,5 +651,33 @@ contactCustomer(orderId) {
         alert(`Order #${orderId} not found!`);
     }
 }
+    // Mobile-friendly WhatsApp URL opening
+openWhatsAppURL(url) {
+    try {
+        // Try to open in new window
+        const newWindow = window.open(url, '_blank');
+        
+        // If blocked (common on mobile), fallback to direct navigation
+        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+            console.log('Popup blocked, using direct navigation');
+            window.location.href = url;
+        }
+    } catch (error) {
+        console.error('Error opening WhatsApp:', error);
+        // Final fallback - show URL for manual copy
+        const manualSend = confirm(
+            "WhatsApp didn't open automatically.\n\n" +
+            "Click OK to copy the WhatsApp link and open it manually."
+        );
+        if (manualSend) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert("📱 WhatsApp link copied! Please paste it in your browser.");
+            }).catch(() => {
+                // Fallback for older browsers
+                prompt("Copy this WhatsApp link:", url);
+            });
+        }
+    }
+}
 // Initialize the single admin manager
 const adminManager = new AdminOrderManager();
