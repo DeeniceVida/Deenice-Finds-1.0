@@ -196,11 +196,6 @@
     localStorage.removeItem('admin_logged_in');
     localStorage.removeItem('admin_user');
 
-    // NEW: Hardcoded admin credentials (temporary solution)
-    const ADMIN_CREDENTIALS = {
-        username: 'admin',
-        password: 'Deenice2024!'  // Change this to your desired password
-    };
 
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
