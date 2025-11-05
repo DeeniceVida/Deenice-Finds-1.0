@@ -224,13 +224,13 @@ app.post('/api/admin/login',
 
             const { username, password } = req.body;
 
-            // Verify credentials
+            // Verify credentials using environment variables
             if (username !== process.env.ADMIN_USERNAME) {
                 return res.status(401).json({ error: 'Invalid credentials' });
             }
 
-            // TEMPORARY: Simple password check instead of bcrypt
-            const validPassword = (password === 'dmcxstn7');
+            // Use environment variable for password
+            const validPassword = (password === process.env.ADMIN_PASSWORD);
             if (!validPassword) {
                 return res.status(401).json({ error: 'Invalid credentials' });
             }
@@ -260,36 +260,6 @@ app.post('/api/admin/login',
         }
     }
 );
-
-// Sync endpoint for user orders
-app.post('/api/orders/sync', (req, res) => {
-    try {
-        const { localOrders } = req.body;
-        
-        if (!localOrders || !Array.isArray(localOrders)) {
-            return res.status(400).json({ error: 'Local orders array required' });
-        }
-
-        // Get all orders that match the user's local orders by ID
-        const userOrderIds = localOrders.map(order => order.id);
-        const serverOrders = orders.filter(order => userOrderIds.includes(order.id));
-        
-        console.log('🔄 Sync request:', {
-            localOrdersCount: localOrders.length,
-            serverOrdersCount: serverOrders.length
-        });
-
-        res.json({
-            orders: serverOrders,
-            syncedAt: new Date().toISOString(),
-            message: `Synced ${serverOrders.length} orders`
-        });
-
-    } catch (error) {
-        console.error('Sync error:', error);
-        res.status(500).json({ error: 'Sync failed' });
-    }
-});
 
 // Get order updates since timestamp
 app.get('/api/orders/updates', (req, res) => {
