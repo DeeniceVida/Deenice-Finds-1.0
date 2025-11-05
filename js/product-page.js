@@ -43,12 +43,11 @@
         if (container) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 60px 20px; color: #666;">
-                    <div style="font-size: 1.2em; margin-bottom: 15px;">❌</div>
                     <div style="margin-bottom: 10px; font-weight: bold;">Error Loading Product</div>
                     <p style="margin-bottom: 20px;">${error.message || 'Please check your connection and try again.'}</p>
                     <button onclick="location.reload()" 
                             style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
-                        🔄 Try Again
+                        Try Again
                     </button>
                 </div>
             `;
@@ -73,7 +72,7 @@
     let selectedModel = product.models && product.models.length > 0 ? product.models[0] : null;
     let selectedColor = product.colors && product.colors.length > 0 ? product.colors[0].name : null;
 
-    // Calculate available stock - SIMPLIFIED for urgency
+    // Calculate available stock
     function getAvailableStock(product) {
         if (product.colorStock && Object.keys(product.colorStock).length > 0) {
             return Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0);
@@ -86,9 +85,9 @@
     const discountAmount = hasDiscount ? product.originalPrice - currentPrice : 0;
     const saveText = hasDiscount ? `Save ${product.currency} ${discountAmount.toLocaleString()}` : "";
 
-    // SIMPLIFIED Stock status display - Creates urgency
-    const stockStatus = initialStock > 5 ? '🟢 In Stock - Order Now!' : 
-                       initialStock > 0 ? '🟡 Low Stock - Only Few Left!' : '🔴 Out of Stock';
+    // Clean stock status display
+    const stockStatus = initialStock > 5 ? 'In Stock' : 
+                       initialStock > 0 ? 'Low Stock' : 'Out of Stock';
     const stockClass = initialStock > 5 ? 'in-stock' : 
                       initialStock > 0 ? 'low-stock' : 'out-of-stock';
 
@@ -109,48 +108,48 @@
             </div>
 
             <div id="product-details">
-                <h2>${product.title}</h2>
+                <h2 style="font-weight: 600; color: #1d1d1f; margin-bottom: 15px;">${product.title}</h2>
 
-                <!-- SIMPLIFIED Stock status display - Creates urgency -->
-                <div class="stock-status ${stockClass}" style="font-weight: bold; padding: 10px; border-radius: 6px; margin: 15px 0; background: ${initialStock > 5 ? '#e8f5e8' : initialStock > 0 ? '#fff3cd' : '#f8d7da'};">
-                    ${stockStatus}
-                    ${initialStock > 0 && initialStock <= 10 ? `<br><small style="font-weight: normal;">Hurry! Only ${initialStock} left at this price!</small>` : ''}
+                <!-- Clean Stock status display -->
+                <div class="stock-status ${stockClass}" style="font-weight: 500; padding: 12px; border-radius: 8px; margin: 15px 0; background: ${initialStock > 5 ? '#f0f9f0' : initialStock > 0 ? '#fff8e6' : '#fef0f0'}; border: 1px solid ${initialStock > 5 ? '#d4edda' : initialStock > 0 ? '#ffeaa7' : '#f5c6cb'}; color: ${initialStock > 5 ? '#155724' : initialStock > 0 ? '#856404' : '#721c24'};">
+                    <strong>${stockStatus}</strong>
+                    ${initialStock > 0 && initialStock <= 5 ? `<div style="font-size: 0.9em; margin-top: 5px; font-weight: normal;">Only ${initialStock} items remaining</div>` : ''}
                 </div>
 
-                <div class="price-section">
-                    <span id="product-price" class="current-price">${product.currency} ${currentPrice.toLocaleString()}</span>
-                    ${hasDiscount ? `<span class="old-price">${product.currency} ${product.originalPrice.toLocaleString()}</span>` : ""}
-                    ${hasDiscount ? `<span class="discount-tag">${saveText}</span>` : ""}
+                <div class="price-section" style="margin: 20px 0;">
+                    <span id="product-price" class="current-price" style="font-size: 1.4em; font-weight: 700; color: #1d1d1f;">${product.currency} ${currentPrice.toLocaleString()}</span>
+                    ${hasDiscount ? `<span class="old-price" style="text-decoration: line-through; color: #86868b; margin-left: 10px;">${product.currency} ${product.originalPrice.toLocaleString()}</span>` : ""}
+                    ${hasDiscount ? `<span class="discount-tag" style="background: #ff3b30; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.9em; margin-left: 10px;">${saveText}</span>` : ""}
                 </div>
 
                 <!-- Description with collapse feature -->
                 <div id="product-description-container" class="description-container">
-                    <div class="description-header" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 10px 0; border-bottom: 1px solid #eee;">
-                        <h3 style="margin: 0; font-size: 1.1em;">Description</h3>
-                        <span id="description-toggle" style="font-size: 1.2em;">−</span>
+                    <div class="description-header" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 15px 0; border-bottom: 1px solid #e5e5e7;">
+                        <h3 style="margin: 0; font-size: 1.1em; font-weight: 600; color: #1d1d1f;">Description</h3>
+                        <span id="description-toggle" style="font-size: 1.2em; color: #86868b;">−</span>
                     </div>
                     <div id="description-content" class="description-content" style="padding: 15px 0; max-height: 200px; overflow: hidden; transition: max-height 0.3s ease;">
-                        <p style="margin: 0; line-height: 1.6;">${product.description}</p>
+                        <p style="margin: 0; line-height: 1.6; color: #515154;">${product.description}</p>
                     </div>
                 </div>
 
                 ${product.colors && product.colors.length > 0 ? `
-                <div id="color-selector">
-                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Color:</label>
-                    <div class="color-options" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div id="color-selector" style="margin: 25px 0;">
+                    <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #1d1d1f;">Color:</label>
+                    <div class="color-options" style="display: flex; gap: 12px; flex-wrap: wrap;">
                         ${product.colors.map((c, idx) => {
                             const isAvailable = !product.availableColors || product.availableColors.includes(c.name);
                             const isOutOfStock = initialStock === 0;
                             
                             return `
                             <div class="color-item" style="text-align: center;">
-                                <div class="color-name" style="font-size: 0.9em; margin-bottom: 5px;">${c.name} ${isOutOfStock ? '(Out of Stock)' : !isAvailable ? '(Unavailable)' : ''}</div>
+                                <div class="color-name" style="font-size: 0.85em; margin-bottom: 6px; color: #515154;">${c.name} ${isOutOfStock ? '(Out of Stock)' : !isAvailable ? '(Unavailable)' : ''}</div>
                                 <div class="color-option ${idx === 0 && isAvailable && !isOutOfStock ? 'selected' : ''} 
                                     ${!isAvailable || isOutOfStock ? 'disabled' : ''}" 
                                     data-img="${c.img}" 
                                     data-name="${c.name}"
-                                    style="width: 60px; height: 60px; border: 2px solid ${idx === 0 && isAvailable && !isOutOfStock ? '#007bff' : '#ddd'}; border-radius: 8px; padding: 2px; cursor: ${!isAvailable || isOutOfStock ? 'not-allowed' : 'pointer'}; opacity: ${!isAvailable || isOutOfStock ? '0.5' : '1'};">
-                                    <img src="${c.img}" alt="${c.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">
+                                    style="width: 60px; height: 60px; border: 2px solid ${idx === 0 && isAvailable && !isOutOfStock ? '#007bff' : '#e5e5e7'}; border-radius: 10px; padding: 2px; cursor: ${!isAvailable || isOutOfStock ? 'not-allowed' : 'pointer'}; opacity: ${!isAvailable || isOutOfStock ? '0.5' : '1'}; transition: all 0.2s ease;">
+                                    <img src="${c.img}" alt="${c.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
                                 </div>
                             </div>
                         `}).join('')}
@@ -159,14 +158,14 @@
                 ` : ''}
 
                 ${product.sizes && product.sizes.length > 0 ? `
-                <div class="size-options-container" style="margin: 20px 0;">
-                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Choose size:</label>
+                <div class="size-options-container" style="margin: 25px 0;">
+                    <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #1d1d1f;">Choose size:</label>
                     <div class="size-buttons" id="size-buttons-group" style="display: flex; gap: 10px; flex-wrap: wrap;">
                         ${product.sizes.map((s, idx) => `
                             <button class="size-button ${idx === 0 ? 'selected' : ''}"
                                     data-size="${s.label}"
                                     data-price="${s.price}"
-                                    style="padding: 10px 15px; border: 2px solid ${idx === 0 ? '#007bff' : '#ddd'}; background: ${idx === 0 ? '#007bff' : 'white'}; color: ${idx === 0 ? 'white' : '#333'}; border-radius: 6px; cursor: pointer;">
+                                    style="padding: 12px 18px; border: 2px solid ${idx === 0 ? '#007bff' : '#e5e5e7'}; background: ${idx === 0 ? '#007bff' : 'white'}; color: ${idx === 0 ? 'white' : '#1d1d1f'}; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s ease;">
                                 ${s.label}
                             </button>
                         `).join('')}
@@ -174,9 +173,9 @@
                 </div>` : ''}
 
                 ${product.models && product.models.length > 0 ? `
-                <div class="model-options-container" style="margin: 20px 0;">
-                    <label for="model-selector" style="display: block; margin-bottom: 10px; font-weight: bold;">Choose Model:</label>
-                    <select id="model-selector" class="product-option-select" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; width: 100%; max-width: 300px;">
+                <div class="model-options-container" style="margin: 25px 0;">
+                    <label for="model-selector" style="display: block; margin-bottom: 12px; font-weight: 600; color: #1d1d1f;">Choose Model:</label>
+                    <select id="model-selector" class="product-option-select" style="padding: 12px; border: 1px solid #e5e5e7; border-radius: 8px; width: 100%; max-width: 300px; background: white; color: #1d1d1f; font-size: 1em;">
                         ${product.models.map((model, idx) => `
                             <option value="${model}" ${idx === 0 ? 'selected' : ''}>
                                 ${model}
@@ -186,29 +185,43 @@
                 </div>` : ''}
 
                 <!-- Quantity input with stock validation -->
-                <div class="quantity-container" style="margin: 20px 0;">
-                    <label for="qty" style="display: block; margin-bottom: 10px; font-weight: bold;">Quantity:</label>
+                <div class="quantity-container" style="margin: 25px 0;">
+                    <label for="qty" style="display: block; margin-bottom: 12px; font-weight: 600; color: #1d1d1f;">Quantity:</label>
                     <input id="qty" type="number" value="1" min="1" max="${initialStock}" 
-                           style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; width: 80px; text-align: center;"
+                           style="padding: 12px; border: 1px solid #e5e5e7; border-radius: 8px; width: 100px; text-align: center; font-size: 1em; color: #1d1d1f;"
                            onchange="validateQuantity(this, ${initialStock})" />
-                    <div id="quantity-error" class="error-message" style="display: none;"></div>
+                    <div id="quantity-error" class="error-message" style="display: none; color: #ff3b30; font-size: 0.9em; margin-top: 5px;"></div>
                 </div>
 
-                <!-- IMPROVED Add to Cart Button with better mobile support -->
-                <button id="add-cart" class="add-to-cart-btn primary" ${initialStock === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}
-                        style="padding: 18px 30px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 1.2em; cursor: pointer; width: 100%; max-width: 350px; font-weight: bold; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); transition: all 0.3s ease;">
-                    ${initialStock === 0 ? 'Out of Stock' : '🛒 Add to Cart - Secure Your Order'}
+                <!-- Premium Add to Cart Button -->
+                <button id="add-cart" class="add-to-cart-btn primary" ${initialStock === 0 ? 'disabled' : ''}
+                        style="padding: 18px 30px; 
+                               background: ${initialStock === 0 ? '#8E8E93' : '#007bff'}; 
+                               color: white; 
+                               border: none; 
+                               border-radius: 12px; 
+                               font-size: 1.1em; 
+                               cursor: ${initialStock === 0 ? 'not-allowed' : 'pointer'}; 
+                               width: 100%; 
+                               max-width: 350px; 
+                               font-weight: 600; 
+                               transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                               box-shadow: ${initialStock === 0 ? 'none' : '0 4px 20px rgba(0, 123, 255, 0.3)'};
+                               opacity: ${initialStock === 0 ? '0.6' : '1'};">
+                    ${initialStock === 0 ? 'Out of Stock' : 'Add to Cart'}
                 </button>
                 
-                ${initialStock > 0 ? `
-                    <div class="urgency-message" style="margin-top: 15px; text-align: center; color: #666; font-size: 0.9em;">
-                        ⚡ <strong>Limited Stock Alert:</strong> ${initialStock > 10 ? 'Selling fast!' : 'Almost gone!'} Order now to avoid disappointment!
+                ${initialStock > 0 && initialStock <= 5 ? `
+                    <div class="stock-notice" style="margin-top: 15px; text-align: center; color: #856404; font-size: 0.9em; font-style: italic;">
+                        Limited availability. Recommended to complete your purchase soon.
                     </div>
-                ` : `
-                    <div class="out-of-stock-message" style="margin-top: 15px; text-align: center;">
-                        🔔 This item is currently out of stock. Check back later!
+                ` : ''}
+                
+                ${initialStock === 0 ? `
+                    <div class="out-of-stock-message" style="margin-top: 15px; text-align: center; color: #721c24; font-size: 0.9em;">
+                        This item is currently out of stock. Please check back later.
                     </div>
-                `}
+                ` : ''}
             </div>
         </div>
     `;
@@ -286,13 +299,13 @@ function addToCart(productId, productTitle, currentPrice, initialStock) {
     
     // Final validation
     if (quantity > maxStock) {
-        alert(`❌ Cannot add to cart! Only ${maxStock} units available.`);
+        showNotification(`Cannot add to cart! Only ${maxStock} units available.`, 'error');
         qtyInput.value = maxStock;
         return;
     }
     
     if (quantity < 1) {
-        alert('❌ Please enter a valid quantity.');
+        showNotification('Please enter a valid quantity.', 'error');
         qtyInput.value = 1;
         return;
     }
@@ -323,7 +336,7 @@ function addToCart(productId, productTitle, currentPrice, initialStock) {
         // Update quantity if item exists
         const newQty = cart[existingItemIndex].qty + quantity;
         if (newQty > maxStock) {
-            alert(`❌ Cannot add more! You already have ${cart[existingItemIndex].qty} in cart, only ${maxStock} available total.`);
+            showNotification(`Cannot add more! You already have ${cart[existingItemIndex].qty} in cart, only ${maxStock} available total.`, 'error');
             return;
         }
         cart[existingItemIndex].qty = newQty;
@@ -343,10 +356,7 @@ function addToCart(productId, productTitle, currentPrice, initialStock) {
     }
 
     localStorage.setItem('de_cart', JSON.stringify(cart));
-    
-    // Enhanced success message
-    const successMsg = `✅ Added ${quantity} item(s) to cart!\n\n${quantity === 1 ? 'Hurry! Limited stock available.' : 'Great choice! Your items are reserved.'}`;
-    alert(successMsg);
+    showNotification(`Added ${quantity} item${quantity > 1 ? 's' : ''} to cart`, 'success');
 
     // Update cart count with animation
     const badge = document.getElementById('cart-count');
@@ -358,6 +368,51 @@ function addToCart(productId, productTitle, currentPrice, initialStock) {
             badge.style.transform = 'scale(1)';
         }, 300);
     }
+}
+
+// Premium notification system instead of alerts
+function showNotification(message, type = 'info') {
+    // Remove existing notification
+    const existingNotification = document.querySelector('.custom-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+
+    const notification = document.createElement('div');
+    notification.className = `custom-notification ${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 20px;
+        border-radius: 10px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 300px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        transform: translateX(400px);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: ${type === 'success' ? '#34C759' : type === 'error' ? '#FF3B30' : '#007AFF'};
+    `;
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    }, 3000);
 }
 
 function setupProductInteractions() {
@@ -442,6 +497,21 @@ function setupProductInteractions() {
     // Add to cart - FIXED: Get product info from the current page
     const addToCartBtn = document.getElementById('add-cart');
     if (addToCartBtn && !addToCartBtn.disabled) {
+        // Add hover effects for desktop
+        addToCartBtn.addEventListener('mouseenter', function() {
+            if (!this.disabled) {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 8px 25px rgba(0, 123, 255, 0.4)';
+            }
+        });
+        
+        addToCartBtn.addEventListener('mouseleave', function() {
+            if (!this.disabled) {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 20px rgba(0, 123, 255, 0.3)';
+            }
+        });
+
         // Click event
         addToCartBtn.addEventListener('click', handleAddToCart);
         
@@ -476,7 +546,7 @@ function selectColorOption(opt) {
     
     document.querySelectorAll('.color-option').forEach(o => {
         o.classList.remove('selected');
-        o.style.borderColor = '#ddd';
+        o.style.borderColor = '#e5e5e7';
     });
     opt.classList.add('selected');
     opt.style.borderColor = '#007bff';
@@ -494,8 +564,8 @@ function selectSizeOption(button) {
     document.querySelectorAll('.size-button').forEach(b => {
         b.classList.remove('selected');
         b.style.background = 'white';
-        b.style.color = '#333';
-        b.style.borderColor = '#ddd';
+        b.style.color = '#1d1d1f';
+        b.style.borderColor = '#e5e5e7';
     });
     button.classList.add('selected');
     button.style.background = '#007bff';
@@ -523,7 +593,7 @@ function handleAddToCart() {
     const productId = params.get('id');
     
     if (!productId) {
-        alert('❌ Error: Could not identify product. Please refresh the page.');
+        showNotification('Error: Could not identify product. Please refresh the page.', 'error');
         return;
     }
     
