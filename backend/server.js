@@ -37,14 +37,14 @@ const ipRestriction = (req, res, next) => {
 let orders = [];
 let adminSessions = {};
 
-// File-based storage functions
+// 🟢 PERMANENT FILE-BASED STORAGE
 const ORDERS_FILE = './orders-data.json';
 
 async function loadOrders() {
     try {
         const data = await fs.readFile(ORDERS_FILE, 'utf8');
         orders = JSON.parse(data);
-        console.log(`📥 Loaded ${orders.length} orders from storage`);
+        console.log(`📥 Loaded ${orders.length} orders from permanent storage`);
         return orders;
     } catch (error) {
         if (error.code === 'ENOENT') {
@@ -64,7 +64,7 @@ async function saveOrders() {
     try {
         const data = JSON.stringify(orders, null, 2);
         await fs.writeFile(ORDERS_FILE, data);
-        console.log(`💾 Saved ${orders.length} orders to storage`);
+        console.log(`💾 Saved ${orders.length} orders to permanent storage`);
         return true;
     } catch (error) {
         console.error('❌ Failed to save orders:', error);
@@ -72,9 +72,9 @@ async function saveOrders() {
     }
 }
 
-// Auto-load orders on server start
+// 🟢 Auto-load orders on server start and auto-save periodically
 (async () => {
-    console.log('🔄 Initializing order storage...');
+    console.log('🔄 Initializing permanent order storage...');
     await loadOrders();
     
     // Auto-save every 2 minutes
@@ -85,6 +85,13 @@ async function saveOrders() {
     // Auto-save on graceful shutdown
     process.on('SIGINT', async () => {
         console.log('💾 Saving orders before shutdown...');
+        await saveOrders();
+        console.log('✅ Orders saved. Shutting down...');
+        process.exit(0);
+    });
+
+    process.on('SIGTERM', async () => {
+        console.log('💾 Saving orders before termination...');
         await saveOrders();
         console.log('✅ Orders saved. Shutting down...');
         process.exit(0);
@@ -164,25 +171,43 @@ app.get('/api/health', (req, res) => {
         status: 'OK', 
         timestamp: new Date().toISOString(),
         ordersCount: orders.length,
-        storage: 'file-based-persistence'
+        storage: 'file-based-permanent-storage'
     });
 });
 
-// Manual save endpoint
+// 🟢 Manual save endpoint for admin
 app.post('/api/admin/save-orders', authenticateToken, checkSessionTimeout, async (req, res) => {
     try {
         const success = await saveOrders();
         if (success) {
             res.json({ 
                 success: true,
-                message: `Orders saved successfully`,
-                ordersCount: orders.length
+                message: `Orders saved successfully to permanent storage`,
+                ordersCount: orders.length,
+                timestamp: new Date().toISOString()
             });
         } else {
             res.status(500).json({ error: 'Failed to save orders' });
         }
     } catch (error) {
+        console.error('Manual save error:', error);
         res.status(500).json({ error: 'Failed to save orders' });
+    }
+});
+
+// 🟢 Manual load endpoint for admin
+app.post('/api/admin/load-orders', authenticateToken, checkSessionTimeout, async (req, res) => {
+    try {
+        await loadOrders();
+        res.json({ 
+            success: true,
+            message: `Orders loaded successfully from permanent storage`,
+            ordersCount: orders.length,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Manual load error:', error);
+        res.status(500).json({ error: 'Failed to load orders' });
     }
 });
 
@@ -297,7 +322,7 @@ app.post('/api/admin/login',
     }
 );
 
-// Delete order
+// Delete order - WITH AUTO-SAVE
 app.delete('/api/orders/:id', authenticateToken, checkSessionTimeout, async (req, res) => {
     try {
         const orderId = req.params.id;
@@ -308,12 +333,15 @@ app.delete('/api/orders/:id', authenticateToken, checkSessionTimeout, async (req
         }
 
         const deletedOrder = orders.splice(orderIndex, 1)[0];
+        
+        // 🟢 Auto-save after deletion
         await saveOrders();
         
         res.json({ 
             success: true,
             message: 'Order deleted successfully',
-            deletedOrder: deletedOrder
+            deletedOrder: deletedOrder,
+            timestamp: new Date().toISOString()
         });
 
     } catch (error) {
@@ -342,7 +370,7 @@ app.get('/api/orders', authenticateToken, checkSessionTimeout, (req, res) => {
     }
 });
 
-// Update order status
+// Update order status - WITH AUTO-SAVE
 app.put('/api/orders/:id/status', 
     authenticateToken, 
     checkSessionTimeout,
@@ -377,6 +405,7 @@ app.put('/api/orders/:id/status',
                 whatsappURL = await sendWhatsAppNotification(orders[orderIndex], status);
             }
 
+            // 🟢 Auto-save after status update
             await saveOrders();
 
             res.json({ 
@@ -393,7 +422,7 @@ app.put('/api/orders/:id/status',
     }
 );
 
-// Create new order
+// Create new order - WITH AUTO-SAVE
 app.post('/api/orders',
     [
         body('customer.name').notEmpty().withMessage('Customer name is required'),
@@ -422,6 +451,8 @@ app.post('/api/orders',
             };
 
             orders.unshift(newOrder);
+            
+            // 🟢 Auto-save after creating new order
             await saveOrders();
             
             res.status(201).json({
@@ -459,13 +490,39 @@ app.get('/api/stats', (req, res) => {
                 cancelled: orders.filter(o => o.status === 'cancelled').length
             },
             serverTime: new Date().toISOString(),
-            storage: 'file-based-persistence'
+            storage: 'file-based-permanent-storage'
         };
 
         res.json(stats);
     } catch (error) {
         console.error('Stats error:', error);
         res.status(500).json({ error: 'Failed to get stats' });
+    }
+});
+
+// 🟢 Storage info endpoint
+app.get('/api/admin/storage-info', authenticateToken, checkSessionTimeout, async (req, res) => {
+    try {
+        let fileSize = 'N/A';
+        try {
+            const stats = await fs.stat(ORDERS_FILE);
+            fileSize = `${(stats.size / 1024).toFixed(2)} KB`;
+        } catch (error) {
+            fileSize = 'File not found';
+        }
+
+        res.json({
+            storageType: 'File-based JSON',
+            ordersInMemory: orders.length,
+            fileLocation: ORDERS_FILE,
+            fileSize: fileSize,
+            autoSaveInterval: '2 minutes',
+            lastSave: new Date().toISOString(),
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Storage info error:', error);
+        res.status(500).json({ error: 'Failed to get storage info' });
     }
 });
 
@@ -489,45 +546,10 @@ app.use('*', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Orders loaded: ${orders.length}`);
-    console.log(`💾 Permanent storage enabled`);
+    console.log(`🔒 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🌐 CORS Origin: ${process.env.CORS_ORIGIN || '*'}`);
+    console.log(`📊 Orders in permanent storage: ${orders.length}`);
+    console.log(`💾 PERMANENT STORAGE: File-based (${ORDERS_FILE})`);
+    console.log(`🔄 Auto-save: Every 2 minutes + on all changes`);
     console.log(`⏰ Server time: ${new Date().toISOString()}`);
 });
-const fs = require('fs').promises;
-const path = require('path');
-
-// Permanent file storage
-const ORDERS_FILE = './admin-orders-data.json';
-
-// Load orders from file on server start
-async function loadAdminOrders() {
-    try {
-        const data = await fs.readFile(ORDERS_FILE, 'utf8');
-        orders = JSON.parse(data); // This updates your main orders array
-        console.log(`📥 Loaded ${orders.length} orders from permanent storage`);
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            console.log('📥 No existing orders file, starting fresh');
-            orders = [];
-        } else {
-            console.error('Failed to load orders:', error);
-            orders = [];
-        }
-    }
-}
-
-// Save orders to file
-async function saveAdminOrders() {
-    try {
-        await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2));
-        console.log(`💾 Saved ${orders.length} orders to permanent storage`);
-    } catch (error) {
-        console.error('Failed to save orders:', error);
-    }
-}
-
-// Auto-save every 2 minutes
-setInterval(saveAdminOrders, 2 * 60 * 1000);
-
-// Load on server start
-loadAdminOrders();
