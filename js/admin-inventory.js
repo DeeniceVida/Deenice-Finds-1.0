@@ -82,46 +82,55 @@ class InventoryManager {
         }
     }
 
-    // 🟢 NEW: Update storefront products with current inventory
     updateStorefrontProducts() {
-        try {
-            // Create storefront-compatible product data
-            const storefrontProducts = this.products.map(product => {
-                const totalStock = product.colorStock ? 
+    try {
+        const storefrontProducts = this.products.map(product => {
+            // 🟢 NEW: Calculate total stock based on whether product has models or colors
+            let totalStock;
+            if (product.originalData?.models && product.originalData.models.length > 0) {
+                // Use model stock for products with models
+                totalStock = product.modelStock ? 
+                    Object.values(product.modelStock).reduce((sum, stock) => sum + stock, 0) : 
+                    product.stock || 0;
+            } else {
+                // Use color stock for products with colors
+                totalStock = product.colorStock ? 
                     Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : 
                     product.stock || 0;
-                    
-                return {
-                    id: product.id,
-                    title: product.name,
-                    price: product.price,
-                    originalPrice: product.originalData?.originalPrice,
-                    currency: product.originalData?.currency || 'KES',
-                    description: product.description,
-                    images: product.originalData?.images || [product.image],
-                    colors: product.colors,
-                    sizes: product.originalData?.sizes,
-                    models: product.originalData?.models,
-                    specs: product.originalData?.specs,
-                    available_status: product.originalData?.available_status,
-                    sku: product.originalData?.sku,
-                    stock: totalStock, // Use calculated total stock
-                    category: product.category,
-                    colorStock: product.colorStock,
-                    availableColors: product.availableColors
-                };
-            });
-            
-            // Save to localStorage for storefront to use
-            localStorage.setItem('storefront_products', JSON.stringify(storefrontProducts));
-            localStorage.setItem('storefront_products_updated', new Date().toISOString());
-            
-            console.log('🔄 Storefront products updated:', storefrontProducts.length);
-            
-        } catch (error) {
-            console.error('Error updating storefront products:', error);
-        }
+            }
+                
+            return {
+                id: product.id,
+                title: product.name,
+                price: product.price,
+                originalPrice: product.originalData?.originalPrice,
+                currency: product.originalData?.currency || 'KES',
+                description: product.description,
+                images: product.originalData?.images || [product.image],
+                colors: product.colors,
+                sizes: product.originalData?.sizes,
+                models: product.originalData?.models,
+                specs: product.originalData?.specs,
+                available_status: product.originalData?.available_status,
+                sku: product.originalData?.sku,
+                stock: totalStock,
+                category: product.category,
+                colorStock: product.colorStock,
+                modelStock: product.modelStock, // 🟢 NEW: Include model stock
+                availableColors: product.availableColors,
+                availableModels: product.availableModels // 🟢 NEW: Include available models
+            };
+        });
+        
+        localStorage.setItem('storefront_products', JSON.stringify(storefrontProducts));
+        localStorage.setItem('storefront_products_updated', new Date().toISOString());
+        
+        console.log('🔄 Storefront products updated:', storefrontProducts.length);
+        
+    } catch (error) {
+        console.error('Error updating storefront products:', error);
     }
+}
 
     // 🟢 NEW: Force refresh from source
     async refreshFromSource() {
@@ -183,40 +192,65 @@ class InventoryManager {
     }
 
     createProductRow(product) {
-        const row = document.createElement('tr');
-        const totalColorStock = product.colorStock ? Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : 0;
-        const status = this.getStockStatus(totalColorStock);
-        const availableColorsCount = product.availableColors ? product.availableColors.length : 0;
-        const totalColorsCount = product.colors ? product.colors.length : 0;
-        
-        row.innerHTML = `
-            <td>${product.id}</td>
-            <td>
-                ${product.image ? 
-                    `<img src="${product.image}" alt="${product.name}" class="product-thumb" onerror="this.style.display='none'">` : 
-                    '<div style="width:50px;height:50px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;border-radius:4px;color:#6c757d;font-size:12px;">No Image</div>'
-                }
-            </td>
-            <td>${this.escapeHtml(product.name)}</td>
-            <td>${this.escapeHtml(product.category)}</td>
-            <td>KES ${parseFloat(product.price).toFixed(2)}</td>
-            <td>${totalColorStock}</td>
-            <td>
-                <span class="status ${status}">${this.formatStatusText(status)}</span>
-            </td>
-            <td>
-                <span class="color-status" title="${availableColorsCount} of ${totalColorsCount} colors available">
-                    ${availableColorsCount}/${totalColorsCount} Colors
-                </span>
-            </td>
-            <td class="actions">
-                <button class="edit-btn" data-id="${product.id}">Edit</button>
-                <button class="colors-btn" data-id="${product.id}">Stock</button>
-                <button class="delete-btn" data-id="${product.id}">Delete</button>
-            </td>
-        `;
-        return row;
+    const row = document.createElement('tr');
+    
+    // 🟢 NEW: Check if product has models instead of colors
+    const hasModels = product.originalData?.models && product.originalData.models.length > 0;
+    const hasColors = product.colors && product.colors.length > 0;
+    
+    const totalStock = product.colorStock ? Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : product.stock || 0;
+    const status = this.getStockStatus(totalStock);
+    
+    // 🟢 NEW: Calculate available items count based on whether it has models or colors
+    let availableItemsCount, totalItemsCount, itemsType;
+    
+    if (hasModels) {
+        // For products with models
+        availableItemsCount = product.availableModels ? product.availableModels.length : product.originalData.models.length;
+        totalItemsCount = product.originalData.models.length;
+        itemsType = 'Models';
+    } else if (hasColors) {
+        // For products with colors
+        availableItemsCount = product.availableColors ? product.availableColors.length : product.colors.length;
+        totalItemsCount = product.colors.length;
+        itemsType = 'Colors';
+    } else {
+        // For products with neither
+        availableItemsCount = 1;
+        totalItemsCount = 1;
+        itemsType = 'Standard';
     }
+    
+    row.innerHTML = `
+        <td>${product.id}</td>
+        <td>
+            ${product.image ? 
+                `<img src="${product.image}" alt="${product.name}" class="product-thumb" onerror="this.style.display='none'">` : 
+                '<div style="width:50px;height:50px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;border-radius:4px;color:#6c757d;font-size:12px;">No Image</div>'
+            }
+        </td>
+        <td>${this.escapeHtml(product.name)}</td>
+        <td>${this.escapeHtml(product.category)}</td>
+        <td>KES ${parseFloat(product.price).toFixed(2)}</td>
+        <td>${totalStock}</td>
+        <td>
+            <span class="status ${status}">${this.formatStatusText(status)}</span>
+        </td>
+        <td>
+            <span class="color-status" title="${availableItemsCount} of ${totalItemsCount} ${itemsType.toLowerCase()} available">
+                ${availableItemsCount}/${totalItemsCount} ${itemsType}
+            </span>
+        </td>
+        <td class="actions">
+            <button class="edit-btn" data-id="${product.id}">Edit</button>
+            <button class="colors-btn" data-id="${product.id}">
+                ${hasModels ? 'Models' : 'Stock'}
+            </button>
+            <button class="delete-btn" data-id="${product.id}">Delete</button>
+        </td>
+    `;
+    return row;
+}
 
     getStockStatus(stock) {
         if (stock > 10) return 'in-stock';
@@ -341,15 +375,23 @@ class InventoryManager {
     }
 
     manageColorStock(productId) {
-        const product = this.products.find(p => p.id === productId);
-        if (!product) return;
+    const product = this.products.find(p => p.id === productId);
+    if (!product) return;
 
-        const modal = document.getElementById('colorsModal');
-        const modalContent = document.getElementById('colorsModalContent');
-        
+    const modal = document.getElementById('colorsModal');
+    const modalContent = document.getElementById('colorsModalContent');
+    
+    // 🟢 NEW: Check if product has models
+    const hasModels = product.originalData?.models && product.originalData.models.length > 0;
+    
+    if (hasModels) {
+        modalContent.innerHTML = this.generateModelStockManagementHTML(product);
+    } else {
         modalContent.innerHTML = this.generateColorStockManagementHTML(product);
-        modal.style.display = 'block';
     }
+    
+    modal.style.display = 'block';
+}
 
     generateColorStockManagementHTML(product) {
         if (!product.colors || product.colors.length === 0) {
@@ -430,6 +472,192 @@ class InventoryManager {
     }
 
     // Color stock management methods
+    // 🟢 NEW: Generate model stock management HTML
+generateModelStockManagementHTML(product) {
+    const models = product.originalData?.models || [];
+    if (models.length === 0) {
+        return `
+            <div style="text-align: center; padding: 40px;">
+                <p>No model options available for this product.</p>
+            </div>
+        `;
+    }
+
+    const totalStock = product.modelStock ? Object.values(product.modelStock).reduce((sum, stock) => sum + stock, 0) : 0;
+
+    let html = `
+        <div class="color-management">
+            <h3>${product.name}</h3>
+            <div class="stock-summary">
+                <div class="total-stock">
+                    <strong>Total Stock:</strong> <span class="stock-total">${totalStock}</span> pcs
+                </div>
+                <div class="stock-controls">
+                    <button type="button" class="btn btn-sm btn-outline" onclick="window.inventoryManager.distributeModelStockEvenly('${product.id}')">
+                        Distribute Evenly
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline" onclick="window.inventoryManager.setAllModelStock('${product.id}', 0)">
+                        Set All to 0
+                    </button>
+                </div>
+            </div>
+            <p>Set available stock for each model:</p>
+            <div class="colors-stock-list">
+    `;
+
+    models.forEach(model => {
+        const currentStock = product.modelStock ? (product.modelStock[model] || 0) : 0;
+        const isAvailable = product.availableModels ? product.availableModels.includes(model) : true;
+        
+        html += `
+            <div class="color-stock-item ${!isAvailable ? 'disabled' : ''}">
+                <div class="color-info">
+                    <span class="color-name" style="font-weight: bold;">${model}</span>
+                </div>
+                <div class="stock-control">
+                    <label class="availability-toggle">
+                        <input type="checkbox" 
+                               ${isAvailable ? 'checked' : ''}
+                               onchange="window.inventoryManager.toggleModelAvailability('${product.id}', '${model}', this.checked)">
+                        Available
+                    </label>
+                    <div class="stock-input-group">
+                        <button type="button" class="stock-btn minus" onclick="window.inventoryManager.adjustModelStock('${product.id}', '${model}', -1)">-</button>
+                        <input type="number" 
+                               class="stock-input" 
+                               value="${currentStock}" 
+                               min="0"
+                               onchange="window.inventoryManager.updateModelStock('${product.id}', '${model}', this.value)"
+                               ${!isAvailable ? 'disabled' : ''}>
+                        <button type="button" class="stock-btn plus" onclick="window.inventoryManager.adjustModelStock('${product.id}', '${model}', 1)">+</button>
+                    </div>
+                    <span class="stock-display">${currentStock} pcs</span>
+                </div>
+            </div>
+        `;
+    });
+
+    html += `
+            </div>
+            <div class="color-actions">
+                <button type="button" class="btn btn-primary" onclick="window.inventoryManager.saveModelStock('${product.id}')">
+                    Save Model Stock Changes
+                </button>
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+    // 🟢 NEW: Model stock management methods
+toggleModelAvailability(productId, modelName, isAvailable) {
+    const product = this.products.find(p => p.id === productId);
+    if (!product) return;
+
+    if (!product.availableModels) {
+        product.availableModels = [];
+    }
+
+    if (isAvailable) {
+        if (!product.availableModels.includes(modelName)) {
+            product.availableModels.push(modelName);
+        }
+    } else {
+        product.availableModels = product.availableModels.filter(model => model !== modelName);
+        if (product.modelStock) {
+            product.modelStock[modelName] = 0;
+        }
+    }
+
+    this.updateModelStockModal(productId);
+}
+
+adjustModelStock(productId, modelName, adjustment) {
+    const product = this.products.find(p => p.id === productId);
+    if (!product || !product.modelStock) return;
+
+    const currentStock = product.modelStock[modelName] || 0;
+    const newStock = Math.max(0, currentStock + adjustment);
+    
+    product.modelStock[modelName] = newStock;
+    this.updateModelStockModal(productId);
+}
+
+updateModelStock(productId, modelName, newStock) {
+    const product = this.products.find(p => p.id === productId);
+    if (!product) return;
+
+    if (!product.modelStock) {
+        product.modelStock = {};
+    }
+
+    product.modelStock[modelName] = Math.max(0, parseInt(newStock) || 0);
+    this.updateModelStockModal(productId);
+}
+
+distributeModelStockEvenly(productId) {
+    const product = this.products.find(p => p.id === productId);
+    if (!product || !product.originalData?.models || product.originalData.models.length === 0) return;
+
+    const availableModels = product.availableModels || product.originalData.models;
+    if (availableModels.length === 0) return;
+
+    const totalStock = product.modelStock ? Object.values(product.modelStock).reduce((sum, stock) => sum + stock, 0) : 0;
+    const stockPerModel = Math.floor(totalStock / availableModels.length);
+    const remainder = totalStock % availableModels.length;
+
+    if (!product.modelStock) {
+        product.modelStock = {};
+    }
+
+    // Initialize all models to 0
+    product.originalData.models.forEach(model => {
+        product.modelStock[model] = 0;
+    });
+
+    // Distribute to available models
+    availableModels.forEach((modelName, index) => {
+        product.modelStock[modelName] = stockPerModel + (index < remainder ? 1 : 0);
+    });
+
+    this.updateModelStockModal(productId);
+}
+
+setAllModelStock(productId, stockValue) {
+    const product = this.products.find(p => p.id === productId);
+    if (!product || !product.originalData?.models) return;
+
+    if (!product.modelStock) {
+        product.modelStock = {};
+    }
+
+    product.originalData.models.forEach(model => {
+        product.modelStock[model] = parseInt(stockValue) || 0;
+    });
+
+    this.updateModelStockModal(productId);
+}
+
+updateModelStockModal(productId) {
+    const product = this.products.find(p => p.id === productId);
+    const modalContent = document.getElementById('colorsModalContent');
+    if (product && modalContent) {
+        modalContent.innerHTML = this.generateModelStockManagementHTML(product);
+    }
+}
+
+async saveModelStock(productId) {
+    try {
+        await this.saveToBackend();
+        this.renderInventory();
+        document.getElementById('colorsModal').style.display = 'none';
+        this.showSuccess('Model stock updated successfully!');
+    } catch (error) {
+        console.error('Error saving model stock:', error);
+        this.showError('Failed to save model stock. Please try again.');
+    }
+}
     toggleColorAvailability(productId, colorName, isAvailable) {
         const product = this.products.find(p => p.id === productId);
         if (!product) return;
