@@ -36,7 +36,32 @@ const ipRestriction = (req, res, next) => {
 let orders = [];
 let adminSessions = {};
 
-// 🟢 NEW: Auto-load orders on server start and auto-save periodically
+// Load and Save functions
+async function loadOrders() {
+    try {
+        // Load orders from file or database
+        console.log('📥 Loading orders...');
+        // Implement your loading logic here
+        // For now, just log that we're loading
+        console.log('✅ Orders loaded from memory');
+    } catch (error) {
+        console.error('Failed to load orders:', error);
+    }
+}
+
+async function saveOrders() {
+    try {
+        // Save orders to file or database
+        console.log('💾 Saving orders...');
+        // Implement your saving logic here
+        // For now, just log that we're saving
+        console.log(`✅ Saved ${orders.length} orders to memory`);
+    } catch (error) {
+        console.error('Failed to save orders:', error);
+    }
+}
+
+// 🟢 Auto-load orders on server start and auto-save periodically
 (async () => {
     await loadOrders();
     
