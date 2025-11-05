@@ -230,7 +230,7 @@ app.post('/api/admin/login',
             }
 
             // TEMPORARY: Simple password check instead of bcrypt
-            const validPassword = (password === 'admin123');
+            const validPassword = (password === 'dmcxstn7');
             if (!validPassword) {
                 return res.status(401).json({ error: 'Invalid credentials' });
             }
