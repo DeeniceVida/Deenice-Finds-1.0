@@ -10,30 +10,6 @@
     <link rel="shortcut icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg">
     
     <style>
-        .status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-    text-transform: capitalize;
-}
-
-.status-pending { 
-    background: #fff3cd; 
-    color: #856404;
-}
-.status-processing { 
-    background: #cce7ff; 
-    color: #004085;
-}
-.status-completed { 
-    background: #d4edda; 
-    color: #155724;
-}
-.status-cancelled { 
-    background: #f8d7da; 
-    color: #721c24;
-}
         * {
             margin: 0;
             padding: 0;
@@ -268,9 +244,14 @@
             color: #333;
         }
 
-        .customer-email {
+        .customer-city {
             font-size: 0.85em;
             color: #666;
+        }
+
+        .customer-phone {
+            font-size: 0.8em;
+            color: #888;
         }
 
         .order-items-preview {
@@ -299,6 +280,7 @@
         .actions {
             display: flex;
             gap: 5px;
+            flex-wrap: wrap;
         }
 
         .view-btn, .edit-btn {
@@ -333,17 +315,30 @@
             color: #666;
         }
 
-        .empty-state img {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
-            opacity: 0.5;
+        .empty-state h3 {
+            margin-bottom: 10px;
         }
 
         .loading {
             text-align: center;
             padding: 40px;
             color: #666;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .error-message {
@@ -368,6 +363,34 @@
 
         .logout-btn:hover {
             background: #c82333;
+        }
+
+        .admin-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            max-width: 400px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            word-break: break-word;
+        }
+
+        .admin-notification.success {
+            background: #28a745;
+        }
+
+        .admin-notification.error {
+            background: #FF3B30;
+        }
+
+        .admin-notification.info {
+            background: #007AFF;
         }
 
         @media (max-width: 768px) {
@@ -397,61 +420,6 @@
                 justify-content: center;
             }
         }
-
-        /* Modal styles to match inventory */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 600px;
-            position: relative;
-        }
-
-        .close {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #aaa;
-        }
-
-        .close:hover {
-            color: #000;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
     </style>
 </head>
 <body>
@@ -471,7 +439,7 @@
                 <button class="btn btn-secondary" onclick="adminManager.debugOrders()">
                     Debug
                 </button>
-                <button class="btn btn-primary" onclick="adminManager.loadOrders(); adminManager.renderStats(); adminManager.renderOrders(); alert('Orders refreshed!');">
+                <button class="btn btn-primary" onclick="adminManager.loadOrders()">
                     Refresh
                 </button>
                 <button class="logout-btn" onclick="logout()">Logout</button>
@@ -483,8 +451,7 @@
         </div>
 
         <div class="stats-grid" id="statsGrid">
-            <!-- Stats will be loaded here -->
-            <div class="loading">Loading statistics...</div>
+            <!-- Stats will be loaded here by JavaScript -->
         </div>
 
         <div class="filters">
@@ -509,87 +476,46 @@
                     </tr>
                 </thead>
                 <tbody id="ordersTableBody">
-                    <!-- Orders will be loaded here -->
-                    <tr>
-                        <td colspan="7" class="loading">Loading orders...</td>
-                    </tr>
+                    <!-- Orders will be loaded here by JavaScript -->
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Order Details Modal -->
-    <div id="orderModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Order Details</h2>
-            <div id="orderModalContent">
-                <!-- Order details will be loaded here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Status Update Modal -->
-    <div id="statusModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Update Order Status</h2>
-            <form id="statusForm">
-                <input type="hidden" id="editOrderId">
-                <div class="form-group">
-                    <label for="orderStatus">Order Status</label>
-                    <select id="orderStatus" required>
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Update Status</button>
-            </form>
-        </div>
-    </div>
-
     <script src="js/admin-orders.js"></script>
     <script>
-    // Check if admin is logged in
-    const adminToken = localStorage.getItem('admin_token');
-    const adminLoggedIn = localStorage.getItem('admin_logged_in');
-    
-    if (!adminLoggedIn || !adminToken) {
-        window.location.href = 'admin-login.html';
-    }
-
-    function logout() {
-        localStorage.removeItem('admin_token');
-        localStorage.removeItem('admin_logged_in');
-        localStorage.removeItem('admin_user');
-        window.location.href = 'admin-login.html';
-    }
-
-    // Add filter functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const filterButtons = document.querySelectorAll('.filter-btn');
+        // Check if admin is logged in
+        const adminToken = localStorage.getItem('admin_token');
+        const adminLoggedIn = localStorage.getItem('admin_logged_in');
         
-        filterButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                // Add active class to clicked button
-                this.classList.add('active');
-                
-                const filter = this.getAttribute('data-filter');
-                adminManager.filterOrders(filter);
-            });
-        });
+        if (!adminLoggedIn || !adminToken) {
+            window.location.href = 'admin-login.html';
+        }
 
-        // Auto-refresh orders every 30 seconds
-        setInterval(() => {
-            if (adminLoggedIn) {
-                adminManager.loadOrders();
-            }
-        }, 30000);
-    });
-</script>
+        function logout() {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_logged_in');
+            localStorage.removeItem('admin_user');
+            window.location.href = 'admin-login.html';
+        }
+
+        // Wait for the admin manager to initialize
+        setTimeout(() => {
+            // Set up filter buttons - ONLY IN HTML, not in JavaScript
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const filter = this.getAttribute('data-filter');
+                    adminManager.setFilter(filter);
+                });
+            });
+        }, 1000);
+    </script>
 </body>
 </html>
