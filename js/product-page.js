@@ -23,7 +23,7 @@
             console.log('📦 No storefront cache, loading from JSON...');
             const res = await fetch('data/products.json');
             if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
             products = await res.json();
             console.log('📦 Loaded products from JSON file:', products.length);
@@ -73,7 +73,7 @@
     let selectedModel = product.models && product.models.length > 0 ? product.models[0] : null;
     let selectedColor = product.colors && product.colors.length > 0 ? product.colors[0].name : null;
 
-    // Calculate available stock
+    // Calculate available stock - SIMPLIFIED for urgency
     function getAvailableStock(product) {
         if (product.colorStock && Object.keys(product.colorStock).length > 0) {
             return Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0);
@@ -86,10 +86,10 @@
     const discountAmount = hasDiscount ? product.originalPrice - currentPrice : 0;
     const saveText = hasDiscount ? `Save ${product.currency} ${discountAmount.toLocaleString()}` : "";
 
-    // Stock status display
-    const stockStatus = initialStock > 10 ? 'In Stock' : 
-                       initialStock > 0 ? 'Low Stock' : 'Out of Stock';
-    const stockClass = initialStock > 10 ? 'in-stock' : 
+    // SIMPLIFIED Stock status display - Creates urgency
+    const stockStatus = initialStock > 5 ? '🟢 In Stock - Order Now!' : 
+                       initialStock > 0 ? '🟡 Low Stock - Only Few Left!' : '🔴 Out of Stock';
+    const stockClass = initialStock > 5 ? 'in-stock' : 
                       initialStock > 0 ? 'low-stock' : 'out-of-stock';
 
     // 4. Build Product Page HTML
@@ -111,10 +111,10 @@
             <div id="product-details">
                 <h2>${product.title}</h2>
 
-                <!-- Stock status display -->
-                <div class="stock-status ${stockClass}">
-                    <span class="stock-indicator"></span>
-                    ${stockStatus} • ${initialStock} units available
+                <!-- SIMPLIFIED Stock status display - Creates urgency -->
+                <div class="stock-status ${stockClass}" style="font-weight: bold; padding: 10px; border-radius: 6px; margin: 15px 0; background: ${initialStock > 5 ? '#e8f5e8' : initialStock > 0 ? '#fff3cd' : '#f8d7da'};">
+                    ${stockStatus}
+                    ${initialStock > 0 && initialStock <= 10 ? `<br><small style="font-weight: normal;">Hurry! Only ${initialStock} left at this price!</small>` : ''}
                 </div>
 
                 <div class="price-section">
@@ -194,16 +194,21 @@
                     <div id="quantity-error" class="error-message" style="display: none;"></div>
                 </div>
 
-                <button id="add-cart" class="primary" ${initialStock === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}
-                        style="padding: 15px 30px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; width: 100%; max-width: 300px;">
-                    ${initialStock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                <!-- IMPROVED Add to Cart Button with better mobile support -->
+                <button id="add-cart" class="add-to-cart-btn primary" ${initialStock === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}
+                        style="padding: 18px 30px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 1.2em; cursor: pointer; width: 100%; max-width: 350px; font-weight: bold; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); transition: all 0.3s ease;">
+                    ${initialStock === 0 ? 'Out of Stock' : '🛒 Add to Cart - Secure Your Order'}
                 </button>
                 
-                ${initialStock === 0 ? `
-                    <div class="out-of-stock-message" style="margin-top: 15px;">
+                ${initialStock > 0 ? `
+                    <div class="urgency-message" style="margin-top: 15px; text-align: center; color: #666; font-size: 0.9em;">
+                        ⚡ <strong>Limited Stock Alert:</strong> ${initialStock > 10 ? 'Selling fast!' : 'Almost gone!'} Order now to avoid disappointment!
+                    </div>
+                ` : `
+                    <div class="out-of-stock-message" style="margin-top: 15px; text-align: center;">
                         🔔 This item is currently out of stock. Check back later!
                     </div>
-                ` : ''}
+                `}
             </div>
         </div>
     `;
@@ -338,13 +343,20 @@ function addToCart(productId, productTitle, currentPrice, initialStock) {
     }
 
     localStorage.setItem('de_cart', JSON.stringify(cart));
-    alert(`✅ Added ${quantity} item(s) to cart!`);
+    
+    // Enhanced success message
+    const successMsg = `✅ Added ${quantity} item(s) to cart!\n\n${quantity === 1 ? 'Hurry! Limited stock available.' : 'Great choice! Your items are reserved.'}`;
+    alert(successMsg);
 
-    // Update cart count
+    // Update cart count with animation
     const badge = document.getElementById('cart-count');
     if (badge) {
         const totalItems = cart.reduce((total, item) => total + item.qty, 0);
         badge.textContent = totalItems;
+        badge.style.transform = 'scale(1.3)';
+        setTimeout(() => {
+            badge.style.transform = 'scale(1)';
+        }, 300);
     }
 }
 
@@ -355,6 +367,11 @@ function setupProductInteractions() {
     const descriptionHeader = document.querySelector('.description-header');
     if (descriptionHeader) {
         descriptionHeader.addEventListener('click', toggleDescription);
+        // Add touch event for mobile
+        descriptionHeader.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            toggleDescription();
+        }, { passive: false });
         console.log('✅ Description toggle listener added');
     }
 
@@ -362,18 +379,16 @@ function setupProductInteractions() {
     const thumbnails = document.querySelectorAll('.product-thumbs img');
     if (thumbnails.length > 0) {
         thumbnails.forEach(img => {
+            // Click event
             img.addEventListener('click', () => {
-                const mainImage = document.getElementById('main-image');
-                if (mainImage) {
-                    mainImage.src = img.dataset.src;
-                }
-                thumbnails.forEach(i => {
-                    i.classList.remove('selected');
-                    i.style.borderColor = 'transparent';
-                });
-                img.classList.add('selected');
-                img.style.borderColor = '#007bff';
+                switchMainImage(img);
             });
+            
+            // Touch event for mobile
+            img.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                switchMainImage(img);
+            }, { passive: false });
         });
         console.log('✅ Thumbnail listeners added');
     }
@@ -382,24 +397,16 @@ function setupProductInteractions() {
     const colorOptions = document.querySelectorAll('.color-option:not(.disabled)');
     if (colorOptions.length > 0) {
         colorOptions.forEach(opt => {
+            // Click event
             opt.addEventListener('click', () => {
-                if (opt.classList.contains('disabled')) return;
-                
-                colorOptions.forEach(o => {
-                    o.classList.remove('selected');
-                    o.style.borderColor = '#ddd';
-                });
-                opt.classList.add('selected');
-                opt.style.borderColor = '#007bff';
-                
-                const mainImage = document.getElementById('main-image');
-                if (mainImage && opt.dataset.img) {
-                    mainImage.src = opt.dataset.img;
-                }
-                
-                // Auto-collapse description when color is selected
-                collapseDescriptionOnColorSelect();
+                selectColorOption(opt);
             });
+            
+            // Touch event for mobile
+            opt.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                selectColorOption(opt);
+            }, { passive: false });
         });
         console.log('✅ Color option listeners added');
     }
@@ -408,25 +415,17 @@ function setupProductInteractions() {
     const sizeButtons = document.querySelectorAll('.size-button');
     if (sizeButtons.length > 0) {
         sizeButtons.forEach(button => {
+            // Click event
             button.addEventListener('click', (e) => {
                 e.preventDefault();
-                sizeButtons.forEach(b => {
-                    b.classList.remove('selected');
-                    b.style.background = 'white';
-                    b.style.color = '#333';
-                    b.style.borderColor = '#ddd';
-                });
-                button.classList.add('selected');
-                button.style.background = '#007bff';
-                button.style.color = 'white';
-                button.style.borderColor = '#007bff';
-                
-                const newPrice = Number(button.dataset.price);
-                const priceElement = document.getElementById('product-price');
-                if (priceElement) {
-                    priceElement.textContent = `KES ${newPrice.toLocaleString()}`;
-                }
+                selectSizeOption(button);
             });
+            
+            // Touch event for mobile
+            button.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                selectSizeOption(button);
+            }, { passive: false });
         });
         console.log('✅ Size button listeners added');
     }
@@ -442,32 +441,94 @@ function setupProductInteractions() {
 
     // Add to cart - FIXED: Get product info from the current page
     const addToCartBtn = document.getElementById('add-cart');
-    if (addToCartBtn) {
-        addToCartBtn.addEventListener('click', () => {
-            // Get product info from the current page elements
-            const productTitle = document.querySelector('h2') ? document.querySelector('h2').textContent : 'Product';
-            const priceElement = document.getElementById('product-price');
-            const priceText = priceElement ? priceElement.textContent : 'KES 0';
-            const currentPrice = parseFloat(priceText.replace('KES', '').replace(/,/g, '').trim());
-            const qtyInput = document.getElementById('qty');
-            const initialStock = parseInt(qtyInput.max);
-            
-            // Get product ID from URL parameters
-            const params = new URLSearchParams(window.location.search);
-            const productId = params.get('id');
-            
-            if (!productId) {
-                alert('❌ Error: Could not identify product. Please refresh the page.');
-                return;
-            }
-            
-            // Call the fixed addToCart function
-            addToCart(productId, productTitle, currentPrice, initialStock);
-        });
+    if (addToCartBtn && !addToCartBtn.disabled) {
+        // Click event
+        addToCartBtn.addEventListener('click', handleAddToCart);
+        
+        // Touch event for mobile
+        addToCartBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleAddToCart();
+        }, { passive: false });
+        
         console.log('✅ Add to cart listener added');
     }
 
     console.log('🎉 All product interactions setup complete');
+}
+
+// Helper functions for better organization
+function switchMainImage(img) {
+    const mainImage = document.getElementById('main-image');
+    if (mainImage) {
+        mainImage.src = img.dataset.src;
+    }
+    document.querySelectorAll('.product-thumbs img').forEach(i => {
+        i.classList.remove('selected');
+        i.style.borderColor = 'transparent';
+    });
+    img.classList.add('selected');
+    img.style.borderColor = '#007bff';
+}
+
+function selectColorOption(opt) {
+    if (opt.classList.contains('disabled')) return;
+    
+    document.querySelectorAll('.color-option').forEach(o => {
+        o.classList.remove('selected');
+        o.style.borderColor = '#ddd';
+    });
+    opt.classList.add('selected');
+    opt.style.borderColor = '#007bff';
+    
+    const mainImage = document.getElementById('main-image');
+    if (mainImage && opt.dataset.img) {
+        mainImage.src = opt.dataset.img;
+    }
+    
+    // Auto-collapse description when color is selected
+    collapseDescriptionOnColorSelect();
+}
+
+function selectSizeOption(button) {
+    document.querySelectorAll('.size-button').forEach(b => {
+        b.classList.remove('selected');
+        b.style.background = 'white';
+        b.style.color = '#333';
+        b.style.borderColor = '#ddd';
+    });
+    button.classList.add('selected');
+    button.style.background = '#007bff';
+    button.style.color = 'white';
+    button.style.borderColor = '#007bff';
+    
+    const newPrice = Number(button.dataset.price);
+    const priceElement = document.getElementById('product-price');
+    if (priceElement) {
+        priceElement.textContent = `KES ${newPrice.toLocaleString()}`;
+    }
+}
+
+function handleAddToCart() {
+    // Get product info from the current page elements
+    const productTitle = document.querySelector('h2') ? document.querySelector('h2').textContent : 'Product';
+    const priceElement = document.getElementById('product-price');
+    const priceText = priceElement ? priceElement.textContent : 'KES 0';
+    const currentPrice = parseFloat(priceText.replace('KES', '').replace(/,/g, '').trim());
+    const qtyInput = document.getElementById('qty');
+    const initialStock = parseInt(qtyInput.max);
+    
+    // Get product ID from URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id');
+    
+    if (!productId) {
+        alert('❌ Error: Could not identify product. Please refresh the page.');
+        return;
+    }
+    
+    // Call the fixed addToCart function
+    addToCart(productId, productTitle, currentPrice, initialStock);
 }
 
 // Update cart count on page load
