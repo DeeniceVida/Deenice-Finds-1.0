@@ -1,4 +1,4 @@
-// product-page.js - FOR SINGLE PRODUCT DETAIL PAGE (WITH DESCRIPTION COLLAPSE)
+// product-page.js - FOR SINGLE PRODUCT DETAIL PAGE (WITH DESCRIPTION COLLAPSE & FIXED ADD TO CART)
 (async () => {
     // 1. Initial Setup and Parameter Retrieval
     const params = new URLSearchParams(location.search);
@@ -273,6 +273,81 @@ function collapseDescriptionOnColorSelect() {
     }
 }
 
+// Add to cart function (FIXED - now properly handles the product ID)
+function addToCart(productId, productTitle, currentPrice, initialStock) {
+    const qtyInput = document.getElementById('qty');
+    const quantity = parseInt(qtyInput.value);
+    const maxStock = parseInt(qtyInput.max);
+    
+    // Final validation
+    if (quantity > maxStock) {
+        alert(`❌ Cannot add to cart! Only ${maxStock} units available.`);
+        qtyInput.value = maxStock;
+        return;
+    }
+    
+    if (quantity < 1) {
+        alert('❌ Please enter a valid quantity.');
+        qtyInput.value = 1;
+        return;
+    }
+
+    const colorEl = document.querySelector('.color-option.selected');
+    const color = colorEl ? colorEl.dataset.name : 'Default';
+    const sizeEl = document.querySelector('.size-button.selected');
+    const size = sizeEl ? sizeEl.dataset.size : 'Standard';
+    const modelEl = document.getElementById('model-selector');
+    const model = modelEl ? modelEl.value : 'Standard';
+    
+    const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
+
+    // Get current price
+    const priceElement = document.getElementById('product-price');
+    const priceText = priceElement ? priceElement.textContent : 'KES 0';
+    const price = parseFloat(priceText.replace('KES', '').replace(/,/g, '').trim());
+
+    // Check if item already in cart
+    const existingItemIndex = cart.findIndex(item => 
+        item.id === productId && 
+        item.color === color && 
+        item.size === size &&
+        item.model === model
+    );
+
+    if (existingItemIndex > -1) {
+        // Update quantity if item exists
+        const newQty = cart[existingItemIndex].qty + quantity;
+        if (newQty > maxStock) {
+            alert(`❌ Cannot add more! You already have ${cart[existingItemIndex].qty} in cart, only ${maxStock} available total.`);
+            return;
+        }
+        cart[existingItemIndex].qty = newQty;
+    } else {
+        // Add new item
+        cart.push({
+            id: productId,
+            title: productTitle,
+            price: price,
+            currency: 'KES',
+            qty: quantity,
+            color: color,
+            size: size,
+            model: model,
+            img: document.getElementById('main-image') ? document.getElementById('main-image').src : ''
+        });
+    }
+
+    localStorage.setItem('de_cart', JSON.stringify(cart));
+    alert(`✅ Added ${quantity} item(s) to cart!`);
+
+    // Update cart count
+    const badge = document.getElementById('cart-count');
+    if (badge) {
+        const totalItems = cart.reduce((total, item) => total + item.qty, 0);
+        badge.textContent = totalItems;
+    }
+}
+
 function setupProductInteractions() {
     console.log('🔄 Setting up product interactions...');
     
@@ -365,81 +440,29 @@ function setupProductInteractions() {
         console.log('✅ Model selector listener added');
     }
 
-    // Add to cart
+    // Add to cart - FIXED: Get product info from the current page
     const addToCartBtn = document.getElementById('add-cart');
     if (addToCartBtn) {
         addToCartBtn.addEventListener('click', () => {
-            const qtyInput = document.getElementById('qty');
-            const quantity = parseInt(qtyInput.value);
-            const maxStock = parseInt(qtyInput.max);
-            
-            // Final validation
-            if (quantity > maxStock) {
-                alert(`❌ Cannot add to cart! Only ${maxStock} units available.`);
-                qtyInput.value = maxStock;
-                return;
-            }
-            
-            if (quantity < 1) {
-                alert('❌ Please enter a valid quantity.');
-                qtyInput.value = 1;
-                return;
-            }
-
-            const colorEl = document.querySelector('.color-option.selected');
-            const color = colorEl ? colorEl.dataset.name : 'Default';
-            const sizeEl = document.querySelector('.size-button.selected');
-            const size = sizeEl ? sizeEl.dataset.size : 'Standard';
-            const modelEl = document.getElementById('model-selector');
-            const model = modelEl ? modelEl.value : 'Standard';
-            
-            const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
-
-            // Get current price
+            // Get product info from the current page elements
+            const productTitle = document.querySelector('h2') ? document.querySelector('h2').textContent : 'Product';
             const priceElement = document.getElementById('product-price');
             const priceText = priceElement ? priceElement.textContent : 'KES 0';
-            const price = parseFloat(priceText.replace('KES', '').replace(/,/g, '').trim());
-
-            // Check if item already in cart
-            const existingItemIndex = cart.findIndex(item => 
-                item.id === id && 
-                item.color === color && 
-                item.size === size &&
-                item.model === model
-            );
-
-            if (existingItemIndex > -1) {
-                // Update quantity if item exists
-                const newQty = cart[existingItemIndex].qty + quantity;
-                if (newQty > maxStock) {
-                    alert(`❌ Cannot add more! You already have ${cart[existingItemIndex].qty} in cart, only ${maxStock} available total.`);
-                    return;
-                }
-                cart[existingItemIndex].qty = newQty;
-            } else {
-                // Add new item
-                cart.push({
-                    id: id,
-                    title: document.querySelector('h2') ? document.querySelector('h2').textContent : 'Product',
-                    price: price,
-                    currency: 'KES',
-                    qty: quantity,
-                    color: color,
-                    size: size,
-                    model: model,
-                    img: document.getElementById('main-image') ? document.getElementById('main-image').src : ''
-                });
+            const currentPrice = parseFloat(priceText.replace('KES', '').replace(/,/g, '').trim());
+            const qtyInput = document.getElementById('qty');
+            const initialStock = parseInt(qtyInput.max);
+            
+            // Get product ID from URL parameters
+            const params = new URLSearchParams(window.location.search);
+            const productId = params.get('id');
+            
+            if (!productId) {
+                alert('❌ Error: Could not identify product. Please refresh the page.');
+                return;
             }
-
-            localStorage.setItem('de_cart', JSON.stringify(cart));
-            alert(`✅ Added ${quantity} item(s) to cart!`);
-
-            // Update cart count
-            const badge = document.getElementById('cart-count');
-            if (badge) {
-                const totalItems = cart.reduce((total, item) => total + item.qty, 0);
-                badge.textContent = totalItems;
-            }
+            
+            // Call the fixed addToCart function
+            addToCart(productId, productTitle, currentPrice, initialStock);
         });
         console.log('✅ Add to cart listener added');
     }
