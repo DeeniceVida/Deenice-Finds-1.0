@@ -493,3 +493,41 @@ app.listen(PORT, () => {
     console.log(`💾 Permanent storage enabled`);
     console.log(`⏰ Server time: ${new Date().toISOString()}`);
 });
+const fs = require('fs').promises;
+const path = require('path');
+
+// Permanent file storage
+const ORDERS_FILE = './admin-orders-data.json';
+
+// Load orders from file on server start
+async function loadAdminOrders() {
+    try {
+        const data = await fs.readFile(ORDERS_FILE, 'utf8');
+        orders = JSON.parse(data); // This updates your main orders array
+        console.log(`📥 Loaded ${orders.length} orders from permanent storage`);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            console.log('📥 No existing orders file, starting fresh');
+            orders = [];
+        } else {
+            console.error('Failed to load orders:', error);
+            orders = [];
+        }
+    }
+}
+
+// Save orders to file
+async function saveAdminOrders() {
+    try {
+        await fs.writeFile(ORDERS_FILE, JSON.stringify(orders, null, 2));
+        console.log(`💾 Saved ${orders.length} orders to permanent storage`);
+    } catch (error) {
+        console.error('Failed to save orders:', error);
+    }
+}
+
+// Auto-save every 2 minutes
+setInterval(saveAdminOrders, 2 * 60 * 1000);
+
+// Load on server start
+loadAdminOrders();
