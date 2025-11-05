@@ -1,295 +1,324 @@
-// UNIVERSAL products-page.js - Works same on desktop and mobile
-(async function(){
-    const grid = document.getElementById('products-grid');
-    if (!grid) {
-        console.error('Products grid element not found');
+// product-page.js - FOR SINGLE PRODUCT DETAIL PAGE
+(async () => {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    const container = document.getElementById('product-page');
+
+    let products = [];
+    let product = null;
+
+    // Load product data
+    try {
+        // Try to load from storefront_products first (admin updates)
+        const storefrontProducts = localStorage.getItem('storefront_products');
+        
+        if (storefrontProducts) {
+            products = JSON.parse(storefrontProducts);
+            console.log('📦 Loaded products from storefront cache');
+        } else {
+            // Fallback to original JSON
+            const res = await fetch('data/products.json');
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            products = await res.json();
+            console.log('📦 Loaded products from JSON file');
+        }
+
+        product = products.find(x => x.id === id) || products[0];
+
+    } catch (error) {
+        console.error("Error loading product data:", error);
+        if (container) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; color: #666;">
+                    <div style="font-size: 1.2em; margin-bottom: 15px;">❌</div>
+                    <div style="margin-bottom: 10px;">Error Loading Product</div>
+                    <p>Please check your connection and try again.</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 15px;">
+                        Try Again
+                    </button>
+                </div>
+            `;
+        }
         return;
     }
 
-    // Show loading state
-    grid.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: #666;">
-            <div style="margin-bottom: 10px;">🔄 Loading products...</div>
-            <small>Checking latest inventory...</small>
+    if (!product || !container) {
+        console.warn("Product or container element not found.");
+        return;
+    }
+
+    // Calculate available stock
+    function getAvailableStock(product, selectedColor = null) {
+        if (product.colorStock && Object.keys(product.colorStock).length > 0) {
+            return Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0);
+        }
+        return product.stock || 0;
+    }
+
+    let currentPrice = product.sizes && product.sizes.length > 0 ? product.sizes[0].price : product.price;
+    let selectedSize = product.sizes && product.sizes.length > 0 ? product.sizes[0].label : null;
+    let selectedModel = product.models && product.models.length > 0 ? product.models[0] : null;
+    let selectedColor = product.colors && product.colors.length > 0 ? product.colors[0].name : null;
+
+    const hasDiscount = product.originalPrice && product.originalPrice > currentPrice;
+    const discountAmount = hasDiscount ? product.originalPrice - currentPrice : 0;
+    const saveText = hasDiscount ? `Save ${product.currency} ${discountAmount.toLocaleString()}` : "";
+
+    // Get initial available stock
+    const initialStock = getAvailableStock(product, selectedColor);
+    
+    // Stock status display
+    const stockStatus = initialStock > 10 ? 'In Stock' : 
+                       initialStock > 0 ? 'Low Stock' : 'Out of Stock';
+    const stockClass = initialStock > 10 ? 'in-stock' : 
+                      initialStock > 0 ? 'low-stock' : 'out-of-stock';
+
+    // Build product page HTML
+    container.innerHTML = `
+        <div class="product-page-card">
+            <div class="product-slideshow">
+                <div class="product-main-image-wrapper">
+                    <img id="main-image" src="${product.images[0]}" alt="${product.title}" 
+                         onerror="this.onerror=null;this.src='https://via.placeholder.com/400x400?text=No+Image';"/>
+                </div>
+                <div class="product-thumbs">
+                    ${product.images.map((im, idx) => `
+                        <img data-src="${im}" ${idx === 0 ? 'class="selected"' : ''} src="${im}" />
+                    `).join('')}
+                </div>
+            </div>
+
+            <div id="product-details">
+                <h2>${product.title}</h2>
+
+                <!-- Stock status display -->
+                <div class="stock-status ${stockClass}">
+                    <span class="stock-indicator"></span>
+                    ${stockStatus} • ${initialStock} units available
+                </div>
+
+                <div class="price-section">
+                    <span id="product-price" class="current-price">${product.currency} ${currentPrice.toLocaleString()}</span>
+                    ${hasDiscount ? `<span class="old-price">${product.currency} ${product.originalPrice.toLocaleString()}</span>` : ""}
+                    ${hasDiscount ? `<span class="discount-tag">${saveText}</span>` : ""}
+                </div>
+
+                <div id="product-description-container" class="long-description">
+                    <p>${product.description}</p>
+                </div>
+
+                ${product.colors && product.colors.length > 0 ? `
+                <div id="color-selector">
+                    <label>Color:</label>
+                    <div class="color-options">
+                        ${product.colors.map((c, idx) => {
+                            const isAvailable = !product.availableColors || product.availableColors.includes(c.name);
+                            const isOutOfStock = initialStock === 0;
+                            
+                            return `
+                            <div class="color-item">
+                                <div class="color-name">${c.name} ${isOutOfStock ? '(Out of Stock)' : !isAvailable ? '(Unavailable)' : ''}</div>
+                                <div class="color-option ${idx === 0 && isAvailable && !isOutOfStock ? 'selected' : ''} 
+                                    ${!isAvailable || isOutOfStock ? 'disabled' : ''}" 
+                                    data-img="${c.img}" 
+                                    data-name="${c.name}"
+                                    ${!isAvailable || isOutOfStock ? 'style="opacity:0.5;cursor:not-allowed;" title="Not available"' : ''}>
+                                    <img src="${c.img}" alt="${c.name}">
+                                </div>
+                            </div>
+                        `}).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                ${product.sizes && product.sizes.length > 0 ? `
+                <div class="size-options-container">
+                    <label>Choose size:</label>
+                    <div class="size-buttons" id="size-buttons-group">
+                        ${product.sizes.map((s, idx) => `
+                            <button class="size-button ${idx === 0 ? 'selected' : ''}"
+                                    data-size="${s.label}"
+                                    data-price="${s.price}">
+                                ${s.label}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>` : ''}
+
+                ${product.models && product.models.length > 0 ? `
+                <div class="model-options-container">
+                    <label for="model-selector">Choose Model:</label>
+                    <select id="model-selector" class="product-option-select">
+                        ${product.models.map((model, idx) => `
+                            <option value="${model}" ${idx === 0 ? 'selected' : ''}>
+                                ${model}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>` : ''}
+
+                <!-- Quantity input with stock validation -->
+                <div class="quantity-container">
+                    <label for="qty">Quantity:</label>
+                    <input id="qty" type="number" value="1" min="1" max="${initialStock}" 
+                           onchange="validateQuantity(this, ${initialStock})" />
+                    <div id="quantity-error" class="error-message" style="display: none;"></div>
+                </div>
+
+                <button id="add-cart" class="primary" ${initialStock === 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
+                    ${initialStock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                </button>
+                
+                ${initialStock === 0 ? `
+                    <div class="out-of-stock-message">
+                        🔔 This item is currently out of stock. Check back later!
+                    </div>
+                ` : ''}
+            </div>
         </div>
     `;
 
-    try {
-        await loadAndRenderProducts();
-        updateCartCount();
-
-    } catch (error) {
-        console.error('Error loading products:', error);
-        showErrorState(error);
-    }
+    // Setup product interactions
+    setupProductInteractions();
 })();
 
-async function loadAndRenderProducts() {
-    const grid = document.getElementById('products-grid');
+// Quantity validation function
+function validateQuantity(input, maxStock) {
+    const quantity = parseInt(input.value);
+    const errorElement = document.getElementById('quantity-error');
+    const addToCartBtn = document.getElementById('add-cart');
     
-    console.log('📱 Device type:', isMobile() ? 'Mobile' : 'Desktop');
-    console.log('🌐 Online status:', navigator.onLine ? 'Online' : 'Offline');
-
-    // Clear any cached data that might cause inconsistencies
-    clearProblematicCache();
-
-    // UNIVERSAL LOADING STRATEGY - Same for all devices
-    let products = await loadProductsUniversal();
-    
-    if (!products || products.length === 0) {
-        grid.innerHTML = '<p class="no-products">No products available at the moment.</p>';
+    if (isNaN(quantity) || quantity < 1) {
+        input.value = 1;
+        errorElement.style.display = 'none';
+        addToCartBtn.disabled = false;
         return;
     }
-
-    renderProductsGrid(products);
-    showLoadInfo(products.length);
-}
-
-// UNIVERSAL product loading - Same logic for all devices
-async function loadProductsUniversal() {
-    let products = [];
     
-    // STRATEGY 1: Try storefront_products (admin updates)
-    const storefrontProducts = localStorage.getItem('storefront_products');
-    const storefrontUpdated = localStorage.getItem('storefront_products_updated');
-    
-    if (storefrontProducts && isRecentUpdate(storefrontUpdated)) {
-        products = JSON.parse(storefrontProducts);
-        console.log('✅ Loaded from storefront cache:', products.length, 'products');
-        return products;
-    }
-    
-    // STRATEGY 2: Try inventory_products (admin raw data)
-    const inventoryProducts = localStorage.getItem('inventory_products');
-    if (inventoryProducts) {
-        products = convertInventoryToStorefront(JSON.parse(inventoryProducts));
-        console.log('✅ Loaded from inventory cache:', products.length, 'products');
-        // Update storefront for next time
-        localStorage.setItem('storefront_products', JSON.stringify(products));
-        localStorage.setItem('storefront_products_updated', new Date().toISOString());
-        return products;
-    }
-    
-    // STRATEGY 3: Load from JSON file (fresh data)
-    console.log('📦 Loading fresh from JSON file...');
-    try {
-        const response = await fetch('data/products.json');
-        if (!response.ok) throw new Error('Failed to load products');
-        products = await response.json();
-        
-        // Save to cache for next time
-        localStorage.setItem('storefront_products', JSON.stringify(products));
-        localStorage.setItem('storefront_products_updated', new Date().toISOString());
-        
-        console.log('✅ Loaded from JSON file:', products.length, 'products');
-        return products;
-    } catch (error) {
-        console.error('❌ Failed to load from JSON:', error);
-        throw error;
+    if (quantity > maxStock) {
+        errorElement.textContent = `Only ${maxStock} units available. You cannot order more than available stock.`;
+        errorElement.style.display = 'block';
+        input.value = maxStock;
+        addToCartBtn.disabled = false;
+    } else {
+        errorElement.style.display = 'none';
+        addToCartBtn.disabled = false;
     }
 }
 
-// Convert admin inventory format to storefront format
-function convertInventoryToStorefront(inventoryProducts) {
-    return inventoryProducts.map(product => {
-        const totalStock = product.colorStock ? 
-            Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : 
-            product.stock || 0;
+function setupProductInteractions() {
+    // Thumbnail switching
+    document.querySelectorAll('.product-thumbs img').forEach(img => {
+        img.addEventListener('click', () => {
+            document.getElementById('main-image').src = img.dataset.src;
+            document.querySelectorAll('.product-thumbs img').forEach(i => i.classList.remove('selected'));
+            img.classList.add('selected');
+        });
+    });
+
+    // Color selection
+    document.querySelectorAll('.color-option:not(.disabled)').forEach(opt => {
+        opt.addEventListener('click', () => {
+            if (opt.classList.contains('disabled')) return;
             
-        return {
-            id: product.id,
-            title: product.name,
-            price: product.price,
-            originalPrice: product.originalData?.originalPrice,
-            currency: product.originalData?.currency || 'KES',
-            description: product.description,
-            images: product.originalData?.images || [product.image],
-            colors: product.colors,
-            sizes: product.originalData?.sizes,
-            models: product.originalData?.models,
-            specs: product.originalData?.specs,
-            available_status: product.originalData?.available_status,
-            sku: product.originalData?.sku,
-            stock: totalStock,
-            category: product.category,
-            colorStock: product.colorStock,
-            availableColors: product.availableColors
-        };
+            document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            document.getElementById('main-image').src = opt.dataset.img;
+        });
     });
-}
 
-// Render products grid - Same for all devices
-function renderProductsGrid(products) {
-    const grid = document.getElementById('products-grid');
-    grid.innerHTML = '';
-
-    products.forEach(p => {
-        const availableStock = getProductStock(p);
-        const stockStatus = getStockStatus(availableStock);
-        const stockText = getStockText(availableStock);
-        const isAvailable = availableStock > 0 && hasAvailableColors(p);
-
-        const el = document.createElement('a');
-        el.className = `product-card ${!isAvailable ? 'out-of-stock' : ''}`;
-        el.href = `product.html?id=${encodeURIComponent(p.id)}`;
-        
-        el.innerHTML = `
-            <img src="${p.images[0]}" alt="${p.title}" 
-                 onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'"/>
-            <h3>${p.title}</h3>
-            <div class="price">
-                ${p.originalPrice ? `
-                    <span class="original-price">${p.currency} ${p.originalPrice.toLocaleString()}</span>
-                ` : ''}
-                <span class="current-price">${p.currency} ${p.price.toLocaleString()}</span>
-            </div>
-            <div class="product-stock stock-${stockStatus}">
-                ${stockText} • ${availableStock} units available
-            </div>
-            ${!isAvailable ? '<div class="out-of-stock-badge">Out of Stock</div>' : ''}
-        `;
-        
-        grid.appendChild(el);
-    });
-}
-
-// Helper functions - Same for all devices
-function getProductStock(product) {
-    if (product.colorStock && Object.keys(product.colorStock).length > 0) {
-        return Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0);
+    // Size selection
+    const sizeButtons = document.querySelectorAll('.size-button');
+    if (sizeButtons.length > 0) {
+        sizeButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                sizeButtons.forEach(b => b.classList.remove('selected'));
+                button.classList.add('selected');
+                
+                const selectedSize = button.dataset.size;
+                const currentPrice = Number(button.dataset.price);
+                document.getElementById('product-price').textContent = `KES ${currentPrice.toLocaleString()}`;
+            });
+        });
     }
-    return product.stock || 0;
-}
 
-function getStockStatus(stock) {
-    if (stock > 10) return 'in-stock';
-    if (stock > 0) return 'low-stock';
-    return 'out-of-stock';
-}
+    // Model selection
+    const modelSelector = document.getElementById('model-selector');
+    if (modelSelector) {
+        modelSelector.addEventListener('change', (e) => {
+            const selectedModel = e.target.value;
+            console.log('Selected Model:', selectedModel);
+        });
+    }
 
-function getStockText(stock) {
-    if (stock > 10) return 'In Stock';
-    if (stock > 0) return 'Low Stock';
-    return 'Out of Stock';
-}
-
-function hasAvailableColors(product) {
-    return !product.availableColors || product.availableColors.length > 0;
-}
-
-function isRecentUpdate(timestamp) {
-    if (!timestamp) return false;
-    const updateTime = new Date(timestamp);
-    const now = new Date();
-    return (now - updateTime) < (24 * 60 * 60 * 1000); // Within 24 hours
-}
-
-function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-function clearProblematicCache() {
-    // Clear only problematic cache items that cause inconsistencies
-    const problematicKeys = [
-        'storefront_products_old',
-        'inventory_products_old',
-        'products_cache'
-    ];
-    
-    problematicKeys.forEach(key => {
-        if (localStorage.getItem(key)) {
-            localStorage.removeItem(key);
-            console.log('🧹 Cleared problematic cache:', key);
+    // Add to cart
+    document.getElementById('add-cart').addEventListener('click', () => {
+        const qtyInput = document.getElementById('qty');
+        const quantity = parseInt(qtyInput.value);
+        const maxStock = parseInt(qtyInput.max);
+        
+        // Final validation
+        if (quantity > maxStock) {
+            alert(`❌ Cannot add to cart! Only ${maxStock} units available.`);
+            qtyInput.value = maxStock;
+            return;
         }
-    });
-}
+        
+        if (quantity < 1) {
+            alert('❌ Please enter a valid quantity.');
+            qtyInput.value = 1;
+            return;
+        }
 
-function showLoadInfo(productCount) {
-    const source = localStorage.getItem('storefront_products') ? 'cache' : 'JSON';
-    const lastUpdate = localStorage.getItem('storefront_products_updated');
-    
-    console.log('📊 Load Info:', {
-        device: isMobile() ? 'mobile' : 'desktop',
-        products: productCount,
-        source: source,
-        lastUpdate: lastUpdate,
-        online: navigator.onLine
-    });
-}
+        const colorEl = document.querySelector('.color-option.selected');
+        const color = colorEl ? colorEl.dataset.name : 'Default';
+        const sizeEl = document.querySelector('.size-button.selected');
+        const size = sizeEl ? sizeEl.dataset.size : 'Standard';
+        const modelEl = document.getElementById('model-selector');
+        const model = modelEl ? modelEl.value : 'Standard';
+        
+        const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
 
-function showErrorState(error) {
-    const grid = document.getElementById('products-grid');
-    grid.innerHTML = `
-        <div class="error-state" style="text-align: center; padding: 40px; color: #666;">
-            <div style="margin-bottom: 15px;">
-                <strong>Unable to load products</strong>
-            </div>
-            <p style="margin-bottom: 20px; font-size: 0.9em;">
-                ${error.message || 'Please check your connection'}
-            </p>
-            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                <button onclick="location.reload()" 
-                        style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    🔄 Try Again
-                </button>
-                <button onclick="clearAllCache()" 
-                        style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                    🧹 Clear Cache
-                </button>
-            </div>
-        </div>
-    `;
-}
+        // Check if item already in cart
+        const existingItemIndex = cart.findIndex(item => 
+            item.id === product.id && 
+            item.color === color && 
+            item.size === size &&
+            item.model === model
+        );
 
-// Cache management
-function clearAllCache() {
-    const keysToKeep = ['de_cart', 'admin_token', 'admin_logged_in'];
-    const keysToRemove = [];
-    
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.includes('product') || key.includes('inventory') || key.includes('storefront')) {
-            if (!keysToKeep.includes(key)) {
-                keysToRemove.push(key);
+        if (existingItemIndex > -1) {
+            // Update quantity if item exists
+            const newQty = cart[existingItemIndex].qty + quantity;
+            if (newQty > maxStock) {
+                alert(`❌ Cannot add more! You already have ${cart[existingItemIndex].qty} in cart, only ${maxStock} available total.`);
+                return;
             }
+            cart[existingItemIndex].qty = newQty;
+        } else {
+            // Add new item
+            cart.push({
+                id: product.id,
+                title: product.title,
+                price: currentPrice,
+                currency: 'KES',
+                qty: quantity,
+                color: color,
+                size: size,
+                model: model,
+                img: product.images[0]
+            });
         }
-    }
-    
-    keysToRemove.forEach(key => {
-        localStorage.removeItem(key);
-        console.log('🧹 Removed cache:', key);
+
+        localStorage.setItem('de_cart', JSON.stringify(cart));
+        alert(`✅ Added ${quantity} item(s) to cart!`);
+
+        // Update cart count
+        const badge = document.getElementById('cart-count');
+        if (badge) {
+            const totalItems = cart.reduce((total, item) => total + item.qty, 0);
+            badge.textContent = totalItems;
+        }
     });
-    
-    alert('Cache cleared! Reloading...');
-    location.reload();
 }
-
-// Update cart count function
-function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
-    const badge = document.getElementById('cart-count');
-    if (badge) {
-        const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-        badge.textContent = totalItems;
-    }
-}
-
-// Listen for storage events (cross-device sync)
-window.addEventListener('storage', function(e) {
-    console.log('🔄 Storage event:', e.key);
-    
-    if (e.key === 'storefront_products' || e.key === 'inventory_products') {
-        console.log('📦 Products updated, reloading...');
-        setTimeout(() => {
-            loadAndRenderProducts();
-        }, 500);
-    }
-    
-    if (e.key === 'de_cart') {
-        updateCartCount();
-    }
-});
-
-// Export for global access
-window.refreshProducts = loadAndRenderProducts;
-window.clearAllCache = clearAllCache;
