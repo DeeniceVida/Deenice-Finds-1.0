@@ -26,27 +26,70 @@
     }
 })();
 
+// SINGLE loadAndRenderProducts function with category support
 async function loadAndRenderProducts() {
     const grid = document.getElementById('products-grid');
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('cat');
     
-    console.log('📱 Loading products for:', isMobile() ? 'Mobile' : 'Desktop');
+    console.log('📱 Loading products for category:', category || 'all');
 
     // Load products
     let products = await loadProductsUniversal();
     
+    if (category && category !== 'all') {
+        products = filterProductsByCategory(products, category);
+    }
+    
     if (!products || products.length === 0) {
         grid.innerHTML = `
             <div style="text-align: center; padding: 60px 20px; color: #666;">
-                <div style="font-size: 1.2em; margin-bottom: 15px;">😔</div>
-                <div style="margin-bottom: 10px;">No Products Available</div>
-                <small>Check back later for new arrivals</small>
+                <div style="font-size: 1.2em; margin-bottom: 15px;">${category ? '🔍' : '😔'}</div>
+                <div style="margin-bottom: 10px;">
+                    ${category ? `No products found in "${category}" category` : 'No Products Available'}
+                </div>
+                <small>${category ? 'Try browsing all products or check back later.' : 'Check back later for new arrivals'}</small>
+                ${category ? `
+                    <div style="margin-top: 15px;">
+                        <button onclick="window.location.href='products.html'" 
+                                style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            View All Products
+                        </button>
+                    </div>
+                ` : ''}
             </div>
         `;
         return;
     }
 
     renderProductsGrid(products);
-    console.log('✅ Rendered', products.length, 'products');
+    
+    // Update page title and heading with category
+    if (category && category !== 'all') {
+        const categories = typeof categoriesManager !== 'undefined' ? categoriesManager.getCategories() : [];
+        const currentCategory = categories.find(cat => cat.id === category);
+        
+        if (currentCategory) {
+            document.title = `${currentCategory.name} — Deenice Finds`;
+            
+            // Update the page heading
+            const pageHeading = document.querySelector('h1');
+            if (pageHeading) {
+                pageHeading.textContent = currentCategory.name;
+                pageHeading.innerHTML = `${currentCategory.icon} ${currentCategory.name}`;
+            }
+        } else {
+            // Fallback for unknown categories
+            document.title = `${category.charAt(0).toUpperCase() + category.slice(1)} — Deenice Finds`;
+            
+            const pageHeading = document.querySelector('h1');
+            if (pageHeading) {
+                pageHeading.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+            }
+        }
+    }
+    
+    console.log('✅ Rendered', products.length, 'products for category:', category || 'all');
 }
 
 // Product loading logic
@@ -155,7 +198,7 @@ function renderProductsGrid(products) {
                 <span class="current-price">${p.currency} ${p.price.toLocaleString()}</span>
             </div>
             <div class="product-stock stock-${stockStatus}">
-                ${stockText} • ${availableStock} units available
+                ${stockText} ${availableStock > 0 ? `• ${availableStock} units available` : ''}
             </div>
             ${!isAvailable ? '<div class="out-of-stock-badge">Out of Stock</div>' : ''}
         `;
@@ -192,6 +235,25 @@ function isMobile() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
+// Add this function to filter products by category
+function filterProductsByCategory(products, categoryId) {
+    if (!categoryId || categoryId === 'all') return products;
+    
+    return products.filter(product => {
+        // Match by category ID or name
+        const productCategory = product.category?.toLowerCase() || '';
+        const targetCategory = categoryId.toLowerCase();
+        
+        // Check if product category matches the target category
+        // Also allow partial matches for flexibility
+        return productCategory.includes(targetCategory) || 
+               product.title.toLowerCase().includes(targetCategory) ||
+               (product.tags && Array.isArray(product.tags) && product.tags.some(tag => 
+                   tag.toLowerCase().includes(targetCategory)
+               ));
+    });
+}
+
 function showErrorState(error) {
     const grid = document.getElementById('products-grid');
     grid.innerHTML = `
@@ -215,50 +277,9 @@ function showErrorState(error) {
     `;
 }
 
-// Add this function to filter products by category
-function filterProductsByCategory(products, categoryId) {
-  if (!categoryId || categoryId === 'all') return products;
-  
-  return products.filter(product => {
-    // Match by category ID or name
-    const productCategory = product.category?.toLowerCase() || '';
-    const targetCategory = categoryId.toLowerCase();
-    
-    return productCategory.includes(targetCategory) || 
-           product.title.toLowerCase().includes(targetCategory);
-  });
-}
-
-// Update the loadAndRenderProducts function to handle categories
-async function loadAndRenderProducts() {
-  const grid = document.getElementById('products-grid');
-  const urlParams = new URLSearchParams(window.location.search);
-  const category = urlParams.get('cat');
-  
-  console.log('📱 Loading products for category:', category || 'all');
-
-  let products = await loadProductsUniversal();
-  
-  if (category) {
-    products = filterProductsByCategory(products, category);
-  }
-  
-  // Rest of your existing rendering code...
-  renderProductsGrid(products);
-  
-  // Update page title with category
-  if (category) {
-    const categories = categoriesManager.getCategories();
-    const currentCategory = categories.find(cat => cat.id === category);
-    if (currentCategory) {
-      document.title = `${currentCategory.name} — Deenice Finds`;
-    }
-  }
-}
-
 // Cache management
 function clearAllCache() {
-    const keysToKeep = ['de_cart', 'admin_token', 'admin_logged_in'];
+    const keysToKeep = ['de_cart', 'admin_token', 'admin_logged_in', 'deenice_categories'];
     const keysToRemove = [];
     
     for (let i = 0; i < localStorage.length; i++) {
@@ -301,8 +322,30 @@ window.addEventListener('storage', function(e) {
     if (e.key === 'de_cart') {
         updateCartCount();
     }
+    
+    if (e.key === 'deenice_categories') {
+        console.log('🔄 Categories updated, reloading products...');
+        setTimeout(() => {
+            loadAndRenderProducts();
+        }, 500);
+    }
+});
+
+// Also listen for custom events from categories manager
+window.addEventListener('categoriesUpdated', function() {
+    console.log('🔄 Categories updated event received, reloading products...');
+    setTimeout(() => {
+        loadAndRenderProducts();
+    }, 300);
 });
 
 // Export for global access
 window.refreshProducts = loadAndRenderProducts;
 window.clearAllCache = clearAllCache;
+window.filterProductsByCategory = filterProductsByCategory;
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 Products page DOM loaded');
+    // Categories will be handled by categories-manager.js
+});
