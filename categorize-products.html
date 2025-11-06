@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Categorize Products - Deenice Finds</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .product { margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .category-select { margin-left: 10px; padding: 5px; border-radius: 4px; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; }
+        .primary { background: #007bff; color: white; }
+        .success { background: #28a745; color: white; }
+        .warning { background: #ffc107; color: black; }
+        .stats { background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>📦 Bulk Categorize Products</h1>
+    
+    <div class="stats" id="stats">
+        Loading product statistics...
+    </div>
+
+    <div>
+        <button class="primary" onclick="autoCategorize()">🤖 Auto-Categorize Uncategorized</button>
+        <button class="success" onclick="saveCategories()">💾 Save All Changes</button>
+        <button class="warning" onclick="loadProducts()">🔄 Reload Products</button>
+    </div>
+
+    <div id="products-container" style="margin-top: 20px;"></div>
+
+    <script>
+        let products = [];
+
+        async function loadProducts() {
+            try {
+                // Try multiple sources
+                let productsData = localStorage.getItem('storefront_products');
+                
+                if (!productsData) {
+                    const response = await fetch('data/products.json');
+                    products = await response.json();
+                } else {
+                    products = JSON.parse(productsData);
+                }
+
+                displayProducts();
+                updateStats();
+                
+            } catch (error) {
+                alert('Error loading products: ' + error.message);
+            }
+        }
+
+        function displayProducts() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+
+            products.forEach((product, index) => {
+                const div = document.createElement('div');
+                div.className = 'product';
+                div.innerHTML = `
+                    <strong>${product.title}</strong> - KES ${product.price?.toLocaleString() || 'N/A'}
+                    <br>
+                    <small>ID: ${product.id} | Current Category: <strong>${product.category || 'None'}</strong></small>
+                    <select class="category-select" data-index="${index}">
+                        <option value="">-- Select Category --</option>
+                        <option value="phones" ${product.category === 'phones' ? 'selected' : ''}>📱 Phones</option>
+                        <option value="earbuds" ${product.category === 'earbuds' ? 'selected' : ''}>🎧 Earbuds</option>
+                        <option value="accessories" ${product.category === 'accessories' ? 'selected' : ''}>⌚ Accessories</option>
+                        <option value="tablets" ${product.category === 'tablets' ? 'selected' : ''}>📟 Tablets</option>
+                        <option value="watches" ${product.category === 'watches' ? 'selected' : ''}>⌚ Watches</option>
+                        <option value="other" ${product.category === 'other' ? 'selected' : ''}>📦 Other</option>
+                    </select>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updateStats() {
+            const stats = document.getElementById('stats');
+            const categorized = products.filter(p => p.category).length;
+            const uncategorized = products.filter(p => !p.category).length;
+            
+            stats.innerHTML = `
+                <h3>📊 Product Statistics</h3>
+                <p>Total Products: <strong>${products.length}</strong></p>
+                <p>Categorized: <strong style="color: green;">${categorized}</strong></p>
+                <p>Uncategorized: <strong style="color: red;">${uncategorized}</strong></p>
+            `;
+        }
+
+        function autoCategorize() {
+            let categorized = 0;
+
+            products.forEach(product => {
+                const title = product.title.toLowerCase();
+                
+                if (!product.category) {
+                    if (title.includes('iphone') || title.includes('samsung') || title.includes('galaxy') || 
+                        title.includes('pixel') || title.includes('phone')) {
+                        product.category = 'phones';
+                        categorized++;
+                    }
+                    else if (title.includes('airpod') || title.includes('earbud') || title.includes('headphone')) {
+                        product.category = 'earbuds';
+                        categorized++;
+                    }
+                    else if (title.includes('case') || title.includes('cover') || title.includes('charger')) {
+                        product.category = 'accessories';
+                        categorized++;
+                    }
+                }
+            });
+
+            displayProducts();
+            updateStats();
+            alert(`Auto-categorized ${categorized} products! Don't forget to save.`);
+        }
+
+        function saveCategories() {
+            const selects = document.querySelectorAll('.category-select');
+            
+            selects.forEach(select => {
+                const index = select.dataset.index;
+                if (select.value && products[index]) {
+                    products[index].category = select.value;
+                }
+            });
+
+            localStorage.setItem('storefront_products', JSON.stringify(products));
+            alert('✅ All categories saved to localStorage!');
+            updateStats();
+        }
+
+        // Load products when page opens
+        loadProducts();
+    </script>
+</body>
+</html>
