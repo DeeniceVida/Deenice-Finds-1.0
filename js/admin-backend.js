@@ -152,3 +152,88 @@ class BackendAdminManager {
 
     // ... include the same render methods from your existing AdminOrderManager
 }
+// Add this function to your admin-backend.js file
+function addCategoriesManagement() {
+    // Check if admin is logged in
+    if (!isAdminLoggedIn()) {
+        return;
+    }
+
+    // Create categories management button
+    const categoriesBtn = document.createElement('button');
+    categoriesBtn.id = 'manage-categories-btn';
+    categoriesBtn.innerHTML = '📁 Manage Categories';
+    categoriesBtn.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        z-index: 9999;
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 25px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    `;
+
+    // Add hover effects
+    categoriesBtn.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+    });
+
+    categoriesBtn.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    });
+
+    // Add click handler
+    categoriesBtn.addEventListener('click', function() {
+        // Make sure categoriesManager is available
+        if (typeof categoriesManager !== 'undefined') {
+            categoriesManager.openCategoriesManager();
+        } else {
+            console.error('Categories manager not loaded');
+            alert('Categories manager not available. Please refresh the page.');
+        }
+    });
+
+    // Add to page
+    document.body.appendChild(categoriesBtn);
+
+    console.log('✅ Categories management button added');
+}
+
+// Initialize when admin backend loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit to ensure categories manager is loaded
+    setTimeout(() => {
+        if (isAdminLoggedIn()) {
+            addCategoriesManagement();
+            
+            // Also update navigation with categories
+            if (typeof categoriesManager !== 'undefined') {
+                categoriesManager.updateNavigation();
+            }
+        }
+    }, 1000);
+});
+
+// Also add to your admin login function
+function enhanceAdminLogin() {
+    // Your existing login code...
+    
+    // After successful login, add categories management
+    setTimeout(() => {
+        addCategoriesManagement();
+        
+        // Update navigation with current categories
+        if (typeof categoriesManager !== 'undefined') {
+            categoriesManager.updateNavigation();
+        }
+    }, 500);
+}
