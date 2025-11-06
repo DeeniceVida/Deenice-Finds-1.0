@@ -460,59 +460,77 @@ class AdminOrderManager {
     }
 
     createOrderRow(order) {
-        const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString();
-        const customerName = order.customer?.name || order.name || 'N/A';
-        const customerCity = order.customer?.city || order.city || 'N/A';
-        const customerPhone = order.customer?.phone || order.phone || 'No phone';
-        const totalAmount = order.totalAmount || order.total || 0;
-        const currency = order.currency || 'KES';
-        const status = order.status || 'pending';
-        const items = order.items || [];
+    const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString();
+    const customerName = order.customer?.name || order.name || 'N/A';
+    const customerCity = order.customer?.city || order.city || 'N/A';
+    const customerPhone = order.customer?.phone || order.phone || 'No phone';
+    const totalAmount = order.totalAmount || order.total || 0;
+    const currency = order.currency || 'KES';
+    const status = order.status || 'pending';
+    const items = order.items || [];
 
-        return `
-            <tr data-order-id="${order.id}">
-                <td><strong>#${order.id}</strong></td>
-                <td>
-                    <div class="customer-info">
-                        <div class="customer-name">${customerName}</div>
-                        <div class="customer-city">${customerCity}</div>
-                        <div class="customer-phone" style="color: #666; font-size: 12px;">📞 ${customerPhone}</div>
-                    </div>
-                </td>
-                <td>${orderDate}</td>
-                <td>
-                    <div class="order-items-preview">
-                        ${items.slice(0, 2).map(item => 
-                            `<div class="order-item-preview">
-                                <div class="item-name-small">${item.title || item.name}</div>
-                            </div>`
-                        ).join('')}
-                        ${items.length > 2 ? `<div class="item-name-small">+${items.length - 2} more</div>` : ''}
-                    </div>
-                </td>
-                <td><strong>${currency} ${totalAmount.toLocaleString()}</strong></td>
-                <td>
-                    <select class="status-select ${this.getStatusClass(status)}" 
-                            onchange="adminManager.updateStatus('${order.id}', this.value)"
-                            style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer; background: white; min-width: 120px;">
-                        <option value="pending" ${status === 'pending' ? 'selected' : ''}>📝 Pending</option>
-                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>🔄 Processing</option>
-                        <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Completed</option>
-                        <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
-                    </select>
-                    ${order.unsynced ? '<br><small style="color: orange;">⚠️ Not synced</small>' : ''}
-                </td>
-                <td>
-                    <div class="actions">
-                        <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">View</button>
-                        <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">Contact</button>
-                        <button class="btn-danger" onclick="adminManager.deleteOrder('${order.id}')">Delete</button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }
+    return `
+        <tr data-order-id="${order.id}">
+            <td><strong>#${order.id}</strong></td>
+            <td>
+                <div class="customer-info">
+                    <div class="customer-name">${customerName}</div>
+                    <div class="customer-city">${customerCity}</div>
+                    <div class="customer-phone">📞 ${customerPhone}</div>
+                </div>
+            </td>
+            <td>${orderDate}</td>
+            <td>
+                <div class="order-items-preview">
+                    ${items.slice(0, 3).map(item => this.createOrderItemPreview(item)).join('')}
+                    ${items.length > 3 ? `<div class="item-name-small">+${items.length - 3} more items</div>` : ''}
+                    ${items.length === 0 ? `<div class="item-name-small">No items</div>` : ''}
+                </div>
+            </td>
+            <td><strong>${currency} ${totalAmount.toLocaleString()}</strong></td>
+            <td>
+                <select class="status-select ${this.getStatusClass(status)}" 
+                        onchange="adminManager.updateStatus('${order.id}', this.value)"
+                        style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer; background: white; min-width: 120px;">
+                    <option value="pending" ${status === 'pending' ? 'selected' : ''}>📝 Pending</option>
+                    <option value="processing" ${status === 'processing' ? 'selected' : ''}>🔄 Processing</option>
+                    <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Completed</option>
+                    <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
+                </select>
+                ${order.unsynced ? '<br><small style="color: orange;">⚠️ Not synced</small>' : ''}
+            </td>
+            <td>
+                <div class="actions">
+                    <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">View</button>
+                    <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">Contact</button>
+                    <button class="btn-danger" onclick="adminManager.deleteOrder('${order.id}')">Delete</button>
+                </div>
+            </td>
+        </tr>
+    `;
+}
 
+createOrderItemPreview(item) {
+    if (!item) return '';
+    
+    const title = item.title || item.name || 'Unknown Item';
+    const imageUrl = item.img || item.image || item.thumbnail || 
+                    'https://via.placeholder.com/40x40/CCCCCC/666666?text=No+Image';
+    const qty = item.qty || 1;
+    
+    return `
+        <div class="order-item-preview">
+            <img src="${imageUrl}" 
+                 alt="${title}" 
+                 class="item-image-small"
+                 onerror="this.src='https://via.placeholder.com/40x40/CCCCCC/666666?text=No+Image'">
+            <div class="item-details-small">
+                <div class="item-name-small">${title}</div>
+                <div class="item-qty-small">Qty: ${qty}</div>
+            </div>
+        </div>
+    `;
+}
     getStatusClass(status) {
         const statusClasses = {
             'pending': 'status-pending',
