@@ -603,90 +603,129 @@ createOrderItemPreview(item) {
         window.location.href = 'admin-login.html';
     }
 
-    // Enhanced order details with phone number and complete information
-    viewOrderDetails(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            const customerName = order.customer?.name || order.name || 'N/A';
-            const customerCity = order.customer?.city || order.city || 'N/A';
-            const customerPhone = order.customer?.phone || order.phone || 'Not provided';
-            const customerEmail = order.customer?.email || order.email || 'Not provided';
+    // Updated createOrderRow method to show images
+createOrderRow(order) {
+    const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString();
+    const customerName = order.customer?.name || order.name || 'N/A';
+    const customerCity = order.customer?.city || order.city || 'N/A';
+    const customerPhone = order.customer?.phone || order.phone || 'No phone';
+    const totalAmount = order.totalAmount || order.total || 0;
+    const currency = order.currency || 'KES';
+    const status = order.status || 'pending';
+    const items = order.items || [];
+
+    return `
+        <tr data-order-id="${order.id}">
+            <td><strong>#${order.id}</strong></td>
+            <td>
+                <div class="customer-info">
+                    <div class="customer-name">${customerName}</div>
+                    <div class="customer-city">${customerCity}</div>
+                    <div class="customer-phone">📞 ${customerPhone}</div>
+                </div>
+            </td>
+            <td>${orderDate}</td>
+            <td>
+                <div class="order-items-preview">
+                    ${items.slice(0, 3).map(item => this.createOrderItemPreview(item)).join('')}
+                    ${items.length > 3 ? `<div class="item-name-small">+${items.length - 3} more items</div>` : ''}
+                    ${items.length === 0 ? `<div class="item-name-small">No items</div>` : ''}
+                </div>
+            </td>
+            <td><strong>${currency} ${totalAmount.toLocaleString()}</strong></td>
+            <td>
+                <select class="status-select ${this.getStatusClass(status)}" 
+                        onchange="adminManager.updateStatus('${order.id}', this.value)"
+                        style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer; background: white; min-width: 120px;">
+                    <option value="pending" ${status === 'pending' ? 'selected' : ''}>📝 Pending</option>
+                    <option value="processing" ${status === 'processing' ? 'selected' : ''}>🔄 Processing</option>
+                    <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Completed</option>
+                    <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
+                </select>
+                ${order.unsynced ? '<br><small style="color: orange;">⚠️ Not synced</small>' : ''}
+            </td>
+            <td>
+                <div class="actions">
+                    <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">Details</button>
+                    <button class="view-btn items-btn" onclick="adminManager.viewOrderItems('${order.id}')">Items</button>
+                    <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">Contact</button>
+                    <button class="btn-danger" onclick="adminManager.deleteOrder('${order.id}')">Delete</button>
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+createOrderItemPreview(item) {
+    if (!item) return '';
+    
+    const title = item.title || item.name || 'Unknown Item';
+    const imageUrl = item.img || item.image || item.thumbnail || 
+                    'https://via.placeholder.com/40x40/CCCCCC/666666?text=No+Image';
+    const qty = item.qty || 1;
+    
+    return `
+        <div class="order-item-preview">
+            <img src="${imageUrl}" 
+                 alt="${title}" 
+                 class="item-image-small"
+                 onerror="this.src='https://via.placeholder.com/40x40/CCCCCC/666666?text=No+Image'">
+            <div class="item-details-small">
+                <div class="item-name-small">${title}</div>
+                <div class="item-qty-small">Qty: ${qty}</div>
+            </div>
+        </div>
+    `;
+}
+
+// Show items in modal with images
+viewOrderItems(orderId) {
+    const order = this.orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const items = order.items || [];
+    const modalContent = document.getElementById('itemsModalContent');
+    
+    if (items.length === 0) {
+        modalContent.innerHTML = '<p>No items in this order.</p>';
+    } else {
+        modalContent.innerHTML = items.map((item, index) => {
+            const title = item.title || item.name || 'Unknown Item';
+            const imageUrl = item.img || item.image || item.thumbnail || 
+                           'https://via.placeholder.com/80x80/CCCCCC/666666?text=No+Image';
+            const price = item.price || 0;
+            const qty = item.qty || 1;
+            const total = price * qty;
+            const currency = item.currency || 'KES';
             
-            const orderDate = new Date(order.orderDate || order.date).toLocaleString();
-            const statusUpdated = order.statusUpdated ? new Date(order.statusUpdated).toLocaleString() : 'N/A';
-            const totalAmount = order.totalAmount || order.total || 0;
-            const currency = order.currency || 'KES';
-            
-            const deliveryMethod = order.delivery?.method || 'Home Delivery';
-            const pickupCode = order.delivery?.pickupCode || 'N/A';
-            const deliveryAddress = order.delivery?.address || 'Not specified';
-            
-            const items = order.items || [];
-            
-            let details = `
-ORDER #${order.id} - DETAILS
-
-📋 CUSTOMER INFORMATION:
-├── Name: ${customerName}
-├── City: ${customerCity}
-├── Phone: ${customerPhone}
-└── Email: ${customerEmail}
-
-📦 ORDER INFORMATION:
-├── Status: ${order.status.toUpperCase()}
-├── Order Date: ${orderDate}
-├── Last Updated: ${statusUpdated}
-├── Total: ${currency} ${totalAmount.toLocaleString()}
-└── Delivery: ${deliveryMethod}
-   ${deliveryMethod === 'pickup' ? `├── Pickup Code: ${pickupCode}` : `├── Address: ${deliveryAddress}`}
-
-🛍️ ITEMS (${items.length}):
-`;
-
-            if (items.length > 0) {
-                items.forEach((item, index) => {
-                    const itemName = item.title || item.name || 'Unknown Item';
-                    const itemPrice = item.price || 0;
-                    const itemQty = item.qty || 1;
-                    const itemTotal = itemPrice * itemQty;
-                    const itemCurrency = item.currency || 'KES';
-                    
-                    details += `\n${index + 1}. ${itemName}
-   ├── Quantity: ${itemQty}
-   ├── Price: ${itemCurrency} ${itemPrice.toLocaleString()}
-   └── Total: ${itemCurrency} ${itemTotal.toLocaleString()}`;
-                    
-                    // Show color/model if available
-                    if (item.color) details += `\n   ├── Color: ${item.color}`;
-                    if (item.model) details += `\n   ├── Model: ${item.model}`;
-                    if (item.size) details += `\n   ├── Size: ${item.size}`;
-                });
-                
-                // Calculate subtotal
-                const subtotal = items.reduce((sum, item) => {
-                    return sum + ((item.price || 0) * (item.qty || 1));
-                }, 0);
-                
-                details += `\n\n💰 ORDER SUMMARY:
-├── Subtotal: ${currency} ${subtotal.toLocaleString()}
-├── Delivery: ${currency} 0
-└── TOTAL: ${currency} ${totalAmount.toLocaleString()}`;
-                
-            } else {
-                details += '\nNo items in this order';
-            }
-
-            // Add quick actions
-            details += `\n\n⚡ QUICK ACTIONS:
-• Click "Contact" to message customer on WhatsApp
-• Use dropdown to change order status
-• Click "Delete" to remove this order`;
-
-            alert(details);
-        } else {
-            alert(`Order #${orderId} not found!`);
-        }
+            return `
+                <div class="order-item-modal">
+                    <img src="${imageUrl}" 
+                         alt="${title}"
+                         onerror="this.src='https://via.placeholder.com/80x80/CCCCCC/666666?text=No+Image'">
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">${title}</div>
+                        <div style="font-size: 0.9em; color: #666;">
+                            <div>Quantity: ${qty}</div>
+                            <div>Price: ${currency} ${price.toLocaleString()}</div>
+                            <div style="font-weight: bold; color: #333;">Total: ${currency} ${total.toLocaleString()}</div>
+                            ${item.color ? `<div>Color: ${item.color}</div>` : ''}
+                            ${item.size ? `<div>Size: ${item.size}</div>` : ''}
+                            ${item.model ? `<div>Model: ${item.model}</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
+    
+    document.getElementById('itemsModal').style.display = 'block';
+}
+
+// Close items modal
+closeItemsModal() {
+    document.getElementById('itemsModal').style.display = 'none';
+}
 
     // Enhanced contact customer with better phone number handling
     contactCustomer(orderId) {
