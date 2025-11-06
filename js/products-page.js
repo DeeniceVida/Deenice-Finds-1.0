@@ -215,6 +215,47 @@ function showErrorState(error) {
     `;
 }
 
+// Add this function to filter products by category
+function filterProductsByCategory(products, categoryId) {
+  if (!categoryId || categoryId === 'all') return products;
+  
+  return products.filter(product => {
+    // Match by category ID or name
+    const productCategory = product.category?.toLowerCase() || '';
+    const targetCategory = categoryId.toLowerCase();
+    
+    return productCategory.includes(targetCategory) || 
+           product.title.toLowerCase().includes(targetCategory);
+  });
+}
+
+// Update the loadAndRenderProducts function to handle categories
+async function loadAndRenderProducts() {
+  const grid = document.getElementById('products-grid');
+  const urlParams = new URLSearchParams(window.location.search);
+  const category = urlParams.get('cat');
+  
+  console.log('📱 Loading products for category:', category || 'all');
+
+  let products = await loadProductsUniversal();
+  
+  if (category) {
+    products = filterProductsByCategory(products, category);
+  }
+  
+  // Rest of your existing rendering code...
+  renderProductsGrid(products);
+  
+  // Update page title with category
+  if (category) {
+    const categories = categoriesManager.getCategories();
+    const currentCategory = categories.find(cat => cat.id === category);
+    if (currentCategory) {
+      document.title = `${currentCategory.name} — Deenice Finds`;
+    }
+  }
+}
+
 // Cache management
 function clearAllCache() {
     const keysToKeep = ['de_cart', 'admin_token', 'admin_logged_in'];
