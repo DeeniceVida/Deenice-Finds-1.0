@@ -11,22 +11,37 @@ class CategoriesManager {
   }
 
   init() {
+    console.log('🔄 CategoriesManager initializing...');
+    
     if (!this.getCategories().length) {
       this.saveCategories(this.defaultCategories);
     }
+    
+    // Auto-update navigation when manager is created
+    this.updateNavigation();
+    
+    console.log('✅ CategoriesManager ready');
   }
 
   getCategories() {
     try {
-      return JSON.parse(localStorage.getItem(this.categoriesKey)) || [];
-    } catch {
+      const categories = JSON.parse(localStorage.getItem(this.categoriesKey)) || [];
+      console.log('📋 Loaded categories:', categories.length);
+      return categories;
+    } catch (error) {
+      console.error('❌ Error loading categories:', error);
       return this.defaultCategories;
     }
   }
 
   saveCategories(categories) {
-    localStorage.setItem(this.categoriesKey, JSON.stringify(categories));
-    this.updateNavigation();
+    try {
+      localStorage.setItem(this.categoriesKey, JSON.stringify(categories));
+      console.log('💾 Saved categories:', categories.length);
+      this.updateNavigation();
+    } catch (error) {
+      console.error('❌ Error saving categories:', error);
+    }
   }
 
   addCategory(name, icon = '📦') {
@@ -67,18 +82,26 @@ class CategoriesManager {
 
   updateNavigation() {
     const menu = document.getElementById('products-categories-menu');
-    if (!menu) return;
+    if (!menu) {
+      console.log('⚠️ Products categories menu not found yet');
+      return;
+    }
 
     const categories = this.getCategories();
+    console.log('🔄 Updating navigation with categories:', categories.length);
+    
     menu.innerHTML = categories
       .sort((a, b) => a.order - b.order)
       .map(cat => `
         <li>
-          <a href="products.html?cat=${cat.id}">
-            ${cat.icon} ${cat.name}
+          <a href="products.html?cat=${cat.id}" style="display: flex; align-items: center; gap: 8px;">
+            <span>${cat.icon}</span>
+            <span>${cat.name}</span>
           </a>
         </li>
       `).join('');
+    
+    console.log('✅ Navigation updated successfully');
   }
 
   slugify(text) {
@@ -119,7 +142,7 @@ class CategoriesManager {
         max-height: 80vh;
         overflow-y: auto;
       ">
-        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <h3 style="margin: 0;">Manage Product Categories</h3>
           <button onclick="this.closest('.admin-modal').remove()" style="
             background: none;
@@ -210,6 +233,8 @@ class CategoriesManager {
       this.addCategory(name);
       nameInput.value = '';
       this.openCategoriesManager(); // Refresh the modal
+    } else {
+      alert('Please enter a category name');
     }
   }
 
@@ -254,14 +279,23 @@ class CategoriesManager {
 
   saveAndClose() {
     this.updateNavigation();
-    document.querySelector('.admin-modal').remove();
+    const modal = document.querySelector('.admin-modal');
+    if (modal) {
+      modal.remove();
+    }
     
-    // Show success message
     this.showNotification('Categories updated successfully!', 'success');
   }
 
   showNotification(message, type = 'info') {
+    // Remove existing notification
+    const existingNotification = document.querySelector('.admin-notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+
     const notification = document.createElement('div');
+    notification.className = `admin-notification ${type}`;
     notification.style.cssText = `
       position: fixed;
       top: 20px;
@@ -272,13 +306,40 @@ class CategoriesManager {
       border-radius: 6px;
       z-index: 10001;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-weight: 500;
     `;
     notification.textContent = message;
     document.body.appendChild(notification);
     
-    setTimeout(() => notification.remove(), 3000);
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 3000);
   }
 }
 
 // Initialize categories manager
 const categoriesManager = new CategoriesManager();
+
+// Export for global access
+window.categoriesManager = categoriesManager;
+
+// Auto-update navigation when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('📄 DOM loaded, updating categories navigation...');
+  setTimeout(() => {
+    if (typeof categoriesManager !== 'undefined') {
+      categoriesManager.updateNavigation();
+    }
+  }, 100);
+});
+
+// Also update when coming back to the page
+window.addEventListener('pageshow', function() {
+  setTimeout(() => {
+    if (typeof categoriesManager !== 'undefined') {
+      categoriesManager.updateNavigation();
+    }
+  }, 50);
+});
