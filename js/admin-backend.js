@@ -237,3 +237,139 @@ function enhanceAdminLogin() {
         }
     }, 500);
 }
+// Add this function to admin-backend.js
+function addAutoCategorizeFeature() {
+    if (!isAdminLoggedIn()) return;
+
+    const autoCatBtn = document.createElement('button');
+    autoCatBtn.id = 'auto-categorize-btn';
+    autoCatBtn.innerHTML = '🤖 Auto-Categorize Products';
+    autoCatBtn.style.cssText = `
+        position: fixed;
+        bottom: 140px;
+        right: 20px;
+        z-index: 9999;
+        background: #ff6b35;
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 25px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        font-size: 0.9em;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    `;
+
+    autoCatBtn.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+    });
+
+    autoCatBtn.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    });
+
+    autoCatBtn.addEventListener('click', function() {
+        if (confirm('This will automatically categorize uncategorized products based on their titles. Continue?')) {
+            autoCategorizeProducts();
+        }
+    });
+
+    document.body.appendChild(autoCatBtn);
+    console.log('✅ Auto-categorize button added');
+}
+
+// Add the auto-categorize function
+function autoCategorizeProducts() {
+    try {
+        const products = JSON.parse(localStorage.getItem('storefront_products') || '[]');
+        let categorized = 0;
+        let alreadyCategorized = 0;
+
+        console.log('🔄 Starting auto-categorization...');
+        console.log('Total products:', products.length);
+
+        products.forEach(product => {
+            const title = product.title.toLowerCase();
+            
+            if (!product.category || product.category === '') {
+                if (title.includes('iphone') || title.includes('samsung') || title.includes('galaxy') || 
+                    title.includes('pixel') || title.includes('phone') || title.includes('smartphone') ||
+                    title.includes('xiaomi') || title.includes('redmi') || title.includes('tecno') ||
+                    title.includes('infinix') || title.includes('oppo') || title.includes('vivo') ||
+                    title.includes('oneplus') || title.includes('nokia') || title.includes('huawei') ||
+                    title.includes('honor')) {
+                    product.category = 'phones';
+                    categorized++;
+                }
+                else if (title.includes('airpod') || title.includes('earbud') || title.includes('headphone') || 
+                         title.includes('earphone') || title.includes('wireless') || title.includes('bluetooth') ||
+                         title.includes('sound') || title.includes('audio') || title.includes('beat') ||
+                         title.includes('sony') || title.includes('jbl') || title.includes('ear') ||
+                         title.includes('noise') || title.includes('cancelling')) {
+                    product.category = 'earbuds';
+                    categorized++;
+                }
+                else if (title.includes('case') || title.includes('cover') || title.includes('charger') || 
+                         title.includes('cable') || title.includes('protector') || title.includes('accessory') ||
+                         title.includes('adapter') || title.includes('power bank') || title.includes('battery') ||
+                         title.includes('stand') || title.includes('holder') || title.includes('mount') ||
+                         title.includes('screen') || title.includes('glass') || title.includes('film') ||
+                         title.includes('sticker') || title.includes('skin') || title.includes('grip') ||
+                         title.includes('ring') || title.includes('pop') || title.includes('wallet') ||
+                         title.includes('bag') || title.includes('sleeve') || title.includes('pouch')) {
+                    product.category = 'accessories';
+                    categorized++;
+                }
+                else if (title.includes('watch') || title.includes('smartwatch') || title.includes('apple watch') ||
+                         title.includes('fitbit') || title.includes('wearable') || title.includes('band')) {
+                    product.category = 'watches';
+                    categorized++;
+                }
+                else if (title.includes('tablet') || title.includes('ipad') || title.includes('tab')) {
+                    product.category = 'tablets';
+                    categorized++;
+                }
+            } else {
+                alreadyCategorized++;
+            }
+        });
+
+        // Save back to localStorage
+        localStorage.setItem('storefront_products', JSON.stringify(products));
+        
+        // Show results
+        const message = `✅ Auto-categorization complete!
+        
+📊 Results:
+• Newly categorized: ${categorized} products
+• Already categorized: ${alreadyCategorized} products
+• Still uncategorized: ${products.filter(p => !p.category).length} products
+
+The page will reload to show changes...`;
+
+        console.log(message);
+        alert(message);
+        
+        // Reload to see changes
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+
+    } catch (error) {
+        console.error('❌ Auto-categorization failed:', error);
+        alert('Auto-categorization failed: ' + error.message);
+    }
+}
+
+// Add this to your admin initialization
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        if (isAdminLoggedIn()) {
+            addAutoCategorizeFeature();
+            addCategoriesManagement(); // Your existing function
+        }
+    }, 1000);
+});
