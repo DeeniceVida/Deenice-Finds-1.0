@@ -1,15 +1,14 @@
-// label-printer.js - SUPPORTS 80x80mm AND 100x150mm
+// label-printer.js - STANDARD SIZE WITH PRINT-TIME PAPER SELECTION
 class LabelPrinter {
     constructor() {
         this.websiteURL = "https://www.deenice.store";
         this.companyName = "Deenice Finds";
         this.companyTagline = "Premium Tech & Accessories";
         this.qrCodeUrl = "https://res.cloudinary.com/dsthpp4oj/image/upload/w_400,h_400,c_scale,q_100/v1762540599/frame_sie10u.png";
-        this.defaultPaperSize = '80x80'; // or '100x150'
     }
 
-    // Generate label for an order with paper size option
-    generateOrderLabel(order, paperSize = '80x80') {
+    // Generate label for an order
+    generateOrderLabel(order) {
         const customerName = order.customer?.name || order.name || 'N/A';
         const customerPhone = order.customer?.phone || order.phone || 'N/A';
         const customerCity = order.customer?.city || order.city || 'N/A';
@@ -24,18 +23,18 @@ class LabelPrinter {
             <head>
                 <title>Shipping Label - Order #${orderId}</title>
                 <style>
-                    ${this.getThermalPrinterStyles(paperSize)}
+                    ${this.getThermalPrinterStyles()}
                 </style>
             </head>
             <body>
                 <div class="label-container">
-                    ${this.generateCompanyHeader(paperSize)}
-                    ${this.generateOrderInfo(orderId, orderDate, paperSize)}
-                    ${this.generateCustomerInfo(customerName, customerPhone, customerCity, paperSize)}
-                    ${this.generateDeliveryInfo(deliveryMethod, pickupCode, paperSize)}
-                    ${this.generateQRCode(paperSize)}
-                    ${this.generateThankYouNote(paperSize)}
-                    ${this.generatePrintInstructions(paperSize)}
+                    ${this.generateCompanyHeader()}
+                    ${this.generateOrderInfo(orderId, orderDate)}
+                    ${this.generateCustomerInfo(customerName, customerPhone, customerCity)}
+                    ${this.generateDeliveryInfo(deliveryMethod, pickupCode)}
+                    ${this.generateQRCode()}
+                    ${this.generateThankYouNote()}
+                    ${this.generatePrintInstructions()}
                 </div>
                 
                 <script>
@@ -55,6 +54,7 @@ class LabelPrinter {
                             new Promise(resolve => setTimeout(resolve, 1500))
                         ]);
                         
+                        // Show print dialog but don't auto-close
                         setTimeout(() => {
                             window.print();
                         }, 300);
@@ -65,9 +65,7 @@ class LabelPrinter {
         `;
     }
 
-    getThermalPrinterStyles(paperSize = '80x80') {
-        const isLarge = paperSize === '100x150';
-        
+    getThermalPrinterStyles() {
         return `
             * { 
                 margin: 0 !important; 
@@ -78,62 +76,58 @@ class LabelPrinter {
             }
             body { 
                 font-family: 'Courier New', monospace !important; 
-                font-size: ${isLarge ? '16px' : '14px'} !important;
+                font-size: 14px !important;
                 line-height: 1.1 !important;
-                width: ${isLarge ? '100mm' : '80mm'} !important;
-                height: ${isLarge ? '150mm' : '80mm'} !important;
+                width: 80mm !important;
                 margin: 0 auto !important;
-                padding: ${isLarge ? '4mm' : '3mm'} !important;
+                padding: 3mm !important;
                 background: white !important;
                 color: #000000 !important;
                 font-weight: bold !important;
             }
             .label-container {
                 border: 2px solid #000000 !important;
-                padding: ${isLarge ? '5mm' : '4mm'} !important;
+                padding: 4mm !important;
                 page-break-inside: avoid !important;
                 background: white !important;
-                height: 100% !important;
-                display: flex !important;
-                flex-direction: column !important;
             }
             .company-header {
                 text-align: center !important;
-                margin-bottom: ${isLarge ? '5mm' : '4mm'} !important;
+                margin-bottom: 4mm !important;
                 border-bottom: 2px dashed #000000 !important;
-                padding-bottom: ${isLarge ? '4mm' : '3mm'} !important;
+                padding-bottom: 3mm !important;
             }
             .company-name {
-                font-size: ${isLarge ? '22px' : '18px'} !important;
+                font-size: 18px !important;
                 font-weight: 900 !important;
-                margin-bottom: ${isLarge ? '3mm' : '2mm'} !important;
+                margin-bottom: 2mm !important;
                 text-transform: uppercase !important;
                 color: #000000 !important;
             }
             .company-tagline {
-                font-size: ${isLarge ? '14px' : '12px'} !important;
+                font-size: 12px !important;
                 font-weight: bold !important;
                 color: #000000 !important;
             }
             .order-info, .customer-info, .delivery-info {
-                margin-bottom: ${isLarge ? '5mm' : '4mm'} !important;
+                margin-bottom: 4mm !important;
             }
             .section-title {
                 font-weight: 900 !important;
                 border-bottom: 2px solid #000000 !important;
-                margin-bottom: ${isLarge ? '3mm' : '2mm'} !important;
-                font-size: ${isLarge ? '15px' : '13px'} !important;
+                margin-bottom: 2mm !important;
+                font-size: 13px !important;
                 text-transform: uppercase !important;
                 padding-bottom: 1mm !important;
                 color: #000000 !important;
             }
             .info-row {
                 display: flex !important;
-                margin-bottom: ${isLarge ? '3mm' : '2mm'} !important;
+                margin-bottom: 2mm !important;
             }
             .info-label {
                 font-weight: 900 !important;
-                min-width: ${isLarge ? '35mm' : '28mm'} !important;
+                min-width: 28mm !important;
                 text-transform: uppercase !important;
                 color: #000000 !important;
             }
@@ -146,32 +140,28 @@ class LabelPrinter {
             }
             .qr-code {
                 text-align: center !important;
-                margin: ${isLarge ? '5mm' : '4mm'} 0 !important;
-                padding: ${isLarge ? '4mm' : '3mm'} !important;
+                margin: 4mm 0 !important;
+                padding: 3mm !important;
                 border: 2px dashed #000000 !important;
                 background: #f0f0f0 !important;
-                flex-grow: 1 !important;
-                display: flex !important;
-                flex-direction: column !important;
-                justify-content: center !important;
             }
             .qr-image {
-                width: ${isLarge ? '50mm' : '40mm'} !important;
-                height: ${isLarge ? '50mm' : '40mm'} !important;
+                width: 40mm !important;
+                height: 40mm !important;
                 border: 2px solid #000000 !important;
                 display: block !important;
                 margin: 0 auto !important;
                 background: white !important;
             }
             .qr-placeholder {
-                width: ${isLarge ? '50mm' : '40mm'} !important;
-                height: ${isLarge ? '50mm' : '40mm'} !important;
+                width: 40mm !important;
+                height: 40mm !important;
                 border: 2px solid #000000 !important;
                 margin: 0 auto !important;
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                font-size: ${isLarge ? '12px' : '10px'} !important;
+                font-size: 10px !important;
                 text-align: center !important;
                 background: white !important;
                 font-weight: bold !important;
@@ -180,41 +170,41 @@ class LabelPrinter {
             }
             .thank-you {
                 text-align: center !important;
-                margin-top: ${isLarge ? '5mm' : '4mm'} !important;
-                padding-top: ${isLarge ? '4mm' : '3mm'} !important;
+                margin-top: 4mm !important;
+                padding-top: 3mm !important;
                 border-top: 2px dashed #000000 !important;
                 font-weight: bold !important;
-                font-size: ${isLarge ? '15px' : '13px'} !important;
+                font-size: 13px !important;
                 color: #000000 !important;
             }
             .delivery-destination {
                 border: 2px dashed #000000 !important;
-                padding: ${isLarge ? '4mm' : '3mm'} !important;
-                margin: ${isLarge ? '4mm' : '3mm'} 0 !important;
-                min-height: ${isLarge ? '25mm' : '18mm'} !important;
+                padding: 3mm !important;
+                margin: 3mm 0 !important;
+                min-height: 18mm !important;
                 background: #f8f8f8 !important;
             }
             .destination-label {
                 font-weight: 900 !important;
-                margin-bottom: ${isLarge ? '3mm' : '2mm'} !important;
+                margin-bottom: 2mm !important;
                 text-transform: uppercase !important;
                 color: #000000 !important;
             }
             .pickup-code {
                 background: #d0d0d0 !important;
-                padding: ${isLarge ? '4mm' : '3mm'} !important;
+                padding: 3mm !important;
                 text-align: center !important;
                 border: 2px solid #000000 !important;
-                margin: ${isLarge ? '4mm' : '3mm'} 0 !important;
+                margin: 3mm 0 !important;
                 font-weight: 900 !important;
-                font-size: ${isLarge ? '18px' : '16px'} !important;
+                font-size: 16px !important;
                 text-transform: uppercase !important;
                 color: #000000 !important;
             }
             .print-instructions {
-                font-size: ${isLarge ? '12px' : '10px'} !important;
+                font-size: 10px !important;
                 text-align: center !important;
-                margin-top: ${isLarge ? '4mm' : '3mm'} !important;
+                margin-top: 3mm !important;
                 color: #000000 !important;
                 font-weight: bold !important;
                 border-top: 1px solid #000000 !important;
@@ -222,20 +212,24 @@ class LabelPrinter {
             }
             @media print {
                 .no-print { display: none !important; }
-                body { 
-                    width: ${isLarge ? '100mm' : '80mm'} !important;
-                    height: ${isLarge ? '150mm' : '80mm'} !important;
+                @page {
+                    size: 80mm 80mm;
+                    margin: 0;
+                }
+                body {
+                    width: 80mm !important;
+                    height: 80mm !important;
+                    margin: 0 !important;
+                    padding: 3mm !important;
                 }
             }
         `;
     }
 
-    generateQRCode(paperSize = '80x80') {
-        const isLarge = paperSize === '100x150';
-        
+    generateQRCode() {
         return `
             <div class="qr-code">
-                <div style="margin-bottom: ${isLarge ? '3mm' : '2mm'}; font-weight: bold; text-transform: uppercase;">
+                <div style="margin-bottom: 2mm; font-weight: bold; text-transform: uppercase;">
                     SCAN TO VISIT OUR STORE
                 </div>
                 <img src="${this.qrCodeUrl}" 
@@ -247,17 +241,14 @@ class LabelPrinter {
                         QR CODE: ${this.websiteURL}
                     </div>
                 </div>
-                <div style="font-size: ${isLarge ? '12px' : '10px'}; margin-top: ${isLarge ? '3mm' : '2mm'}; font-weight: bold;">
+                <div style="font-size: 10px; margin-top: 2mm; font-weight: bold;">
                     ${this.websiteURL}
                 </div>
             </div>
         `;
     }
 
-    // Update other generation methods to accept paperSize parameter
-    generateCompanyHeader(paperSize = '80x80') {
-        const isLarge = paperSize === '100x150';
-        
+    generateCompanyHeader() {
         return `
             <div class="company-header">
                 <div class="company-name">${this.companyName}</div>
@@ -266,7 +257,7 @@ class LabelPrinter {
         `;
     }
 
-    generateOrderInfo(orderId, orderDate, paperSize = '80x80') {
+    generateOrderInfo(orderId, orderDate) {
         return `
             <div class="order-info">
                 <div class="section-title">ORDER INFORMATION</div>
@@ -282,7 +273,7 @@ class LabelPrinter {
         `;
     }
 
-    generateCustomerInfo(name, phone, city, paperSize = '80x80') {
+    generateCustomerInfo(name, phone, city) {
         return `
             <div class="customer-info">
                 <div class="section-title">CUSTOMER INFORMATION</div>
@@ -302,8 +293,7 @@ class LabelPrinter {
         `;
     }
 
-    generateDeliveryInfo(deliveryMethod, pickupCode, paperSize = '80x80') {
-        const isLarge = paperSize === '100x150';
+    generateDeliveryInfo(deliveryMethod, pickupCode) {
         const isPickup = deliveryMethod === 'pickup';
         
         return `
@@ -325,26 +315,20 @@ class LabelPrinter {
                     <div>________________________________</div>
                     <div>________________________________</div>
                     <div>________________________________</div>
-                    ${isLarge ? `<div>________________________________</div>` : ''}
                 </div>
             </div>
         `;
     }
 
-    generateThankYouNote(paperSize = '80x80') {
-        const isLarge = paperSize === '100x150';
-        
+    generateThankYouNote() {
         return `
             <div class="thank-you">
-                ${isLarge ? 
-                    'THANK YOU FOR YOUR ORDER! 🎉<br>WE APPRECIATE YOUR BUSINESS AND LOOK FORWARD TO SERVING YOU AGAIN!' :
-                    'THANK YOU FOR YOUR ORDER! 🎉<br>WE APPRECIATE YOUR BUSINESS!'
-                }
+                THANK YOU FOR YOUR ORDER! 🎉<br>WE APPRECIATE YOUR BUSINESS!
             </div>
         `;
     }
 
-    generatePrintInstructions(paperSize = '80x80') {
+    generatePrintInstructions() {
         return `
             <div class="print-instructions">
                 PRINTED: ${new Date().toLocaleString()}
@@ -352,18 +336,18 @@ class LabelPrinter {
         `;
     }
 
-    // Print with paper size selection
-    printLabel(order, paperSize = '80x80') {
-        const labelHTML = this.generateOrderLabel(order, paperSize);
-        const printWindow = window.open('', '_blank', 'width=500,height=700');
+    // Print label - user selects paper size in print dialog
+    printLabel(order) {
+        const labelHTML = this.generateOrderLabel(order);
+        const printWindow = window.open('', '_blank', 'width=400,height=600');
         
         printWindow.document.write(labelHTML);
         printWindow.document.close();
     }
 
-    // Preview with paper size selection
-    previewLabel(order, paperSize = '80x80') {
-        const labelHTML = this.generateOrderLabel(order, paperSize);
+    // Preview label
+    previewLabel(order) {
+        const labelHTML = this.generateOrderLabel(order);
         const previewWindow = window.open('', '_blank');
         
         previewWindow.document.write(`
@@ -378,7 +362,7 @@ class LabelPrinter {
                         font-family: Arial, sans-serif;
                     }
                     .preview-container {
-                        max-width: 500px;
+                        max-width: 400px;
                         margin: 0 auto;
                         background: white;
                         padding: 20px;
@@ -391,22 +375,6 @@ class LabelPrinter {
                         padding: 20px;
                         background: #f8f9fa;
                         border-radius: 8px;
-                    }
-                    .paper-size-selector {
-                        margin: 15px 0;
-                    }
-                    .paper-btn {
-                        background: #17a2b8;
-                        color: white;
-                        border: none;
-                        padding: 10px 15px;
-                        border-radius: 6px;
-                        cursor: pointer;
-                        margin: 5px;
-                        font-size: 14px;
-                    }
-                    .paper-btn.active {
-                        background: #0056b3;
                     }
                     .print-btn {
                         background: #28a745;
@@ -428,30 +396,26 @@ class LabelPrinter {
                         font-size: 16px;
                         margin: 0 10px;
                     }
+                    .print-tip {
+                        margin-top: 10px;
+                        color: #666;
+                        font-size: 14px;
+                    }
                 </style>
             </head>
             <body>
                 <div class="print-controls">
-                    <h3>Label Preview - Order #${order.id}</h3>
-                    <div class="paper-size-selector">
-                        <strong>Paper Size:</strong>
-                        <button class="paper-btn active" onclick="switchPaperSize('80x80')">80×80mm</button>
-                        <button class="paper-btn" onclick="switchPaperSize('100x150')">100×150mm</button>
-                    </div>
+                    <h3>Shipping Label Preview</h3>
+                    <p><strong>Order #${order.id}</strong></p>
                     <button class="print-btn" onclick="window.print()">🖨️ Print Label</button>
                     <button class="back-btn" onclick="window.close()">← Back</button>
+                    <div class="print-tip">
+                        💡 <strong>Print Tip:</strong> Select "80×80mm" or "100×150mm" in your printer settings
+                    </div>
                 </div>
                 <div class="preview-container">
                     ${labelHTML}
                 </div>
-                
-                <script>
-                    function switchPaperSize(size) {
-                        document.querySelectorAll('.paper-btn').forEach(btn => btn.classList.remove('active'));
-                        event.target.classList.add('active');
-                        window.location.href = '?paperSize=' + size;
-                    }
-                </script>
             </body>
             </html>
         `);
