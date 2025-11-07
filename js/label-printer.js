@@ -66,187 +66,177 @@ class LabelPrinter {
     }
 
     getThermalPrinterStyles() {
-        return `
-            * { 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                box-sizing: border-box !important;
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-            }
-            body { 
-                font-family: 'Courier New', monospace !important; 
-                font-size: 14px !important;
-                line-height: 1.1 !important;
-                width: 80mm !important;
-                margin: 0 auto !important;
-                padding: 3mm !important;
-                background: white !important;
-                color: #000000 !important;
-                font-weight: bold !important;
-            }
-            .label-container {
-                border: 2px solid #000000 !important;
-                padding: 4mm !important;
-                page-break-inside: avoid !important;
-                background: white !important;
-            }
-            .company-header {
-                text-align: center !important;
-                margin-bottom: 4mm !important;
-                border-bottom: 2px dashed #000000 !important;
-                padding-bottom: 3mm !important;
-            }
-            .company-name {
-                font-size: 18px !important;
-                font-weight: 900 !important;
-                margin-bottom: 2mm !important;
-                text-transform: uppercase !important;
-                color: #000000 !important;
-            }
-            .company-tagline {
-                font-size: 12px !important;
-                font-weight: bold !important;
-                color: #000000 !important;
-            }
-            .order-info, .customer-info, .delivery-info {
-                margin-bottom: 4mm !important;
-            }
-            .section-title {
-                font-weight: 900 !important;
-                border-bottom: 2px solid #000000 !important;
-                margin-bottom: 2mm !important;
-                font-size: 13px !important;
-                text-transform: uppercase !important;
-                padding-bottom: 1mm !important;
-                color: #000000 !important;
-            }
-            .info-row {
-                display: flex !important;
-                margin-bottom: 2mm !important;
-            }
-            .info-label {
-                font-weight: 900 !important;
-                min-width: 28mm !important;
-                text-transform: uppercase !important;
-                color: #000000 !important;
-            }
-            .info-value {
-                flex: 1 !important;
-                font-weight: bold !important;
-                border-bottom: 1px dotted #000000 !important;
-                padding-bottom: 1mm !important;
-                color: #000000 !important;
-            }
-            .qr-code {
-                text-align: center !important;
-                margin: 4mm 0 !important;
-                padding: 3mm !important;
-                border: 2px dashed #000000 !important;
-                background: #f0f0f0 !important;
-            }
-            .qr-image {
-                width: 40mm !important;
-                height: 40mm !important;
-                border: 2px solid #000000 !important;
-                display: block !important;
-                margin: 0 auto !important;
-                background: white !important;
-            }
-            .qr-placeholder {
-                width: 40mm !important;
-                height: 40mm !important;
-                border: 2px solid #000000 !important;
-                margin: 0 auto !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                font-size: 10px !important;
-                text-align: center !important;
-                background: white !important;
-                font-weight: bold !important;
-                padding: 2mm !important;
-                color: #000000 !important;
-            }
-            .thank-you {
-                text-align: center !important;
-                margin-top: 4mm !important;
-                padding-top: 3mm !important;
-                border-top: 2px dashed #000000 !important;
-                font-weight: bold !important;
-                font-size: 13px !important;
-                color: #000000 !important;
-            }
-            .delivery-destination {
-                border: 2px dashed #000000 !important;
-                padding: 3mm !important;
-                margin: 3mm 0 !important;
-                min-height: 18mm !important;
-                background: #f8f8f8 !important;
-            }
-            .destination-label {
-                font-weight: 900 !important;
-                margin-bottom: 2mm !important;
-                text-transform: uppercase !important;
-                color: #000000 !important;
-            }
-            .pickup-code {
-                background: #d0d0d0 !important;
-                padding: 3mm !important;
-                text-align: center !important;
-                border: 2px solid #000000 !important;
-                margin: 3mm 0 !important;
-                font-weight: 900 !important;
-                font-size: 16px !important;
-                text-transform: uppercase !important;
-                color: #000000 !important;
-            }
-            .print-instructions {
-                font-size: 10px !important;
-                text-align: center !important;
-                margin-top: 3mm !important;
-                color: #000000 !important;
-                font-weight: bold !important;
-                border-top: 1px solid #000000 !important;
-                padding-top: 2mm !important;
-            }
-            @media print {
-                .no-print { display: none !important; }
-                @page {
-                    size: 80mm 80mm;
-                    margin: 0;
-                }
-                body {
-                    width: 80mm !important;
-                    height: 80mm !important;
-                    margin: 0 !important;
-                    padding: 3mm !important;
-                }
-            }
-        `;
-    }
-
+    return `
+        * { 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            box-sizing: border-box !important;
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+        body { 
+            font-family: 'Courier New', monospace !important; 
+            font-size: 14px !important;
+            line-height: 1.1 !important;
+            width: 80mm !important;
+            margin: 0 auto !important;
+            padding: 3mm !important;
+            background: white !important;
+            color: #000000 !important;
+            font-weight: bold !important;
+        }
+        .label-container {
+            border: 2px solid #000000 !important;
+            padding: 4mm !important;
+            page-break-inside: avoid !important;
+            background: white !important;
+        }
+        .company-header {
+            text-align: center !important;
+            margin-bottom: 4mm !important;
+            border-bottom: 2px dashed #000000 !important;
+            padding-bottom: 3mm !important;
+        }
+        .company-name {
+            font-size: 18px !important;
+            font-weight: 900 !important;
+            margin-bottom: 2mm !important;
+            text-transform: uppercase !important;
+            color: #000000 !important;
+        }
+        .company-tagline {
+            font-size: 12px !important;
+            font-weight: bold !important;
+            color: #000000 !important;
+        }
+        .order-info, .customer-info, .delivery-info {
+            margin-bottom: 4mm !important;
+        }
+        .section-title {
+            font-weight: 900 !important;
+            border-bottom: 2px solid #000000 !important;
+            margin-bottom: 2mm !important;
+            font-size: 13px !important;
+            text-transform: uppercase !important;
+            padding-bottom: 1mm !important;
+            color: #000000 !important;
+        }
+        .info-row {
+            display: flex !important;
+            margin-bottom: 2mm !important;
+        }
+        .info-label {
+            font-weight: 900 !important;
+            min-width: 28mm !important;
+            text-transform: uppercase !important;
+            color: #000000 !important;
+        }
+        .info-value {
+            flex: 1 !important;
+            font-weight: bold !important;
+            border-bottom: 1px dotted #000000 !important;
+            padding-bottom: 1mm !important;
+            color: #000000 !important;
+        }
+        .qr-code {
+            text-align: center !important;
+            margin: 4mm 0 !important;
+            padding: 3mm !important;
+            border: 2px dashed #000000 !important;
+            background: #f0f0f0 !important;
+        }
+        .qr-image {
+            width: 40mm !important;
+            height: 40mm !important;
+            border: 2px solid #000000 !important;
+            display: block !important;
+            margin: 0 auto !important;
+            background: white !important;
+        }
+        .qr-placeholder {
+            width: 40mm !important;
+            height: 40mm !important;
+            border: 2px solid #000000 !important;
+            margin: 0 auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 10px !important;
+            text-align: center !important;
+            background: white !important;
+            font-weight: bold !important;
+            padding: 2mm !important;
+            color: #000000 !important;
+        }
+        .thank-you {
+            text-align: center !important;
+            margin-top: 4mm !important;
+            padding-top: 3mm !important;
+            border-top: 2px dashed #000000 !important;
+            font-weight: bold !important;
+            font-size: 13px !important;
+            color: #000000 !important;
+        }
+        .delivery-destination {
+            border: 2px dashed #000000 !important;
+            padding: 3mm !important;
+            margin: 3mm 0 !important;
+            min-height: 18mm !important;
+            background: #f8f8f8 !important;
+        }
+        .destination-label {
+            font-weight: 900 !important;
+            margin-bottom: 2mm !important;
+            text-transform: uppercase !important;
+            color: #000000 !important;
+        }
+        .pickup-code {
+            background: #d0d0d0 !important;
+            padding: 3mm !important;
+            text-align: center !important;
+            border: 2px solid #000000 !important;
+            margin: 3mm 0 !important;
+            font-weight: 900 !important;
+            font-size: 16px !important;
+            text-transform: uppercase !important;
+            color: #000000 !important;
+        }
+        .print-instructions {
+            font-size: 10px !important;
+            text-align: center !important;
+            margin-top: 3mm !important;
+            color: #000000 !important;
+            font-weight: bold !important;
+            border-top: 1px solid #000000 !important;
+            padding-top: 2mm !important;
+        }
+        @media print {
+            .no-print { display: none !important; }
+        }
+    `;
+}
     generateQRCode() {
-        return `
-            <div class="qr-code">
-                <div style="margin-bottom: 2mm; font-weight: bold; text-transform: uppercase;">
-                    SCAN TO VISIT OUR STORE
-                </div>
-                <img src="${this.qrCodeUrl}" 
-                     alt="QR Code - www.deenice.store" 
-                     class="qr-image"
-                     onerror="this.onerror=null; this.style.display='none'; document.getElementById('qr-fallback').style.display='block';">
-                <div id="qr-fallback" style="display: none;">
-                    <div class="qr-placeholder">
-                        QR CODE: ${this.websiteURL}
-                    </div>
-                </div>
-                <div style="font-size: 10px; margin-top: 2mm; font-weight: bold;">
-                    ${this.websiteURL}
+    const qrCodeUrl = "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762540599/frame_sie10u.png";
+    
+    return `
+        <div class="qr-code">
+            <div style="margin-bottom: 2mm; font-weight: bold; text-transform: uppercase;">Scan for more info</div>
+            <img src="${qrCodeUrl}" 
+                 alt="QR Code - deenice.store" 
+                 class="qr-image"
+                 style="width: 40mm; height: 40mm; border: 2px solid #000; display: block; margin: 0 auto;"
+                 onerror="this.style.display='none'; document.getElementById('qr-fallback').style.display='block';">
+            <div id="qr-fallback" style="display: none; text-align: center; margin-top: 2mm;">
+                <div class="qr-placeholder">
+                    QR Code: ${this.websiteURL}
                 </div>
             </div>
-        `;
-    }
+            <div style="font-size: 10px; margin-top: 2mm; font-weight: bold;">
+                Visit: ${this.websiteURL}
+            </div>
+        </div>
+    `;
+}
 
     generateCompanyHeader() {
         return `
