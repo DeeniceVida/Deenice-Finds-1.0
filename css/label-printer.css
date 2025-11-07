@@ -1,0 +1,192 @@
+/* label-printer.css - Thermal Printer Styles */
+@media print {
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        line-height: 1.2;
+        width: 80mm; /* Standard thermal printer width */
+        margin: 0 auto;
+        padding: 2mm;
+        background: white;
+        color: black;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+    
+    .label-container {
+        border: 1px solid #000;
+        padding: 3mm;
+        margin-bottom: 2mm;
+        page-break-inside: avoid;
+    }
+    
+    .company-header {
+        text-align: center;
+        margin-bottom: 3mm;
+        border-bottom: 1px dashed #000;
+        padding-bottom: 2mm;
+    }
+    
+    .company-name {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 1mm;
+    }
+    
+    .company-tagline {
+        font-size: 10px;
+        font-style: italic;
+    }
+    
+    .order-info {
+        margin-bottom: 3mm;
+    }
+    
+    .customer-info, .delivery-info {
+        margin-bottom: 3mm;
+    }
+    
+    .info-section {
+        margin-bottom: 2mm;
+    }
+    
+    .section-title {
+        font-weight: bold;
+        border-bottom: 1px solid #000;
+        margin-bottom: 1mm;
+        font-size: 11px;
+    }
+    
+    .info-row {
+        display: flex;
+        margin-bottom: 1mm;
+    }
+    
+    .info-label {
+        font-weight: bold;
+        min-width: 25mm;
+    }
+    
+    .info-value {
+        flex: 1;
+    }
+    
+    .qr-code {
+        text-align: center;
+        margin: 3mm 0;
+        padding: 2mm;
+        border: 1px dashed #000;
+    }
+    
+    .qr-placeholder {
+        width: 35mm;
+        height: 35mm;
+        border: 1px solid #ccc;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        text-align: center;
+        background: #f9f9f9;
+    }
+    
+    .thank-you {
+        text-align: center;
+        margin-top: 3mm;
+        padding-top: 2mm;
+        border-top: 1px dashed #000;
+        font-style: italic;
+    }
+    
+    .delivery-destination {
+        border: 1px dashed #000;
+        padding: 2mm;
+        margin: 2mm 0;
+        min-height: 15mm;
+    }
+    
+    .destination-label {
+        font-weight: bold;
+        margin-bottom: 1mm;
+    }
+    
+    .pickup-code {
+        background: #f0f0f0;
+        padding: 2mm;
+        text-align: center;
+        border: 1px solid #000;
+        margin: 2mm 0;
+        font-weight: bold;
+    }
+    
+    .barcode {
+        text-align: center;
+        margin: 2mm 0;
+    }
+    
+    .print-instructions {
+        font-size: 9px;
+        text-align: center;
+        margin-top: 2mm;
+        color: #666;
+    }
+}
+
+/* Screen styles */
+@media screen {
+    .label-preview {
+        border: 1px solid #ccc;
+        padding: 20px;
+        margin: 20px auto;
+        max-width: 400px;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .print-controls {
+        text-align: center;
+        margin: 20px 0;
+        padding: 20px;
+        background: #f5f5f5;
+        border-radius: 8px;
+    }
+    
+    .print-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 0 10px;
+    }
+    
+    .print-btn:hover {
+        background: #218838;
+    }
+    
+    .back-btn {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        margin: 0 10px;
+    }
+    
+    .back-btn:hover {
+        background: #545b62;
+    }
+}
