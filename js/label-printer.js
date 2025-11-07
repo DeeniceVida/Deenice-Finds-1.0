@@ -1,13 +1,15 @@
-// label-printer.js
+// label-printer.js - SUPPORTS 80x80mm AND 100x150mm
 class LabelPrinter {
     constructor() {
         this.websiteURL = "https://www.deenice.store";
         this.companyName = "Deenice Finds";
         this.companyTagline = "Premium Tech & Accessories";
+        this.qrCodeUrl = "https://res.cloudinary.com/dsthpp4oj/image/upload/w_400,h_400,c_scale,q_100/v1762540599/frame_sie10u.png";
+        this.defaultPaperSize = '80x80'; // or '100x150'
     }
 
-    // Generate label for an order
-    generateOrderLabel(order) {
+    // Generate label for an order with paper size option
+    generateOrderLabel(order, paperSize = '80x80') {
         const customerName = order.customer?.name || order.name || 'N/A';
         const customerPhone = order.customer?.phone || order.phone || 'N/A';
         const customerCity = order.customer?.city || order.city || 'N/A';
@@ -21,31 +23,41 @@ class LabelPrinter {
             <html>
             <head>
                 <title>Shipping Label - Order #${orderId}</title>
-                <link rel="stylesheet" href="css/label-printer.css">
                 <style>
-                    ${this.getThermalPrinterStyles()}
+                    ${this.getThermalPrinterStyles(paperSize)}
                 </style>
             </head>
             <body>
                 <div class="label-container">
-                    ${this.generateCompanyHeader()}
-                    ${this.generateOrderInfo(orderId, orderDate)}
-                    ${this.generateCustomerInfo(customerName, customerPhone, customerCity)}
-                    ${this.generateDeliveryInfo(deliveryMethod, pickupCode)}
-                    ${this.generateQRCode()}
-                    ${this.generateThankYouNote()}
-                    ${this.generatePrintInstructions()}
+                    ${this.generateCompanyHeader(paperSize)}
+                    ${this.generateOrderInfo(orderId, orderDate, paperSize)}
+                    ${this.generateCustomerInfo(customerName, customerPhone, customerCity, paperSize)}
+                    ${this.generateDeliveryInfo(deliveryMethod, pickupCode, paperSize)}
+                    ${this.generateQRCode(paperSize)}
+                    ${this.generateThankYouNote(paperSize)}
+                    ${this.generatePrintInstructions(paperSize)}
                 </div>
                 
                 <script>
-                    // Auto-print when loaded
-                    window.onload = function() {
+                    // Preload the QR code image
+                    function preloadImage() {
+                        return new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = resolve;
+                            img.onerror = resolve;
+                            img.src = '${this.qrCodeUrl}';
+                        });
+                    }
+                    
+                    window.onload = async function() {
+                        await Promise.race([
+                            preloadImage(),
+                            new Promise(resolve => setTimeout(resolve, 1500))
+                        ]);
+                        
                         setTimeout(() => {
                             window.print();
-                            setTimeout(() => {
-                                window.close();
-                            }, 1000);
-                        }, 500);
+                        }, 300);
                     };
                 </script>
             </body>
@@ -53,158 +65,199 @@ class LabelPrinter {
         `;
     }
 
-    // In your label-printer.js, update the getThermalPrinterStyles method:
-getThermalPrinterStyles() {
-    return `
-        * { 
-            margin: 0 !important; 
-            padding: 0 !important; 
-            box-sizing: border-box !important;
-            -webkit-print-color-adjust: exact !important;
-            color-adjust: exact !important;
-        }
-        body { 
-            font-family: 'Courier New', monospace !important; 
-            font-size: 14px !important;
-            line-height: 1.1 !important;
-            width: 80mm !important;
-            margin: 0 auto !important;
-            padding: 3mm !important;
-            background: white !important;
-            color: #000000 !important;
-            font-weight: bold !important;
-        }
-        .label-container {
-            border: 2px solid #000000 !important;
-            padding: 4mm !important;
-            page-break-inside: avoid !important;
-            background: white !important;
-        }
-        .company-header {
-            text-align: center !important;
-            margin-bottom: 4mm !important;
-            border-bottom: 2px dashed #000000 !important;
-            padding-bottom: 3mm !important;
-        }
-        .company-name {
-            font-size: 18px !important;
-            font-weight: 900 !important;
-            margin-bottom: 2mm !important;
-            text-transform: uppercase !important;
-            color: #000000 !important;
-        }
-        .company-tagline {
-            font-size: 12px !important;
-            font-weight: bold !important;
-            color: #000000 !important;
-        }
-        .order-info, .customer-info, .delivery-info {
-            margin-bottom: 4mm !important;
-        }
-        .section-title {
-            font-weight: 900 !important;
-            border-bottom: 2px solid #000000 !important;
-            margin-bottom: 2mm !important;
-            font-size: 13px !important;
-            text-transform: uppercase !important;
-            padding-bottom: 1mm !important;
-            color: #000000 !important;
-        }
-        .info-row {
-            display: flex !important;
-            margin-bottom: 2mm !important;
-        }
-        .info-label {
-            font-weight: 900 !important;
-            min-width: 28mm !important;
-            text-transform: uppercase !important;
-            color: #000000 !important;
-        }
-        .info-value {
-            flex: 1 !important;
-            font-weight: bold !important;
-            border-bottom: 1px dotted #000000 !important;
-            padding-bottom: 1mm !important;
-            color: #000000 !important;
-        }
-        .qr-code {
-            text-align: center !important;
-            margin: 4mm 0 !important;
-            padding: 3mm !important;
-            border: 2px dashed #000000 !important;
-            background: #f0f0f0 !important;
-        }
-        .qr-image {
-            width: 40mm !important;
-            height: 40mm !important;
-            border: 2px solid #000000 !important;
-            display: block !important;
-            margin: 0 auto !important;
-            background: white !important;
-        }
-        .qr-placeholder {
-            width: 40mm !important;
-            height: 40mm !important;
-            border: 2px solid #000000 !important;
-            margin: 0 auto !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-size: 10px !important;
-            text-align: center !important;
-            background: white !important;
-            font-weight: bold !important;
-            padding: 2mm !important;
-            color: #000000 !important;
-        }
-        .thank-you {
-            text-align: center !important;
-            margin-top: 4mm !important;
-            padding-top: 3mm !important;
-            border-top: 2px dashed #000000 !important;
-            font-weight: bold !important;
-            font-size: 13px !important;
-            color: #000000 !important;
-        }
-        .delivery-destination {
-            border: 2px dashed #000000 !important;
-            padding: 3mm !important;
-            margin: 3mm 0 !important;
-            min-height: 18mm !important;
-            background: #f8f8f8 !important;
-        }
-        .destination-label {
-            font-weight: 900 !important;
-            margin-bottom: 2mm !important;
-            text-transform: uppercase !important;
-            color: #000000 !important;
-        }
-        .pickup-code {
-            background: #d0d0d0 !important;
-            padding: 3mm !important;
-            text-align: center !important;
-            border: 2px solid #000000 !important;
-            margin: 3mm 0 !important;
-            font-weight: 900 !important;
-            font-size: 16px !important;
-            text-transform: uppercase !important;
-            color: #000000 !important;
-        }
-        .print-instructions {
-            font-size: 10px !important;
-            text-align: center !important;
-            margin-top: 3mm !important;
-            color: #000000 !important;
-            font-weight: bold !important;
-            border-top: 1px solid #000000 !important;
-            padding-top: 2mm !important;
-        }
-        @media print {
-            .no-print { display: none !important; }
-        }
-    `;
-}
-    generateCompanyHeader() {
+    getThermalPrinterStyles(paperSize = '80x80') {
+        const isLarge = paperSize === '100x150';
+        
+        return `
+            * { 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                box-sizing: border-box !important;
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            body { 
+                font-family: 'Courier New', monospace !important; 
+                font-size: ${isLarge ? '16px' : '14px'} !important;
+                line-height: 1.1 !important;
+                width: ${isLarge ? '100mm' : '80mm'} !important;
+                height: ${isLarge ? '150mm' : '80mm'} !important;
+                margin: 0 auto !important;
+                padding: ${isLarge ? '4mm' : '3mm'} !important;
+                background: white !important;
+                color: #000000 !important;
+                font-weight: bold !important;
+            }
+            .label-container {
+                border: 2px solid #000000 !important;
+                padding: ${isLarge ? '5mm' : '4mm'} !important;
+                page-break-inside: avoid !important;
+                background: white !important;
+                height: 100% !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            .company-header {
+                text-align: center !important;
+                margin-bottom: ${isLarge ? '5mm' : '4mm'} !important;
+                border-bottom: 2px dashed #000000 !important;
+                padding-bottom: ${isLarge ? '4mm' : '3mm'} !important;
+            }
+            .company-name {
+                font-size: ${isLarge ? '22px' : '18px'} !important;
+                font-weight: 900 !important;
+                margin-bottom: ${isLarge ? '3mm' : '2mm'} !important;
+                text-transform: uppercase !important;
+                color: #000000 !important;
+            }
+            .company-tagline {
+                font-size: ${isLarge ? '14px' : '12px'} !important;
+                font-weight: bold !important;
+                color: #000000 !important;
+            }
+            .order-info, .customer-info, .delivery-info {
+                margin-bottom: ${isLarge ? '5mm' : '4mm'} !important;
+            }
+            .section-title {
+                font-weight: 900 !important;
+                border-bottom: 2px solid #000000 !important;
+                margin-bottom: ${isLarge ? '3mm' : '2mm'} !important;
+                font-size: ${isLarge ? '15px' : '13px'} !important;
+                text-transform: uppercase !important;
+                padding-bottom: 1mm !important;
+                color: #000000 !important;
+            }
+            .info-row {
+                display: flex !important;
+                margin-bottom: ${isLarge ? '3mm' : '2mm'} !important;
+            }
+            .info-label {
+                font-weight: 900 !important;
+                min-width: ${isLarge ? '35mm' : '28mm'} !important;
+                text-transform: uppercase !important;
+                color: #000000 !important;
+            }
+            .info-value {
+                flex: 1 !important;
+                font-weight: bold !important;
+                border-bottom: 1px dotted #000000 !important;
+                padding-bottom: 1mm !important;
+                color: #000000 !important;
+            }
+            .qr-code {
+                text-align: center !important;
+                margin: ${isLarge ? '5mm' : '4mm'} 0 !important;
+                padding: ${isLarge ? '4mm' : '3mm'} !important;
+                border: 2px dashed #000000 !important;
+                background: #f0f0f0 !important;
+                flex-grow: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+            }
+            .qr-image {
+                width: ${isLarge ? '50mm' : '40mm'} !important;
+                height: ${isLarge ? '50mm' : '40mm'} !important;
+                border: 2px solid #000000 !important;
+                display: block !important;
+                margin: 0 auto !important;
+                background: white !important;
+            }
+            .qr-placeholder {
+                width: ${isLarge ? '50mm' : '40mm'} !important;
+                height: ${isLarge ? '50mm' : '40mm'} !important;
+                border: 2px solid #000000 !important;
+                margin: 0 auto !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: ${isLarge ? '12px' : '10px'} !important;
+                text-align: center !important;
+                background: white !important;
+                font-weight: bold !important;
+                padding: 2mm !important;
+                color: #000000 !important;
+            }
+            .thank-you {
+                text-align: center !important;
+                margin-top: ${isLarge ? '5mm' : '4mm'} !important;
+                padding-top: ${isLarge ? '4mm' : '3mm'} !important;
+                border-top: 2px dashed #000000 !important;
+                font-weight: bold !important;
+                font-size: ${isLarge ? '15px' : '13px'} !important;
+                color: #000000 !important;
+            }
+            .delivery-destination {
+                border: 2px dashed #000000 !important;
+                padding: ${isLarge ? '4mm' : '3mm'} !important;
+                margin: ${isLarge ? '4mm' : '3mm'} 0 !important;
+                min-height: ${isLarge ? '25mm' : '18mm'} !important;
+                background: #f8f8f8 !important;
+            }
+            .destination-label {
+                font-weight: 900 !important;
+                margin-bottom: ${isLarge ? '3mm' : '2mm'} !important;
+                text-transform: uppercase !important;
+                color: #000000 !important;
+            }
+            .pickup-code {
+                background: #d0d0d0 !important;
+                padding: ${isLarge ? '4mm' : '3mm'} !important;
+                text-align: center !important;
+                border: 2px solid #000000 !important;
+                margin: ${isLarge ? '4mm' : '3mm'} 0 !important;
+                font-weight: 900 !important;
+                font-size: ${isLarge ? '18px' : '16px'} !important;
+                text-transform: uppercase !important;
+                color: #000000 !important;
+            }
+            .print-instructions {
+                font-size: ${isLarge ? '12px' : '10px'} !important;
+                text-align: center !important;
+                margin-top: ${isLarge ? '4mm' : '3mm'} !important;
+                color: #000000 !important;
+                font-weight: bold !important;
+                border-top: 1px solid #000000 !important;
+                padding-top: 2mm !important;
+            }
+            @media print {
+                .no-print { display: none !important; }
+                body { 
+                    width: ${isLarge ? '100mm' : '80mm'} !important;
+                    height: ${isLarge ? '150mm' : '80mm'} !important;
+                }
+            }
+        `;
+    }
+
+    generateQRCode(paperSize = '80x80') {
+        const isLarge = paperSize === '100x150';
+        
+        return `
+            <div class="qr-code">
+                <div style="margin-bottom: ${isLarge ? '3mm' : '2mm'}; font-weight: bold; text-transform: uppercase;">
+                    SCAN TO VISIT OUR STORE
+                </div>
+                <img src="${this.qrCodeUrl}" 
+                     alt="QR Code - www.deenice.store" 
+                     class="qr-image"
+                     onerror="this.onerror=null; this.style.display='none'; document.getElementById('qr-fallback').style.display='block';">
+                <div id="qr-fallback" style="display: none;">
+                    <div class="qr-placeholder">
+                        QR CODE: ${this.websiteURL}
+                    </div>
+                </div>
+                <div style="font-size: ${isLarge ? '12px' : '10px'}; margin-top: ${isLarge ? '3mm' : '2mm'}; font-weight: bold;">
+                    ${this.websiteURL}
+                </div>
+            </div>
+        `;
+    }
+
+    // Update other generation methods to accept paperSize parameter
+    generateCompanyHeader(paperSize = '80x80') {
+        const isLarge = paperSize === '100x150';
+        
         return `
             <div class="company-header">
                 <div class="company-name">${this.companyName}</div>
@@ -213,51 +266,52 @@ getThermalPrinterStyles() {
         `;
     }
 
-    generateOrderInfo(orderId, orderDate) {
+    generateOrderInfo(orderId, orderDate, paperSize = '80x80') {
         return `
             <div class="order-info">
                 <div class="section-title">ORDER INFORMATION</div>
                 <div class="info-row">
-                    <div class="info-label">Order ID:</div>
+                    <div class="info-label">ORDER ID:</div>
                     <div class="info-value">#${orderId}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Date:</div>
+                    <div class="info-label">DATE:</div>
                     <div class="info-value">${orderDate}</div>
                 </div>
             </div>
         `;
     }
 
-    generateCustomerInfo(name, phone, city) {
+    generateCustomerInfo(name, phone, city, paperSize = '80x80') {
         return `
             <div class="customer-info">
                 <div class="section-title">CUSTOMER INFORMATION</div>
                 <div class="info-row">
-                    <div class="info-label">Name:</div>
+                    <div class="info-label">NAME:</div>
                     <div class="info-value">${name}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Phone:</div>
+                    <div class="info-label">PHONE:</div>
                     <div class="info-value">${phone}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">City:</div>
+                    <div class="info-label">CITY:</div>
                     <div class="info-value">${city}</div>
                 </div>
             </div>
         `;
     }
 
-    generateDeliveryInfo(deliveryMethod, pickupCode) {
+    generateDeliveryInfo(deliveryMethod, pickupCode, paperSize = '80x80') {
+        const isLarge = paperSize === '100x150';
         const isPickup = deliveryMethod === 'pickup';
         
         return `
             <div class="delivery-info">
                 <div class="section-title">DELIVERY INFORMATION</div>
                 <div class="info-row">
-                    <div class="info-label">Method:</div>
-                    <div class="info-value">${isPickup ? 'Shop Pickup' : 'Home Delivery'}</div>
+                    <div class="info-label">METHOD:</div>
+                    <div class="info-value">${isPickup ? 'SHOP PICKUP' : 'HOME DELIVERY'}</div>
                 </div>
                 
                 ${isPickup ? `
@@ -267,63 +321,49 @@ getThermalPrinterStyles() {
                 ` : ''}
                 
                 <div class="delivery-destination">
-                    <div class="destination-label">Delivery Address:</div>
+                    <div class="destination-label">DELIVERY ADDRESS:</div>
                     <div>________________________________</div>
                     <div>________________________________</div>
                     <div>________________________________</div>
+                    ${isLarge ? `<div>________________________________</div>` : ''}
                 </div>
             </div>
         `;
     }
 
-    generateQRCode() {
-    // Optimized Cloudinary URL for thermal printing
-    const qrCodeUrl = "https://res.cloudinary.com/dsthpp4oj/image/upload/w_400,h_400,c_scale,q_100/v1762540599/frame_sie10u.png";
-    
-    return `
-        <div class="qr-code">
-            <div style="margin-bottom: 2mm; font-weight: bold; text-transform: uppercase;">Scan to visit our store</div>
-            <img src="${qrCodeUrl}" 
-                 alt="QR Code - www.deenice.store" 
-                 class="qr-image"
-                 style="width: 40mm; height: 40mm; border: 2px solid #000; display: block; margin: 0 auto; background: white;"
-                 onerror="this.onerror=null; this.src='https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.deenice.store';">
-            <div style="font-size: 10px; margin-top: 2mm; font-weight: bold;">
-                www.deenice.store
-            </div>
-        </div>
-    `;
-}
-
-    generateThankYouNote() {
+    generateThankYouNote(paperSize = '80x80') {
+        const isLarge = paperSize === '100x150';
+        
         return `
             <div class="thank-you">
-                Thank you for your order! 🎉<br>
-                We appreciate your business
+                ${isLarge ? 
+                    'THANK YOU FOR YOUR ORDER! 🎉<br>WE APPRECIATE YOUR BUSINESS AND LOOK FORWARD TO SERVING YOU AGAIN!' :
+                    'THANK YOU FOR YOUR ORDER! 🎉<br>WE APPRECIATE YOUR BUSINESS!'
+                }
             </div>
         `;
     }
 
-    generatePrintInstructions() {
+    generatePrintInstructions(paperSize = '80x80') {
         return `
             <div class="print-instructions">
-                Printed on: ${new Date().toLocaleString()}
+                PRINTED: ${new Date().toLocaleString()}
             </div>
         `;
     }
 
-    // Open print window
-    printLabel(order) {
-        const labelHTML = this.generateOrderLabel(order);
-        const printWindow = window.open('', '_blank', 'width=400,height=600');
+    // Print with paper size selection
+    printLabel(order, paperSize = '80x80') {
+        const labelHTML = this.generateOrderLabel(order, paperSize);
+        const printWindow = window.open('', '_blank', 'width=500,height=700');
         
         printWindow.document.write(labelHTML);
         printWindow.document.close();
     }
 
-    // Preview label in current window
-    previewLabel(order) {
-        const labelHTML = this.generateOrderLabel(order);
+    // Preview with paper size selection
+    previewLabel(order, paperSize = '80x80') {
+        const labelHTML = this.generateOrderLabel(order, paperSize);
         const previewWindow = window.open('', '_blank');
         
         previewWindow.document.write(`
@@ -331,7 +371,6 @@ getThermalPrinterStyles() {
             <html>
             <head>
                 <title>Label Preview - Order #${order.id}</title>
-                <link rel="stylesheet" href="css/label-printer.css">
                 <style>
                     body { 
                         padding: 20px; 
@@ -339,12 +378,12 @@ getThermalPrinterStyles() {
                         font-family: Arial, sans-serif;
                     }
                     .preview-container {
-                        max-width: 400px;
+                        max-width: 500px;
                         margin: 0 auto;
                         background: white;
                         padding: 20px;
                         border-radius: 8px;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                     }
                     .print-controls {
                         text-align: center;
@@ -352,6 +391,22 @@ getThermalPrinterStyles() {
                         padding: 20px;
                         background: #f8f9fa;
                         border-radius: 8px;
+                    }
+                    .paper-size-selector {
+                        margin: 15px 0;
+                    }
+                    .paper-btn {
+                        background: #17a2b8;
+                        color: white;
+                        border: none;
+                        padding: 10px 15px;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        margin: 5px;
+                        font-size: 14px;
+                    }
+                    .paper-btn.active {
+                        background: #0056b3;
                     }
                     .print-btn {
                         background: #28a745;
@@ -377,12 +432,26 @@ getThermalPrinterStyles() {
             </head>
             <body>
                 <div class="print-controls">
+                    <h3>Label Preview - Order #${order.id}</h3>
+                    <div class="paper-size-selector">
+                        <strong>Paper Size:</strong>
+                        <button class="paper-btn active" onclick="switchPaperSize('80x80')">80×80mm</button>
+                        <button class="paper-btn" onclick="switchPaperSize('100x150')">100×150mm</button>
+                    </div>
                     <button class="print-btn" onclick="window.print()">🖨️ Print Label</button>
                     <button class="back-btn" onclick="window.close()">← Back</button>
                 </div>
                 <div class="preview-container">
                     ${labelHTML}
                 </div>
+                
+                <script>
+                    function switchPaperSize(size) {
+                        document.querySelectorAll('.paper-btn').forEach(btn => btn.classList.remove('active'));
+                        event.target.classList.add('active');
+                        window.location.href = '?paperSize=' + size;
+                    }
+                </script>
             </body>
             </html>
         `);
