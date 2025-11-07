@@ -509,57 +509,67 @@ class AdminOrderManager {
     }
 
     createOrderRow(order) {
-        const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString();
-        const customerName = order.customer?.name || order.name || 'N/A';
-        const customerCity = order.customer?.city || order.city || 'N/A';
-        const customerPhone = order.customer?.phone || order.phone || 'No phone';
-        const totalAmount = order.totalAmount || order.total || 0;
-        const currency = order.currency || 'KES';
-        const status = order.status || 'pending';
-        const items = order.items || [];
+    const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString();
+    const customerName = order.customer?.name || order.name || 'N/A';
+    const customerCity = order.customer?.city || order.city || 'N/A';
+    const customerPhone = order.customer?.phone || order.phone || 'No phone';
+    const totalAmount = order.totalAmount || order.total || 0;
+    const currency = order.currency || 'KES';
+    const status = order.status || 'pending';
+    const items = order.items || [];
 
-        return `
-            <tr data-order-id="${order.id}">
-                <td><strong>#${order.id}</strong></td>
-                <td>
-                    <div class="customer-info">
-                        <div class="customer-name">${customerName}</div>
-                        <div class="customer-city">${customerCity}</div>
-                        <div class="customer-phone">📞 ${customerPhone}</div>
-                    </div>
-                </td>
-                <td>${orderDate}</td>
-                <td>
-                    <div class="order-items-preview">
-                        ${items.slice(0, 3).map(item => this.createOrderItemPreview(item)).join('')}
-                        ${items.length > 3 ? `<div class="item-name-small">+${items.length - 3} more items</div>` : ''}
-                        ${items.length === 0 ? `<div class="item-name-small">No items</div>` : ''}
-                    </div>
-                </td>
-                <td><strong>${currency} ${totalAmount.toLocaleString()}</strong></td>
-                <td>
-                    <select class="status-select ${this.getStatusClass(status)}" 
-                            onchange="adminManager.updateStatus('${order.id}', this.value)"
-                            style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer; background: white; min-width: 120px;">
-                        <option value="pending" ${status === 'pending' ? 'selected' : ''}>📝 Pending</option>
-                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>🔄 Processing</option>
-                        <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Completed</option>
-                        <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
-                    </select>
-                    ${order.unsynced ? '<br><small style="color: orange;">⚠️ Not synced</small>' : ''}
-                </td>
-                <td>
-                    <div class="actions">
-                        <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">Details</button>
-                        <button class="view-btn items-btn" onclick="adminManager.viewOrderItems('${order.id}')">Items</button>
-                        <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">Contact</button>
-                        <button class="btn-danger" onclick="adminManager.deleteOrder('${order.id}')">Delete</button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }
-
+    return `
+        <tr data-order-id="${order.id}">
+            <td><strong>#${order.id}</strong></td>
+            <td>
+                <div class="customer-info">
+                    <div class="customer-name">${customerName}</div>
+                    <div class="customer-city">${customerCity}</div>
+                    <div class="customer-phone">📞 ${customerPhone}</div>
+                </div>
+            </td>
+            <td>${orderDate}</td>
+            <td>
+                <div class="order-items-preview">
+                    ${items.slice(0, 3).map(item => this.createOrderItemPreview(item)).join('')}
+                    ${items.length > 3 ? `<div class="item-name-small">+${items.length - 3} more items</div>` : ''}
+                    ${items.length === 0 ? `<div class="item-name-small">No items</div>` : ''}
+                </div>
+            </td>
+            <td><strong>${currency} ${totalAmount.toLocaleString()}</strong></td>
+            <td>
+                <select class="status-select ${this.getStatusClass(status)}" 
+                        onchange="adminManager.updateStatus('${order.id}', this.value)"
+                        style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer; background: white; min-width: 120px;">
+                    <option value="pending" ${status === 'pending' ? 'selected' : ''}>📝 Pending</option>
+                    <option value="processing" ${status === 'processing' ? 'selected' : ''}>🔄 Processing</option>
+                    <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Completed</option>
+                    <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
+                </select>
+                ${order.unsynced ? '<br><small style="color: orange;">⚠️ Not synced</small>' : ''}
+            </td>
+            <td>
+                <div class="actions">
+                    <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">Details</button>
+                    <button class="view-btn items-btn" onclick="adminManager.viewOrderItems('${order.id}')">Items</button>
+                    <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">Contact</button>
+                    
+                    <!-- PRINT BUTTONS -->
+                    <button class="print-btn" onclick="adminManager.printShippingLabel('${order.id}')" 
+                            style="background: #17a2b8; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin: 2px; display: block; width: 100%;">
+                        🖨️ Print Label
+                    </button>
+                    <button class="preview-btn" onclick="adminManager.previewShippingLabel('${order.id}')" 
+                            style="background: #6f42c1; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin: 2px; display: block; width: 100%;">
+                        👀 Preview Label
+                    </button>
+                    
+                    <button class="btn-danger" onclick="adminManager.deleteOrder('${order.id}')" style="margin-top: 5px;">Delete</button>
+                </div>
+            </td>
+        </tr>
+    `;
+}
     createOrderItemPreview(item) {
         if (!item) return '';
         
@@ -647,6 +657,37 @@ class AdminOrderManager {
             });
         }, 30000);
     }
+
+    // Add these methods to your AdminOrderManager class:
+
+// Print shipping label
+printShippingLabel(orderId) {
+    const order = this.orders.find(o => o.id === orderId);
+    if (order) {
+        if (typeof labelPrinter !== 'undefined') {
+            labelPrinter.printLabel(order);
+            this.showNotification(`Printing label for order #${orderId}`, 'success');
+        } else {
+            this.showNotification('Label printer not loaded. Please refresh the page.', 'error');
+        }
+    } else {
+        this.showNotification(`Order #${orderId} not found!`, 'error');
+    }
+}
+
+// Preview shipping label
+previewShippingLabel(orderId) {
+    const order = this.orders.find(o => o.id === orderId);
+    if (order) {
+        if (typeof labelPrinter !== 'undefined') {
+            labelPrinter.previewLabel(order);
+        } else {
+            this.showNotification('Label printer not loaded. Please refresh the page.', 'error');
+        }
+    } else {
+        this.showNotification(`Order #${orderId} not found!`, 'error');
+    }
+}
 
     // FIXED: Enhanced order details with phone number and complete information
     viewOrderDetails(orderId) {
