@@ -1,10 +1,9 @@
-// label-printer.js - STANDARD SIZE WITH PRINT-TIME PAPER SELECTION
+// label-printer.js
 class LabelPrinter {
     constructor() {
         this.websiteURL = "https://www.deenice.store";
         this.companyName = "Deenice Finds";
         this.companyTagline = "Premium Tech & Accessories";
-        this.qrCodeUrl = "https://res.cloudinary.com/dsthpp4oj/image/upload/w_400,h_400,c_scale,q_100/v1762540599/frame_sie10u.png";
     }
 
     // Generate label for an order
@@ -22,6 +21,7 @@ class LabelPrinter {
             <html>
             <head>
                 <title>Shipping Label - Order #${orderId}</title>
+                <link rel="stylesheet" href="css/label-printer.css">
                 <style>
                     ${this.getThermalPrinterStyles()}
                 </style>
@@ -38,26 +38,14 @@ class LabelPrinter {
                 </div>
                 
                 <script>
-                    // Preload the QR code image
-                    function preloadImage() {
-                        return new Promise((resolve) => {
-                            const img = new Image();
-                            img.onload = resolve;
-                            img.onerror = resolve;
-                            img.src = '${this.qrCodeUrl}';
-                        });
-                    }
-                    
-                    window.onload = async function() {
-                        await Promise.race([
-                            preloadImage(),
-                            new Promise(resolve => setTimeout(resolve, 1500))
-                        ]);
-                        
-                        // Show print dialog but don't auto-close
+                    // Auto-print when loaded
+                    window.onload = function() {
                         setTimeout(() => {
                             window.print();
-                        }, 300);
+                            setTimeout(() => {
+                                window.close();
+                            }, 1000);
+                        }, 500);
                     };
                 </script>
             </body>
@@ -67,184 +55,110 @@ class LabelPrinter {
 
     getThermalPrinterStyles() {
         return `
-            * { 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                box-sizing: border-box !important;
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-            }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
             body { 
-                font-family: 'Courier New', monospace !important; 
-                font-size: 14px !important;
-                line-height: 1.1 !important;
-                width: 80mm !important;
-                margin: 0 auto !important;
-                padding: 3mm !important;
-                background: white !important;
-                color: #000000 !important;
-                font-weight: bold !important;
+                font-family: 'Courier New', monospace; 
+                font-size: 12px; 
+                line-height: 1.2;
+                width: 80mm;
+                margin: 0 auto;
+                padding: 2mm;
+                background: white;
+                color: black;
             }
             .label-container {
-                border: 2px solid #000000 !important;
-                padding: 4mm !important;
-                page-break-inside: avoid !important;
-                background: white !important;
+                border: 1px solid #000;
+                padding: 3mm;
+                page-break-inside: avoid;
             }
             .company-header {
-                text-align: center !important;
-                margin-bottom: 4mm !important;
-                border-bottom: 2px dashed #000000 !important;
-                padding-bottom: 3mm !important;
+                text-align: center;
+                margin-bottom: 3mm;
+                border-bottom: 1px dashed #000;
+                padding-bottom: 2mm;
             }
             .company-name {
-                font-size: 18px !important;
-                font-weight: 900 !important;
-                margin-bottom: 2mm !important;
-                text-transform: uppercase !important;
-                color: #000000 !important;
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 1mm;
             }
             .company-tagline {
-                font-size: 12px !important;
-                font-weight: bold !important;
-                color: #000000 !important;
+                font-size: 10px;
+                font-style: italic;
             }
             .order-info, .customer-info, .delivery-info {
-                margin-bottom: 4mm !important;
+                margin-bottom: 3mm;
             }
             .section-title {
-                font-weight: 900 !important;
-                border-bottom: 2px solid #000000 !important;
-                margin-bottom: 2mm !important;
-                font-size: 13px !important;
-                text-transform: uppercase !important;
-                padding-bottom: 1mm !important;
-                color: #000000 !important;
+                font-weight: bold;
+                border-bottom: 1px solid #000;
+                margin-bottom: 1mm;
+                font-size: 11px;
             }
             .info-row {
-                display: flex !important;
-                margin-bottom: 2mm !important;
+                display: flex;
+                margin-bottom: 1mm;
             }
             .info-label {
-                font-weight: 900 !important;
-                min-width: 28mm !important;
-                text-transform: uppercase !important;
-                color: #000000 !important;
+                font-weight: bold;
+                min-width: 25mm;
             }
             .info-value {
-                flex: 1 !important;
-                font-weight: bold !important;
-                border-bottom: 1px dotted #000000 !important;
-                padding-bottom: 1mm !important;
-                color: #000000 !important;
+                flex: 1;
             }
             .qr-code {
-                text-align: center !important;
-                margin: 4mm 0 !important;
-                padding: 3mm !important;
-                border: 2px dashed #000000 !important;
-                background: #f0f0f0 !important;
-            }
-            .qr-image {
-                width: 40mm !important;
-                height: 40mm !important;
-                border: 2px solid #000000 !important;
-                display: block !important;
-                margin: 0 auto !important;
-                background: white !important;
+                text-align: center;
+                margin: 3mm 0;
+                padding: 2mm;
+                border: 1px dashed #000;
             }
             .qr-placeholder {
-                width: 40mm !important;
-                height: 40mm !important;
-                border: 2px solid #000000 !important;
-                margin: 0 auto !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                font-size: 10px !important;
-                text-align: center !important;
-                background: white !important;
-                font-weight: bold !important;
-                padding: 2mm !important;
-                color: #000000 !important;
+                width: 35mm;
+                height: 35mm;
+                border: 1px solid #ccc;
+                margin: 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 9px;
+                text-align: center;
+                background: #f9f9f9;
             }
             .thank-you {
-                text-align: center !important;
-                margin-top: 4mm !important;
-                padding-top: 3mm !important;
-                border-top: 2px dashed #000000 !important;
-                font-weight: bold !important;
-                font-size: 13px !important;
-                color: #000000 !important;
+                text-align: center;
+                margin-top: 3mm;
+                padding-top: 2mm;
+                border-top: 1px dashed #000;
+                font-style: italic;
             }
             .delivery-destination {
-                border: 2px dashed #000000 !important;
-                padding: 3mm !important;
-                margin: 3mm 0 !important;
-                min-height: 18mm !important;
-                background: #f8f8f8 !important;
+                border: 1px dashed #000;
+                padding: 2mm;
+                margin: 2mm 0;
+                min-height: 15mm;
             }
             .destination-label {
-                font-weight: 900 !important;
-                margin-bottom: 2mm !important;
-                text-transform: uppercase !important;
-                color: #000000 !important;
+                font-weight: bold;
+                margin-bottom: 1mm;
             }
             .pickup-code {
-                background: #d0d0d0 !important;
-                padding: 3mm !important;
-                text-align: center !important;
-                border: 2px solid #000000 !important;
-                margin: 3mm 0 !important;
-                font-weight: 900 !important;
-                font-size: 16px !important;
-                text-transform: uppercase !important;
-                color: #000000 !important;
+                background: #f0f0f0;
+                padding: 2mm;
+                text-align: center;
+                border: 1px solid #000;
+                margin: 2mm 0;
+                font-weight: bold;
+                font-size: 14px;
             }
             .print-instructions {
-                font-size: 10px !important;
-                text-align: center !important;
-                margin-top: 3mm !important;
-                color: #000000 !important;
-                font-weight: bold !important;
-                border-top: 1px solid #000000 !important;
-                padding-top: 2mm !important;
+                font-size: 9px;
+                text-align: center;
+                margin-top: 2mm;
+                color: #666;
             }
             @media print {
                 .no-print { display: none !important; }
-                @page {
-                    size: 80mm 80mm;
-                    margin: 0;
-                }
-                body {
-                    width: 80mm !important;
-                    height: 80mm !important;
-                    margin: 0 !important;
-                    padding: 3mm !important;
-                }
             }
-        `;
-    }
-
-    generateQRCode() {
-        return `
-            <div class="qr-code">
-                <div style="margin-bottom: 2mm; font-weight: bold; text-transform: uppercase;">
-                    SCAN TO VISIT OUR STORE
-                </div>
-                <img src="${this.qrCodeUrl}" 
-                     alt="QR Code - www.deenice.store" 
-                     class="qr-image"
-                     onerror="this.onerror=null; this.style.display='none'; document.getElementById('qr-fallback').style.display='block';">
-                <div id="qr-fallback" style="display: none;">
-                    <div class="qr-placeholder">
-                        QR CODE: ${this.websiteURL}
-                    </div>
-                </div>
-                <div style="font-size: 10px; margin-top: 2mm; font-weight: bold;">
-                    ${this.websiteURL}
-                </div>
-            </div>
         `;
     }
 
@@ -262,11 +176,11 @@ class LabelPrinter {
             <div class="order-info">
                 <div class="section-title">ORDER INFORMATION</div>
                 <div class="info-row">
-                    <div class="info-label">ORDER ID:</div>
+                    <div class="info-label">Order ID:</div>
                     <div class="info-value">#${orderId}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">DATE:</div>
+                    <div class="info-label">Date:</div>
                     <div class="info-value">${orderDate}</div>
                 </div>
             </div>
@@ -278,15 +192,15 @@ class LabelPrinter {
             <div class="customer-info">
                 <div class="section-title">CUSTOMER INFORMATION</div>
                 <div class="info-row">
-                    <div class="info-label">NAME:</div>
+                    <div class="info-label">Name:</div>
                     <div class="info-value">${name}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">PHONE:</div>
+                    <div class="info-label">Phone:</div>
                     <div class="info-value">${phone}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">CITY:</div>
+                    <div class="info-label">City:</div>
                     <div class="info-value">${city}</div>
                 </div>
             </div>
@@ -300,8 +214,8 @@ class LabelPrinter {
             <div class="delivery-info">
                 <div class="section-title">DELIVERY INFORMATION</div>
                 <div class="info-row">
-                    <div class="info-label">METHOD:</div>
-                    <div class="info-value">${isPickup ? 'SHOP PICKUP' : 'HOME DELIVERY'}</div>
+                    <div class="info-label">Method:</div>
+                    <div class="info-value">${isPickup ? 'Shop Pickup' : 'Home Delivery'}</div>
                 </div>
                 
                 ${isPickup ? `
@@ -311,7 +225,7 @@ class LabelPrinter {
                 ` : ''}
                 
                 <div class="delivery-destination">
-                    <div class="destination-label">DELIVERY ADDRESS:</div>
+                    <div class="destination-label">Delivery Address:</div>
                     <div>________________________________</div>
                     <div>________________________________</div>
                     <div>________________________________</div>
@@ -320,10 +234,25 @@ class LabelPrinter {
         `;
     }
 
+    generateQRCode() {
+        return `
+            <div class="qr-code">
+                <div style="margin-bottom: 2mm; font-weight: bold;">Scan for more info:</div>
+                <div class="qr-placeholder">
+                    QR Code: ${this.websiteURL}
+                </div>
+                <div style="font-size: 9px; margin-top: 1mm;">
+                    Visit: ${this.websiteURL}
+                </div>
+            </div>
+        `;
+    }
+
     generateThankYouNote() {
         return `
             <div class="thank-you">
-                THANK YOU FOR YOUR ORDER! 🎉<br>WE APPRECIATE YOUR BUSINESS!
+                Thank you for your order! 🎉<br>
+                We appreciate your business
             </div>
         `;
     }
@@ -331,12 +260,12 @@ class LabelPrinter {
     generatePrintInstructions() {
         return `
             <div class="print-instructions">
-                PRINTED: ${new Date().toLocaleString()}
+                Printed on: ${new Date().toLocaleString()}
             </div>
         `;
     }
 
-    // Print label - user selects paper size in print dialog
+    // Open print window
     printLabel(order) {
         const labelHTML = this.generateOrderLabel(order);
         const printWindow = window.open('', '_blank', 'width=400,height=600');
@@ -345,7 +274,7 @@ class LabelPrinter {
         printWindow.document.close();
     }
 
-    // Preview label
+    // Preview label in current window
     previewLabel(order) {
         const labelHTML = this.generateOrderLabel(order);
         const previewWindow = window.open('', '_blank');
@@ -355,6 +284,7 @@ class LabelPrinter {
             <html>
             <head>
                 <title>Label Preview - Order #${order.id}</title>
+                <link rel="stylesheet" href="css/label-printer.css">
                 <style>
                     body { 
                         padding: 20px; 
@@ -367,7 +297,7 @@ class LabelPrinter {
                         background: white;
                         padding: 20px;
                         border-radius: 8px;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                     }
                     .print-controls {
                         text-align: center;
@@ -396,22 +326,12 @@ class LabelPrinter {
                         font-size: 16px;
                         margin: 0 10px;
                     }
-                    .print-tip {
-                        margin-top: 10px;
-                        color: #666;
-                        font-size: 14px;
-                    }
                 </style>
             </head>
             <body>
                 <div class="print-controls">
-                    <h3>Shipping Label Preview</h3>
-                    <p><strong>Order #${order.id}</strong></p>
                     <button class="print-btn" onclick="window.print()">🖨️ Print Label</button>
                     <button class="back-btn" onclick="window.close()">← Back</button>
-                    <div class="print-tip">
-                        💡 <strong>Print Tip:</strong> Select "80×80mm" or "100×150mm" in your printer settings
-                    </div>
                 </div>
                 <div class="preview-container">
                     ${labelHTML}
