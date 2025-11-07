@@ -53,114 +53,149 @@ class LabelPrinter {
         `;
     }
 
-    getThermalPrinterStyles() {
-        return `
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-                font-family: 'Courier New', monospace; 
-                font-size: 12px; 
-                line-height: 1.2;
-                width: 80mm;
-                margin: 0 auto;
-                padding: 2mm;
-                background: white;
-                color: black;
-            }
-            .label-container {
-                border: 1px solid #000;
-                padding: 3mm;
-                page-break-inside: avoid;
-            }
-            .company-header {
-                text-align: center;
-                margin-bottom: 3mm;
-                border-bottom: 1px dashed #000;
-                padding-bottom: 2mm;
-            }
-            .company-name {
-                font-size: 16px;
-                font-weight: bold;
-                margin-bottom: 1mm;
-            }
-            .company-tagline {
-                font-size: 10px;
-                font-style: italic;
-            }
-            .order-info, .customer-info, .delivery-info {
-                margin-bottom: 3mm;
-            }
-            .section-title {
-                font-weight: bold;
-                border-bottom: 1px solid #000;
-                margin-bottom: 1mm;
-                font-size: 11px;
-            }
-            .info-row {
-                display: flex;
-                margin-bottom: 1mm;
-            }
-            .info-label {
-                font-weight: bold;
-                min-width: 25mm;
-            }
-            .info-value {
-                flex: 1;
-            }
-            .qr-code {
-                text-align: center;
-                margin: 3mm 0;
-                padding: 2mm;
-                border: 1px dashed #000;
-            }
-            .qr-placeholder {
-                width: 35mm;
-                height: 35mm;
-                border: 1px solid #ccc;
-                margin: 0 auto;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 9px;
-                text-align: center;
-                background: #f9f9f9;
-            }
-            .thank-you {
-                text-align: center;
-                margin-top: 3mm;
-                padding-top: 2mm;
-                border-top: 1px dashed #000;
-                font-style: italic;
-            }
-            .delivery-destination {
-                border: 1px dashed #000;
-                padding: 2mm;
-                margin: 2mm 0;
-                min-height: 15mm;
-            }
-            .destination-label {
-                font-weight: bold;
-                margin-bottom: 1mm;
-            }
-            .pickup-code {
-                background: #f0f0f0;
-                padding: 2mm;
-                text-align: center;
-                border: 1px solid #000;
-                margin: 2mm 0;
-                font-weight: bold;
-                font-size: 14px;
-            }
-            .print-instructions {
-                font-size: 9px;
-                text-align: center;
-                margin-top: 2mm;
-                color: #666;
-            }
-            @media print {
-                .no-print { display: none !important; }
-            }
-        `;
-    }
+    // In your label-printer.js, update the getThermalPrinterStyles method:
+getThermalPrinterStyles() {
+    return `
+        * { 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            box-sizing: border-box !important;
+            -webkit-print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+        body { 
+            font-family: 'Courier New', monospace !important; 
+            font-size: 14px !important;
+            line-height: 1.1 !important;
+            width: 80mm !important;
+            margin: 0 auto !important;
+            padding: 3mm !important;
+            background: white !important;
+            color: #000000 !important; /* Pure black */
+            font-weight: bold !important;
+        }
+        .label-container {
+            border: 2px solid #000000 !important;
+            padding: 4mm !important;
+            page-break-inside: avoid !important;
+            background: white !important;
+        }
+        .company-header {
+            text-align: center !important;
+            margin-bottom: 4mm !important;
+            border-bottom: 2px dashed #000000 !important;
+            padding-bottom: 3mm !important;
+        }
+        .company-name {
+            font-size: 18px !important;
+            font-weight: 900 !important;
+            margin-bottom: 2mm !important;
+            text-transform: uppercase !important;
+            color: #000000 !important;
+        }
+        .company-tagline {
+            font-size: 12px !important;
+            font-weight: bold !important;
+            color: #000000 !important;
+        }
+        .order-info, .customer-info, .delivery-info {
+            margin-bottom: 4mm !important;
+        }
+        .section-title {
+            font-weight: 900 !important;
+            border-bottom: 2px solid #000000 !important;
+            margin-bottom: 2mm !important;
+            font-size: 13px !important;
+            text-transform: uppercase !important;
+            padding-bottom: 1mm !important;
+            color: #000000 !important;
+        }
+        .info-row {
+            display: flex !important;
+            margin-bottom: 2mm !important;
+        }
+        .info-label {
+            font-weight: 900 !important;
+            min-width: 28mm !important;
+            text-transform: uppercase !important;
+            color: #000000 !important;
+        }
+        .info-value {
+            flex: 1 !important;
+            font-weight: bold !important;
+            border-bottom: 1px dotted #000000 !important;
+            padding-bottom: 1mm !important;
+            color: #000000 !important;
+        }
+        .qr-code {
+            text-align: center !important;
+            margin: 4mm 0 !important;
+            padding: 3mm !important;
+            border: 2px dashed #000000 !important;
+            background: #f0f0f0 !important;
+        }
+        .qr-placeholder {
+            width: 40mm !important;
+            height: 40mm !important;
+            border: 2px solid #000000 !important;
+            margin: 0 auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 10px !important;
+            text-align: center !important;
+            background: white !important;
+            font-weight: bold !important;
+            padding: 2mm !important;
+            color: #000000 !important;
+        }
+        .thank-you {
+            text-align: center !important;
+            margin-top: 4mm !important;
+            padding-top: 3mm !important;
+            border-top: 2px dashed #000000 !important;
+            font-weight: bold !important;
+            font-size: 13px !important;
+            color: #000000 !important;
+        }
+        .delivery-destination {
+            border: 2px dashed #000000 !important;
+            padding: 3mm !important;
+            margin: 3mm 0 !important;
+            min-height: 18mm !important;
+            background: #f8f8f8 !important;
+        }
+        .destination-label {
+            font-weight: 900 !important;
+            margin-bottom: 2mm !important;
+            text-transform: uppercase !important;
+            color: #000000 !important;
+        }
+        .pickup-code {
+            background: #d0d0d0 !important; /* Even darker gray */
+            padding: 3mm !important;
+            text-align: center !important;
+            border: 2px solid #000000 !important;
+            margin: 3mm 0 !important;
+            font-weight: 900 !important;
+            font-size: 16px !important;
+            text-transform: uppercase !important;
+            color: #000000 !important;
+        }
+        .print-instructions {
+            font-size: 10px !important;
+            text-align: center !important;
+            margin-top: 3mm !important;
+            color: #000000 !important;
+            font-weight: bold !important;
+            border-top: 1px solid #000000 !important;
+            padding-top: 2mm !important;
+        }
+        @media print {
+            .no-print { display: none !important; }
+        }
+    `;
+}
 
     generateCompanyHeader() {
         return `
