@@ -71,7 +71,7 @@ getThermalPrinterStyles() {
             margin: 0 auto !important;
             padding: 3mm !important;
             background: white !important;
-            color: #000000 !important; /* Pure black */
+            color: #000000 !important;
             font-weight: bold !important;
         }
         .label-container {
@@ -134,6 +134,14 @@ getThermalPrinterStyles() {
             border: 2px dashed #000000 !important;
             background: #f0f0f0 !important;
         }
+        .qr-image {
+            width: 40mm !important;
+            height: 40mm !important;
+            border: 2px solid #000000 !important;
+            display: block !important;
+            margin: 0 auto !important;
+            background: white !important;
+        }
         .qr-placeholder {
             width: 40mm !important;
             height: 40mm !important;
@@ -172,7 +180,7 @@ getThermalPrinterStyles() {
             color: #000000 !important;
         }
         .pickup-code {
-            background: #d0d0d0 !important; /* Even darker gray */
+            background: #d0d0d0 !important;
             padding: 3mm !important;
             text-align: center !important;
             border: 2px solid #000000 !important;
@@ -196,7 +204,6 @@ getThermalPrinterStyles() {
         }
     `;
 }
-
     generateCompanyHeader() {
         return `
             <div class="company-header">
@@ -270,18 +277,23 @@ getThermalPrinterStyles() {
     }
 
     generateQRCode() {
-        return `
-            <div class="qr-code">
-                <div style="margin-bottom: 2mm; font-weight: bold;">Scan for more info:</div>
-                <div class="qr-placeholder">
-                    QR Code: ${this.websiteURL}
-                </div>
-                <div style="font-size: 9px; margin-top: 1mm;">
-                    Visit: ${this.websiteURL}
-                </div>
+    // Optimized Cloudinary URL for thermal printing
+    const qrCodeUrl = "https://res.cloudinary.com/dsthpp4oj/image/upload/w_400,h_400,c_scale,q_100/v1762540599/frame_sie10u.png";
+    
+    return `
+        <div class="qr-code">
+            <div style="margin-bottom: 2mm; font-weight: bold; text-transform: uppercase;">Scan to visit our store</div>
+            <img src="${qrCodeUrl}" 
+                 alt="QR Code - www.deenice.store" 
+                 class="qr-image"
+                 style="width: 40mm; height: 40mm; border: 2px solid #000; display: block; margin: 0 auto; background: white;"
+                 onerror="this.onerror=null; this.src='https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.deenice.store';">
+            <div style="font-size: 10px; margin-top: 2mm; font-weight: bold;">
+                www.deenice.store
             </div>
-        `;
-    }
+        </div>
+    `;
+}
 
     generateThankYouNote() {
         return `
