@@ -125,6 +125,130 @@
 .items-btn:hover {
     background-color: #5a2d91;
 }
+
+/* Bulk Print Styles */
+.bulk-print-section {
+    margin: 20px 0;
+}
+
+.bulk-print-controls {
+    background: #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+}
+
+.bulk-print-controls h4 {
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.bulk-print-controls p {
+    margin: 10px 0;
+    color: #6c757d;
+}
+
+.bulk-selection-panel {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+}
+
+.bulk-selection-panel p {
+    margin: 0 0 10px 0;
+    font-weight: bold;
+    color: #495057;
+}
+
+.bulk-print-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 5px;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
+.bulk-print-btn:hover {
+    background: #218838;
+}
+
+.bulk-cancel-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 5px;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
+.bulk-cancel-btn:hover {
+    background: #545b62;
+}
+
+.enable-bulk-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.enable-bulk-btn:hover {
+    background: #138496;
+}
+
+/* Print button styles in table */
+.print-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    margin: 2px;
+    display: block;
+    width: 100%;
+    transition: background 0.3s ease;
+}
+
+.print-btn:hover {
+    background: #138496;
+}
+
+.preview-btn {
+    background: #6f42c1;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    margin: 2px;
+    display: block;
+    width: 100%;
+    transition: background 0.3s ease;
+}
+
+.preview-btn:hover {
+    background: #5a2d91;
+}
+
         * {
             margin: 0;
             padding: 0;
@@ -534,6 +658,15 @@
             .filters {
                 justify-content: center;
             }
+            
+            .bulk-print-controls {
+                padding: 15px;
+            }
+            
+            .bulk-print-btn, .bulk-cancel-btn, .enable-bulk-btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -567,6 +700,26 @@
 
         <div class="stats-grid" id="statsGrid">
             <!-- Stats will be loaded here by JavaScript -->
+        </div>
+
+        <!-- BULK PRINT CONTROLS SECTION - ADDED HERE -->
+        <div class="bulk-print-section">
+            <div class="bulk-print-controls">
+                <h4>🖨️ Bulk Print Shipping Labels</h4>
+                <p>Select multiple orders and print all shipping labels at once</p>
+                <button class="enable-bulk-btn" onclick="adminManager.enableBulkPrintMode()">
+                    📋 Enable Bulk Print Mode
+                </button>
+                <div id="bulk-print-selection" class="bulk-selection-panel">
+                    <p>Selected Orders: <span id="selected-count">0</span></p>
+                    <button class="bulk-print-btn" onclick="adminManager.printSelectedOrders()">
+                        🖨️ Print Selected Labels
+                    </button>
+                    <button class="bulk-cancel-btn" onclick="adminManager.cancelBulkPrint()">
+                        ❌ Cancel Bulk Print
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="filters">
