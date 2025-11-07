@@ -660,13 +660,13 @@ class AdminOrderManager {
 
     // Add these methods to your AdminOrderManager class:
 
-// Print shipping label with paper size option
-printShippingLabel(orderId, paperSize = '80x80') {
+// Print shipping label - simplified
+printShippingLabel(orderId) {
     const order = this.orders.find(o => o.id === orderId);
     if (order) {
         if (typeof labelPrinter !== 'undefined') {
-            labelPrinter.printLabel(order, paperSize);
-            this.showNotification(`Printing ${paperSize} label for order #${orderId}`, 'success');
+            labelPrinter.printLabel(order);
+            this.showNotification(`Opening print dialog for order #${orderId}`, 'success');
         } else {
             this.showNotification('Label printer not loaded.', 'error');
         }
@@ -675,12 +675,12 @@ printShippingLabel(orderId, paperSize = '80x80') {
     }
 }
 
-// Preview with paper size option
-previewShippingLabel(orderId, paperSize = '80x80') {
+// Preview label - simplified
+previewShippingLabel(orderId) {
     const order = this.orders.find(o => o.id === orderId);
     if (order) {
         if (typeof labelPrinter !== 'undefined') {
-            labelPrinter.previewLabel(order, paperSize);
+            labelPrinter.previewLabel(order);
         } else {
             this.showNotification('Label printer not loaded.', 'error');
         }
