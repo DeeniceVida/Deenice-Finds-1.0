@@ -3232,29 +3232,6 @@ h1 {
         border-radius: 15px;
     }
     
-    .trust-signals-section {
-        padding: 40px 15px;
-    }
-    
-    .trust-signals-section h2 {
-        font-size: 1.6em;
-        margin-bottom: 30px;
-    }
-    
-    .trust-grid {
-        grid-template-columns: 1fr;
-        gap: 25px;
-    }
-    
-    .trust-item {
-        padding: 15px;
-    }
-    
-    .trust-icon {
-        font-size: 2em;
-        margin-bottom: 12px;
-    }
-    
     .trust-item h3 {
         font-size: 1.2em;
     }
