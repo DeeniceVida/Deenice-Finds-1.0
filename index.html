@@ -1,28 +1,84 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-KE">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
-  <!-- Add this before your other scripts -->
-<script src="js/categories-manager.js"></script>
-<script src="js/config.js"></script>
-<script src="js/products-page.js"></script>
-<!-- ... other scripts ... -->
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-NKNQ2DT7X2"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  
+  <!-- SEO Meta Tags -->
+  <title>Deenice Finds - Premium Tech Gadgets, Phones & Accessories in Kenya</title>
+  <meta name="description" content="Shop best-reviewed phones, earbuds & tech accessories in Kenya. iPhone, Samsung, AirPods with free delivery. Curated, tested & shipped with care.">
+  <meta name="keywords" content="phones Kenya, earbuds Nairobi, tech accessories Kenya, iPhone Kenya, Samsung phones Kenya, AirPods Kenya, gadgets Kenya, mobile accessories Nairobi">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Deenice Finds">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://www.deenice.store">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="Deenice Finds - Premium Tech Gadgets & Accessories in Kenya">
+  <meta property="og:description" content="Best-reviewed phones, earbuds & tech accessories in Kenya. Curated, tested & shipped with care.">
+  <meta property="og:url" content="https://www.deenice.store">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://res.cloudinary.com/dsthpp4oj/image/upload/v1761402966/logo_2_copy_2x_kvkzrh.png">
+  <meta property="og:site_name" content="Deenice Finds">
+  <meta property="og:locale" content="en_KE">
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Deenice Finds - Premium Tech in Kenya">
+  <meta name="twitter:description" content="Best-reviewed phones, earbuds & tech accessories in Kenya">
+  <meta name="twitter:image" content="https://res.cloudinary.com/dsthpp4oj/image/upload/v1761402966/logo_2_copy_2x_kvkzrh.png">
+  
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Deenice Finds",
+    "description": "Premium tech gadgets and accessories store in Kenya - phones, earbuds, and mobile accessories",
+    "url": "https://www.deenice.store",
+    "telephone": "+254106590617",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "Kenya",
+      "addressRegion": "Nairobi"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "-1.286389",
+      "longitude": "36.817223"
+    },
+    "openingHours": "Mo-Su 08:00-20:00",
+    "areaServed": "Kenya",
+    "priceRange": "KES 1,500 - KES 150,000",
+    "sameAs": [
+      "https://www.instagram.com/deenicefinds",
+      "https://www.tiktok.com/@deenicefinds"
+    ]
+  }
+  </script>
 
-  // Enable Enhanced E-commerce
+  <!-- Preload Critical Resources -->
+  <link rel="preload" href="css/styles.css" as="style">
+  <link rel="preload" href="js/config.js" as="script">
+  <link rel="preload" href="js/categories-manager.js" as="script">
+  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NKNQ2DT7X2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
     gtag('config', 'G-NKNQ2DT7X2', {
       'send_page_view': false,
-      'enhanced_ecommerce': true
+      'enhanced_ecommerce': true,
+      'page_title': 'Deenice Finds - Premium Tech Kenya',
+      'page_location': window.location.href
     });
-</script>
-  <!-- Facebook Pixel placeholder - replace PIXEL_ID with your pixel ID -->
+  </script>
+  
+  <!-- Facebook Pixel -->
   <script>
   !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
   n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
@@ -33,9 +89,25 @@
   fbq('track', 'PageView');
   </script>
 
-  <title>Deenice Finds — Plugged By the Best</title>
   <link rel="apple-touch-icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
   <link rel="stylesheet" href="css/styles.css" />
+  
+  <!-- Critical CSS Inline for Above-the-Fold Content -->
+  <style>
+    /* Critical above-the-fold styles */
+    .site-header { position: fixed; top: 0; width: 100%; background: white; z-index: 1000; }
+    .hero-copy { padding: 100px 20px 50px; text-align: center; }
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 20px; }
+    
+    /* Loading states */
+    .loading { text-align: center; padding: 40px; }
+    .loading-spinner { 
+      width: 40px; height: 40px; border: 4px solid #f3f3f3; 
+      border-top: 4px solid #007bff; border-radius: 50%; 
+      animation: spin 1s linear infinite; margin: 0 auto; 
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
   <script src="//code.tidio.co/kqlf54zch9h9olbcjin6kqpag9u5q1lr.js" async></script>
@@ -48,41 +120,41 @@
       </button>
 
       <!-- Brand Logo + Name -->
-      <a class="brand" href="index.html">
-        <img src="https://res.cloudinary.com/dsthpp4oj/image/upload/v1761402966/logo_2_copy_2x_kvkzrh.png" alt="Deenice Finds" class="brand-logo" />
+      <a class="brand" href="index.html" aria-label="Deenice Finds Home">
+        <img src="https://res.cloudinary.com/dsthpp4oj/image/upload/v1761402966/logo_2_copy_2x_kvkzrh.png" alt="Deenice Finds - Premium Tech Kenya" class="brand-logo" />
         <span class="brand-name">Deenice Finds</span>
       </a>
 
-      <!-- Cart + Search (Order History REMOVED from header) -->
+      <!-- Cart + Search -->
       <div class="header-right">
-        <button id="search-toggle" class="icon-btn search-icon-btn" aria-label="Search">
+        <button id="search-toggle" class="icon-btn search-icon-btn" aria-label="Search products">
           <img src="https://img.icons8.com/?size=100&id=131&format=png&color=000000" alt="Search" class="header-icon search-icon" />
         </button>
 
         <div id="search-box" class="search-box hidden">
-          <input id="search-input" placeholder="Search products, cases, sunglasses..." autocomplete="off" />
+          <input id="search-input" placeholder="Search phones, earbuds, accessories in Kenya..." autocomplete="off" />
           <div id="search-suggestions" class="suggestions"></div>
         </div>
 
-        <a href="cart.html" class="icon-btn cart-btn" aria-label="Cart">
-          <img src="https://img.icons8.com/?size=100&id=85080&format=png&color=000000" alt="Cart" class="header-icon cart-icon" />
+        <a href="cart.html" class="icon-btn cart-btn" aria-label="View cart">
+          <img src="https://img.icons8.com/?size=100&id=85080&format=png&color=000000" alt="Shopping Cart" class="header-icon cart-icon" />
           <span id="cart-count">0</span>
         </a>
       </div>
 
       <!-- Mobile Dropdown Menu -->
-      <nav class="main-nav">
+      <nav class="main-nav" aria-label="Main navigation">
         <ul>
           <li><a href="index.html">Home</a></li>
           
           <li class="has-sub">
-  <a href="#">Products</a>
-  <ul class="sub" id="products-categories-menu">
-    <!-- Categories will be loaded dynamically -->
-  </ul>
-</li>
+            <a href="products.html">Products</a>
+            <ul class="sub" id="products-categories-menu">
+              <!-- Categories loaded dynamically by categories-manager.js -->
+            </ul>
+          </li>
           
-          <li><a href="blogs.html">Blogs</a></li>
+          <li><a href="blogs.html">Tech Blog & Guides</a></li>
           
           <li class="has-sub">
             <a href="#">Services</a>
@@ -92,9 +164,8 @@
             </ul>
           </li>
           
-          <li><a href="reviews.html">Reviews</a></li>
+          <li><a href="reviews.html">Customer Reviews</a></li>
           
-          <!-- 🆕 Order History Link (Only in mobile menu) -->
           <li><a href="order-history.html">📦 Order History</a></li>
         </ul>
       </nav>
@@ -102,75 +173,187 @@
   </header>
   
   <main>
+    <!-- Structured Data for Website -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Deenice Finds",
+      "url": "https://www.deenice.store",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.deenice.store/products.html?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+      },
+      "description": "Premium tech gadgets and accessories store in Kenya"
+    }
+    </script>
+
     <section class="offers">
-      <div class="offers-slider" id="offers-slider"></div>
+      <div class="offers-slider" id="offers-slider">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading latest offers...</p>
+        </div>
+      </div>
       <div class="offers-controls">
-        <button id="offers-prev" aria-label="previous">‹</button>
+        <button id="offers-prev" aria-label="Previous offer">‹</button>
         <div id="offers-dots" class="dots"></div>
-        <button id="offers-next" aria-label="next">›</button>
+        <button id="offers-next" aria-label="Next offer">›</button>
       </div>
     </section>
 
     <section class="hero-copy reveal">
-      <h1>Best-reviewed & tested items you can buy in Kenya</h1>
-      <p class="subline">Premium tech and accessories — curated, tested and shipped with care.</p>
+      <h1>Best-Reviewed Tech Products You Can Buy in Kenya</h1>
+      <p class="subline">Premium phones, earbuds & accessories — curated, tested and shipped with care across Kenya.</p>
+      
+      <!-- Local SEO Keywords -->
+      <div style="display: none;" aria-hidden="true">
+        <h2>Tech Shop Kenya</h2>
+        <p>Buy phones in Nairobi, earbuds in Kenya, mobile accessories delivery nationwide. iPhone Kenya, Samsung Kenya, AirPods Kenya prices.</p>
+      </div>
     </section>
 
     <section class="product-grid-wrap">
-      <div class="product-grid" id="product-grid"></div>
+      <h2 style="text-align: center; margin-bottom: 30px; color: #333;">Featured Products in Kenya</h2>
+      <div class="product-grid" id="product-grid">
+        <div class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading featured products...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust Signals Section -->
+    <section style="background: #f8f9fa; padding: 60px 20px; text-align: center; margin: 40px 0;">
+      <div class="footer-inner">
+        <h2 style="margin-bottom: 30px; color: #333;">Why Shop With Deenice Finds Kenya?</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+          <div>
+            <h3>🚚 Free Delivery</h3>
+            <p>Nationwide delivery across Kenya</p>
+          </div>
+          <div>
+            <h3>✅ Quality Tested</h3>
+            <p>All products thoroughly tested before shipping</p>
+          </div>
+          <div>
+            <h3>📞 Customer Support</h3>
+            <p>Dedicated support for Kenyan customers</p>
+          </div>
+          <div>
+            <h3>💳 Secure Payment</h3>
+            <p>M-Pesa, bank transfer & cash on delivery</p>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
   
   <section class="offers bottom-offers">
-    <div class="offers-slider" id="bottom-offers-slider"></div>
+    <div class="offers-slider" id="bottom-offers-slider">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading more offers...</p>
+      </div>
+    </div>
     
     <div class="offers-controls">
-      <button id="bottom-offers-prev" aria-label="previous">‹</button>
+      <button id="bottom-offers-prev" aria-label="Previous offer">‹</button>
       <div id="bottom-offers-dots" class="dots"></div>
-      <button id="bottom-offers-next" aria-label="next">›</button>
+      <button id="bottom-offers-next" aria-label="Next offer">›</button>
     </div>
   </section>
 
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="col">
-        <h4>About</h4>
+        <h4>About Deenice Finds</h4>
         <ul>
           <li><a href="about.html">About Us</a></li>
-          <li><a href="reviews.html">Our Impact</a></li>
+          <li><a href="reviews.html">Customer Reviews</a></li>
+          <li><a href="blogs.html">Tech Blog Kenya</a></li>
         </ul>
       </div>
       <div class="col">
-        <h4>Help</h4>
+        <h4>Customer Help</h4>
         <ul>
-          <li><a href="#" id="open-help">Help Center</a></li>
-          <li><a href="order-history.html">📦 Order History</a></li> <!-- 🆕 Still in footer -->
-          <li><a href="mailto:deenicevida@gmail.com">Contact Us</a></li>
+          <li><a href="shipping.html">Shipping Kenya</a></li>
+          <li><a href="returns.html">Returns Policy</a></li>
+          <li><a href="order-history.html">📦 Order History</a></li>
+          <li><a href="mailto:deenicevida@gmail.com">Contact Support</a></li>
         </ul>
       </div>
       <div class="col">
-        <h4>Services</h4>
+        <h4>Our Services</h4>
         <ul>
-          <li><a href="buy-for-me.html">Buy For Me (US Phone)</a></li>
-          <li><a href="collaborate.html">Collaborate</a></li>
+          <li><a href="buy-for-me.html">US Phone Import</a></li>
+          <li><a href="collaborate.html">Brand Collaboration</a></li>
+          <li><a href="products.html">Shop All Products</a></li>
         </ul>
       </div>
       <div class="col social">
-        <h4>Follow</h4>
+        <h4>Follow Us Kenya</h4>
         <div class="footer-social">
-          <a href="https://www.instagram.com//" target="_blank" aria-label="Instagram">
+          <a href="https://www.instagram.com/deenicefinds" target="_blank" rel="noopener noreferrer" aria-label="Follow on Instagram">
             <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram">
           </a>
-          <a href="https://www.tiktok.com/@?_t=ZM-90lyVlskdWC&_r=1" target="_blank" aria-label="TikTok">
+          <a href="https://www.tiktok.com/@deenicefinds" target="_blank" rel="noopener noreferrer" aria-label="Follow on TikTok">
             <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok">
+          </a>
+          <a href="https://wa.me/254106590617" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
+            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" alt="WhatsApp Kenya">
           </a>
         </div>
       </div>
     </div>
-    <div class="footer-bottom">© 2025 Deenice Finds — Plugged By the Best</div>
+    <div class="footer-bottom">
+      © 2024 Deenice Finds — Premium Tech Gadgets Kenya. All rights reserved.
+      <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+        <a href="privacy.html" style="color: #666; margin-right: 15px;">Privacy Policy</a>
+        <a href="terms.html" style="color: #666;">Terms of Service</a>
+      </div>
+    </div>
   </footer>
-  
+
+  <!-- Script Loading Optimization -->
+  <script>
+    // Load non-critical CSS asynchronously
+    const stylesheet = document.createElement('link');
+    stylesheet.rel = 'stylesheet';
+    stylesheet.href = 'css/styles.css';
+    document.head.appendChild(stylesheet);
+  </script>
+
+  <!-- Essential Scripts -->
+  <script src="js/categories-manager.js"></script>
   <script src="js/config.js"></script>
   <script src="js/site.js"></script>
+  
+  <!-- Deferred Scripts -->
+  <script src="js/products-page.js" defer></script>
+
+  <!-- Schema for Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Deenice Finds",
+    "url": "https://www.deenice.store",
+    "logo": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761402966/logo_2_copy_2x_kvkzrh.png",
+    "description": "Premium tech gadgets and accessories store in Kenya",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "Kenya"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+254106590617",
+      "contactType": "customer service",
+      "areaServed": "KE",
+      "availableLanguage": "English"
+    }
+  }
+  </script>
 </body>
 </html>
