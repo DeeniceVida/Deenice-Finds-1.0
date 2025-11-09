@@ -1,8 +1,6 @@
 <!doctype html>
 <html lang="en-KE" prefix="og: https://ogp.me/ns#">
 <head>
-  <!-- In your index.html head section, add this: -->
-  <script src="js/featured-products.js" defer></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
@@ -146,24 +144,24 @@
     /* Kenya Local SEO Section */
     .kenya-local-section {
       background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-      padding: 40px 20px;
-      margin: 40px 0;
-      border-radius: 15px;
+      padding: 30px 15px;
+      margin: 30px 0;
+      border-radius: 12px;
       cursor: pointer;
     }
     .local-delivery-areas {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
       margin-top: 20px;
     }
     .city-badge {
       background: white;
-      padding: 10px 15px;
-      border-radius: 25px;
+      padding: 8px 12px;
+      border-radius: 20px;
       text-align: center;
       font-weight: 600;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       border: 2px solid #007bff;
     }
     
@@ -302,112 +300,83 @@
         </div>
       </div>
     </section>
-
-   <!-- Trust Signals Section - PROPERLY CENTERED -->
-<section class="trust-signals-section">
-    <div class="footer-inner">
-        <h2>Why Kenyan Customers Choose Deenice Finds</h2>
-        <div class="trust-grid">
-            <div class="trust-item">
-                <div class="trust-icon">●</div>
-                <h3>Delivery Kenya</h3>
-                <p>Nationwide delivery across all 47 counties</p>
-            </div>
-            <div class="trust-item">
-                <div class="trust-icon">●</div>
-                <h3>M-Pesa Payment</h3>
-                <p>Secure M-Pesa integration for easy payments</p>
-            </div>
-            <div class="trust-item">
-                <div class="trust-icon">●</div>
-                <h3>Quality Tested</h3>
-                <p>All products thoroughly tested before shipping</p>
-            </div>
-            <div class="trust-item">
-                <div class="trust-icon">●</div>
-                <h3>Kenyan Support</h3>
-                <p>Dedicated support for Kenyan customers</p>
-            </div>
-        </div>
-    </div>
-</section>
-</main>
-
-<section class="offers bottom-offers">
+  </main>
+  
+  <section class="offers bottom-offers">
     <div class="offers-slider" id="bottom-offers-slider">
-        <div class="loading">
-            <div class="loading-spinner"></div>
-            <p>Loading more offers...</p>
-        </div>
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading more offers...</p>
+      </div>
     </div>
     
     <div class="offers-controls">
-        <button id="bottom-offers-prev" aria-label="Previous offer">‹</button>
-        <div id="bottom-offers-dots" class="dots"></div>
-        <button id="bottom-offers-next" aria-label="Next offer">›</button>
+      <button id="bottom-offers-prev" aria-label="Previous offer">‹</button>
+      <div id="bottom-offers-dots" class="dots"></div>
+      <button id="bottom-offers-next" aria-label="Next offer">›</button>
     </div>
-</section>
+  </section>
 
-<!-- NEW: Responsive Collapsible Kenya Local SEO Section -->
-<section class="kenya-local-section" id="kenya-local-section">
+  <!-- Responsive Collapsible Kenya Local SEO Section -->
+  <section class="kenya-local-section" id="kenya-local-section">
     <div style="max-width: 1200px; margin: 0 auto;">
-        <div class="kenya-toggle" id="kenya-toggle">
-            <h2>Service Areas Across Kenya</h2>
-            <span class="toggle-icon">▼</span>
+      <div class="kenya-toggle" id="kenya-toggle">
+        <h2>Service Areas Across Kenya</h2>
+        <span class="toggle-icon">▼</span>
+      </div>
+      
+      <div class="collapsible-content" id="kenya-content">
+        <div style="background: white; padding: 25px; border-radius: 10px; margin: 20px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+          <h3 style="color: #007bff; margin-bottom: 15px; text-align: center;">Serving Customers Across Kenya</h3>
+          <p style="font-size: 1.1em; margin-bottom: 20px; line-height: 1.6; text-align: center;">
+            <strong>Deenice Finds</strong> is your trusted <strong>tech shop in Kenya</strong> offering premium phones, earbuds, and accessories with nationwide delivery. 
+            We serve customers across major Kenyan towns and cities.
+          </p>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+            <div style="text-align: center;">
+              <div style="font-size: 1.3em; color: #007bff; margin-bottom: 8px;">●</div>
+              <h4 style="margin: 0 0 8px 0; color: #333;">Nationwide Delivery</h4>
+              <p style="margin: 0; color: #666; font-size: 0.9em;">Delivery across Kenya</p>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.3em; color: #007bff; margin-bottom: 8px;">●</div>
+              <h4 style="margin: 0 0 8px 0; color: #333;">M-Pesa Payments</h4>
+              <p style="margin: 0; color: #666; font-size: 0.9em;">Secure M-Pesa integration</p>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 1.3em; color: #007bff; margin-bottom: 8px;">●</div>
+              <h4 style="margin: 0 0 8px 0; color: #333;">Kenyan Business</h4>
+              <p style="margin: 0; color: #666; font-size: 0.9em;">Serving all 47 counties</p>
+            </div>
+          </div>
         </div>
-        
-        <div class="collapsible-content" id="kenya-content">
-            <div style="background: white; padding: 25px; border-radius: 10px; margin: 20px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                <h3 style="color: #007bff; margin-bottom: 15px; text-align: center;">Serving Customers Across Kenya</h3>
-                <p style="font-size: 1.1em; margin-bottom: 20px; line-height: 1.6; text-align: center;">
-                    <strong>Deenice Finds</strong> is your trusted <strong>tech shop in Kenya</strong> offering premium phones, earbuds, and accessories with nationwide delivery. 
-                    We serve customers across major Kenyan towns and cities.
-                </p>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
-                    <div style="text-align: center;">
-                        <div style="font-size: 1.3em; color: #007bff; margin-bottom: 8px;">●</div>
-                        <h4 style="margin: 0 0 8px 0; color: #333;">Nationwide Delivery</h4>
-                        <p style="margin: 0; color: #666; font-size: 0.9em;">Delivery across Kenya</p>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 1.3em; color: #007bff; margin-bottom: 8px;">●</div>
-                        <h4 style="margin: 0 0 8px 0; color: #333;">M-Pesa Payments</h4>
-                        <p style="margin: 0; color: #666; font-size: 0.9em;">Secure M-Pesa integration</p>
-                    </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 1.3em; color: #007bff; margin-bottom: 8px;">●</div>
-                        <h4 style="margin: 0 0 8px 0; color: #333;">Kenyan Business</h4>
-                        <p style="margin: 0; color: #666; font-size: 0.9em;">Serving all 47 counties</p>
-                    </div>
-                </div>
-            </div>
 
-            <h3 style="text-align: center; margin-bottom: 20px; color: #333;">We Deliver To These Cities & Towns:</h3>
-            <div class="local-delivery-areas">
-                <div class="city-badge">Nairobi CBD</div>
-                <div class="city-badge">Westlands</div>
-                <div class="city-badge">Karen</div>
-                <div class="city-badge">Mombasa</div>
-                <div class="city-badge">Kisumu</div>
-                <div class="city-badge">Nakuru</div>
-                <div class="city-badge">Eldoret</div>
-                <div class="city-badge">Thika</div>
-                <div class="city-badge">Malindi</div>
-                <div class="city-badge">Kitale</div>
-                <div class="city-badge">Nyeri</div>
-                <div class="city-badge">Garissa</div>
-            </div>
-
-            <div style="text-align: center; margin-top: 25px; padding: 20px; background: #007bff; color: white; border-radius: 8px;">
-                <h4 style="margin: 0 0 10px 0;">Kenyan Tech Tips</h4>
-                <p style="margin: 0; font-size: 0.95em;">
-                    Looking for the best phone deals? Check our <a href="blogs.html" style="color: white; text-decoration: underline;">Kenya Tech Blog</a> for latest reviews and price comparisons in Kenyan Shillings.
-                </p>
-            </div>
+        <h3 style="text-align: center; margin-bottom: 20px; color: #333;">We Deliver To These Cities & Towns:</h3>
+        <div class="local-delivery-areas">
+          <div class="city-badge">Nairobi CBD</div>
+          <div class="city-badge">Westlands</div>
+          <div class="city-badge">Karen</div>
+          <div class="city-badge">Mombasa</div>
+          <div class="city-badge">Kisumu</div>
+          <div class="city-badge">Nakuru</div>
+          <div class="city-badge">Eldoret</div>
+          <div class="city-badge">Thika</div>
+          <div class="city-badge">Malindi</div>
+          <div class="city-badge">Kitale</div>
+          <div class="city-badge">Nyeri</div>
+          <div class="city-badge">Garissa</div>
         </div>
+
+        <div style="text-align: center; margin-top: 25px; padding: 20px; background: #007bff; color: white; border-radius: 8px;">
+          <h4 style="margin: 0 0 10px 0;">Kenyan Tech Tips</h4>
+          <p style="margin: 0; font-size: 0.95em;">
+            Looking for the best phone deals? Check our <a href="blogs.html" style="color: white; text-decoration: underline;">Kenya Tech Blog</a> for latest reviews and price comparisons in Kenyan Shillings.
+          </p>
+        </div>
+      </div>
     </div>
-</section>
+  </section>
 
   <footer class="site-footer">
     <div class="footer-inner">
@@ -460,40 +429,6 @@
     </div>
   </footer>
 
-  <script>
-    // Kenya section toggle functionality with better mobile support
-    document.addEventListener('DOMContentLoaded', function() {
-        const kenyaToggle = document.getElementById('kenya-toggle');
-        const kenyaContent = document.getElementById('kenya-content');
-        const toggleIcon = document.querySelector('.toggle-icon');
-
-        if (kenyaToggle && kenyaContent) {
-            // Click event
-            kenyaToggle.addEventListener('click', function() {
-                kenyaContent.classList.toggle('expanded');
-                toggleIcon.classList.toggle('rotated');
-            });
-
-            // Touch event for mobile with better handling
-            kenyaToggle.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                kenyaContent.classList.toggle('expanded');
-                toggleIcon.classList.toggle('rotated');
-            }, { passive: false });
-
-            // Close on outside click (optional)
-            document.addEventListener('click', function(event) {
-                if (!kenyaToggle.contains(event.target) && !kenyaContent.contains(event.target)) {
-                    if (kenyaContent.classList.contains('expanded')) {
-                        kenyaContent.classList.remove('expanded');
-                        toggleIcon.classList.remove('rotated');
-                    }
-                }
-            });
-        }
-    });
-</script>
-
   <!-- Script Loading Optimization -->
   <script>
     // Load non-critical CSS asynchronously
@@ -524,6 +459,7 @@
   
   <!-- Deferred Scripts -->
   <script src="js/products-page.js" defer></script>
+  <script src="js/featured-products.js" defer></script>
 
   <!-- Enhanced Schema for Organization -->
   <script type="application/ld+json">
