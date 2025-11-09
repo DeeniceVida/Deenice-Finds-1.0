@@ -85,11 +85,22 @@
     const discountAmount = hasDiscount ? product.originalPrice - currentPrice : 0;
     const saveText = hasDiscount ? `Save ${product.currency} ${discountAmount.toLocaleString()}` : "";
 
+    // Check if product is thermal printer for special handling
+    const isThermalPrinter = product.title.toLowerCase().includes('thermal') || 
+                            product.category && product.category.toLowerCase().includes('thermal') ||
+                            product.tags && product.tags.some(tag => tag.toLowerCase().includes('thermal'));
+
     // Clean stock status display
-    const stockStatus = initialStock > 5 ? 'In Stock' : 
-                       initialStock > 0 ? 'Low Stock' : 'Out of Stock';
-    const stockClass = initialStock > 5 ? 'in-stock' : 
-                      initialStock > 0 ? 'low-stock' : 'out-of-stock';
+    let stockStatus, stockClass;
+    if (isThermalPrinter) {
+        stockStatus = 'Available on Order';
+        stockClass = 'special-order';
+    } else {
+        stockStatus = initialStock > 5 ? 'In Stock' : 
+                     initialStock > 0 ? 'Low Stock' : 'Out of Stock';
+        stockClass = initialStock > 5 ? 'in-stock' : 
+                    initialStock > 0 ? 'low-stock' : 'out-of-stock';
+    }
 
     // Update page title and meta for SEO
     document.title = `${product.title} - Buy in Kenya | Deenice Finds`;
@@ -97,7 +108,11 @@
     // Update meta description dynamically
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-        metaDescription.content = `Buy ${product.title} in Kenya. Best price KES ${currentPrice.toLocaleString()}. Free delivery Nairobi, Mombasa, Kisumu. M-Pesa accepted.`;
+        if (isThermalPrinter) {
+            metaDescription.content = `Order ${product.title} in Kenya. Importing duration 5-7 days. Best price KES ${currentPrice.toLocaleString()}. Delivery Nairobi, Mombasa, Kisumu. M-Pesa accepted.`;
+        } else {
+            metaDescription.content = `Buy ${product.title} in Kenya. Best price KES ${currentPrice.toLocaleString()}. Delivery Nairobi, Mombasa, Kisumu. M-Pesa accepted.`;
+        }
     }
 
     // 4. Build Product Page HTML with Kenya SEO enhancements
@@ -123,14 +138,24 @@
                 <!-- Kenya Delivery Badge -->
                 <div style="background: #e3f2fd; color: #1976d2; padding: 8px 15px; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; font-size: 0.9em; font-weight: 500;">
                     <span>🇰🇪</span>
-                    <span>Free Delivery in Kenya</span>
+                    <span>Available in Kenya</span>
                 </div>
 
-                <!-- Clean Stock status display -->
+                <!-- Special Stock status for Thermal Printers -->
+                ${isThermalPrinter ? `
+                <div class="stock-status special-order" style="font-weight: 500; padding: 12px; border-radius: 8px; margin: 15px 0; background: #fff3cd; border: 1px solid #ffeaa7; color: #856404;">
+                    <strong>📦 Available on Order</strong>
+                    <div style="font-size: 0.9em; margin-top: 5px; font-weight: normal;">
+                        Importing duration: 5-7 days
+                    </div>
+                </div>
+                ` : `
+                <!-- Regular Stock status display -->
                 <div class="stock-status ${stockClass}" style="font-weight: 500; padding: 12px; border-radius: 8px; margin: 15px 0; background: ${initialStock > 5 ? '#f0f9f0' : initialStock > 0 ? '#fff8e6' : '#fef0f0'}; border: 1px solid ${initialStock > 5 ? '#d4edda' : initialStock > 0 ? '#ffeaa7' : '#f5c6cb'}; color: ${initialStock > 5 ? '#155724' : initialStock > 0 ? '#856404' : '#721c24'};">
                     <strong>${stockStatus}</strong>
                     ${initialStock > 0 && initialStock <= 5 ? `<div style="font-size: 0.9em; margin-top: 5px; font-weight: normal;">Only ${initialStock} items remaining in Kenya</div>` : ''}
                 </div>
+                `}
 
                 <div class="price-section" style="margin: 20px 0;">
                     <span id="product-price" class="current-price" style="font-size: 1.4em; font-weight: 700; color: #1d1d1f;">${product.currency} ${currentPrice.toLocaleString()}</span>
@@ -145,10 +170,15 @@
                         <strong style="color: #333;">Kenya Delivery Information</strong>
                     </div>
                     <div style="font-size: 0.9em; color: #666;">
-                        <div>• <strong>Nairobi:</strong> Same-day delivery (CBD areas)</div>
+                        ${isThermalPrinter ? `
+                        <div>• <strong>Special Order:</strong> Importing duration 5-7 days</div>
+                        <div>• <strong>Nationwide:</strong> Delivery after import clearance</div>
+                        ` : `
+                        <div>• <strong>Nairobi:</strong> Delivery available</div>
                         <div>• <strong>Major Cities:</strong> 1-2 business days</div>
                         <div>• <strong>Nationwide:</strong> 2-5 business days</div>
-                        <div>• <strong>Payment:</strong> M-Pesa, Cash on Delivery</div>
+                        `}
+                        <div>• <strong>Payment:</strong> M-Pesa, Bank Transfer</div>
                     </div>
                 </div>
 
@@ -162,7 +192,7 @@
                         <p style="margin: 0; line-height: 1.6; color: #515154;">${product.description}</p>
                         <!-- Kenya-specific content -->
                         <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 6px; border-left: 4px solid #ffc107;">
-                            <strong>🇰🇪 Available in Kenya:</strong> This product is available for immediate shipping across Kenya. Free delivery in Nairobi CBD.
+                            <strong>🇰🇪 Available in Kenya:</strong> ${isThermalPrinter ? 'This product is available for special order with 5-7 days importing duration.' : 'This product is available for delivery across Kenya.'}
                         </div>
                     </div>
                 </div>
@@ -173,7 +203,7 @@
                     <div class="color-options" style="display: flex; gap: 12px; flex-wrap: wrap;">
                         ${product.colors.map((c, idx) => {
                             const isAvailable = !product.availableColors || product.availableColors.includes(c.name);
-                            const isOutOfStock = initialStock === 0;
+                            const isOutOfStock = initialStock === 0 && !isThermalPrinter;
                             
                             return `
                             <div class="color-item" style="text-align: center;">
@@ -221,45 +251,50 @@
                 <!-- Quantity input with stock validation -->
                 <div class="quantity-container" style="margin: 25px 0;">
                     <label for="qty" style="display: block; margin-bottom: 12px; font-weight: 600; color: #1d1d1f;">Quantity:</label>
-                    <input id="qty" type="number" value="1" min="1" max="${initialStock}" 
+                    <input id="qty" type="number" value="1" min="1" ${isThermalPrinter ? '' : `max="${initialStock}"`}
                            style="padding: 12px; border: 1px solid #e5e5e7; border-radius: 8px; width: 100px; text-align: center; font-size: 1em; color: #1d1d1f;"
-                           onchange="validateQuantity(this, ${initialStock})" />
+                           onchange="${isThermalPrinter ? '' : `validateQuantity(this, ${initialStock})`}" />
                     <div id="quantity-error" class="error-message" style="display: none; color: #ff3b30; font-size: 0.9em; margin-top: 5px;"></div>
                 </div>
 
                 <!-- Premium Add to Cart Button -->
-                <button id="add-cart" class="add-to-cart-btn primary" ${initialStock === 0 ? 'disabled' : ''}
+                <button id="add-cart" class="add-to-cart-btn primary" ${initialStock === 0 && !isThermalPrinter ? 'disabled' : ''}
                         style="padding: 18px 30px; 
-                               background: ${initialStock === 0 ? '#8E8E93' : '#007bff'}; 
+                               background: ${(initialStock === 0 && !isThermalPrinter) ? '#8E8E93' : '#007bff'}; 
                                color: white; 
                                border: none; 
                                border-radius: 12px; 
                                font-size: 1.1em; 
-                               cursor: ${initialStock === 0 ? 'not-allowed' : 'pointer'}; 
+                               cursor: ${(initialStock === 0 && !isThermalPrinter) ? 'not-allowed' : 'pointer'}; 
                                width: 100%; 
                                max-width: 350px; 
                                font-weight: 600; 
                                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                               box-shadow: ${initialStock === 0 ? 'none' : '0 4px 20px rgba(0, 123, 255, 0.3)'};
-                               opacity: ${initialStock === 0 ? '0.6' : '1'};">
-                    ${initialStock === 0 ? 'Out of Stock' : 'Add to Cart - Buy in Kenya'}
+                               box-shadow: ${(initialStock === 0 && !isThermalPrinter) ? 'none' : '0 4px 20px rgba(0, 123, 255, 0.3)'};
+                               opacity: ${(initialStock === 0 && !isThermalPrinter) ? '0.6' : '1'};">
+                    ${isThermalPrinter ? 'Order Now - Importing 5-7 Days' : 
+                      initialStock === 0 ? 'Out of Stock' : 'Add to Cart - Buy in Kenya'}
                 </button>
                 
                 <!-- M-Pesa Payment Info -->
                 <div style="text-align: center; margin-top: 15px; color: #666; font-size: 0.9em;">
                     <div style="display: inline-flex; align-items: center; gap: 8px; background: #f8f9fa; padding: 8px 15px; border-radius: 20px;">
                         <span style="color: #00A859;">📱</span>
-                        <span>M-Pesa & Cash on Delivery Accepted</span>
+                        <span>M-Pesa & Bank Transfer Accepted</span>
                     </div>
                 </div>
                 
-                ${initialStock > 0 && initialStock <= 5 ? `
+                ${isThermalPrinter ? `
+                    <div class="special-order-notice" style="margin-top: 15px; text-align: center; color: #856404; font-size: 0.9em; font-style: italic;">
+                        ⚠️ Special Order Item: This thermal printer requires 5-7 days importing duration. We'll contact you after order confirmation.
+                    </div>
+                ` : initialStock > 0 && initialStock <= 5 ? `
                     <div class="stock-notice" style="margin-top: 15px; text-align: center; color: #856404; font-size: 0.9em; font-style: italic;">
                         ⚠️ Limited availability in Kenya. Recommended to complete your purchase soon.
                     </div>
                 ` : ''}
                 
-                ${initialStock === 0 ? `
+                ${initialStock === 0 && !isThermalPrinter ? `
                     <div class="out-of-stock-message" style="margin-top: 15px; text-align: center; color: #721c24; font-size: 0.9em;">
                         This item is currently out of stock in Kenya. Please check back later or contact us for restock updates.
                     </div>
@@ -273,7 +308,7 @@
                     </div>
                     <div style="text-align: center;">
                         <div style="font-size: 1.5em;">🚚</div>
-                        <div style="font-size: 0.8em; font-weight: 600;">Free Delivery</div>
+                        <div style="font-size: 0.8em; font-weight: 600;">Nationwide Delivery</div>
                     </div>
                     <div style="text-align: center;">
                         <div style="font-size: 1.5em;">📱</div>
@@ -289,23 +324,23 @@
 
         <!-- Hidden SEO Content for Kenya -->
         <div style="display: none;" aria-hidden="true">
-            <h2>Buy ${product.title} in Kenya</h2>
-            <p>Purchase ${product.title} from Deenice Finds Kenya. Best prices in Nairobi, Mombasa, Kisumu with nationwide delivery. Available for M-Pesa payment across Kenya.</p>
-            <p>Tech products Kenya, phones Kenya, earbuds Nairobi, mobile accessories Kenya.</p>
+            <h2>${isThermalPrinter ? 'Order' : 'Buy'} ${product.title} in Kenya</h2>
+            <p>${isThermalPrinter ? 'Order' : 'Purchase'} ${product.title} from Deenice Finds Kenya. ${isThermalPrinter ? 'Special order with 5-7 days importing duration.' : 'Best prices in Nairobi, Mombasa, Kisumu with nationwide delivery.'} Available for M-Pesa payment across Kenya.</p>
+            <p>Tech products Kenya, phones Kenya, earbuds Nairobi, mobile accessories Kenya${isThermalPrinter ? ', thermal printers Kenya' : ''}.</p>
         </div>
     `;
 
     console.log('✅ Product page rendered successfully');
 
     // 5. Add Enhanced Structured Data for Kenya SEO
-    addProductStructuredData(product, selectedColor, selectedSize, selectedModel, currentPrice, initialStock);
+    addProductStructuredData(product, selectedColor, selectedSize, selectedModel, currentPrice, initialStock, isThermalPrinter);
 
     // 6. Setup Event Listeners
-    setupProductInteractions();
+    setupProductInteractions(isThermalPrinter);
 })();
 
 // Enhanced Product Structured Data Function for Kenya SEO
-function addProductStructuredData(product, selectedColor, selectedSize, selectedModel, currentPrice, initialStock) {
+function addProductStructuredData(product, selectedColor, selectedSize, selectedModel, currentPrice, initialStock, isThermalPrinter) {
     const productSchema = {
         "@context": "https://schema.org",
         "@type": "Product",
@@ -323,7 +358,7 @@ function addProductStructuredData(product, selectedColor, selectedSize, selected
             "price": currentPrice,
             "priceCurrency": "KES",
             "priceValidUntil": "2024-12-31",
-            "availability": initialStock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            "availability": isThermalPrinter ? "https://schema.org/PreOrder" : (initialStock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
             "url": window.location.href,
             "seller": {
                 "@type": "Organization",
@@ -346,42 +381,13 @@ function addProductStructuredData(product, selectedColor, selectedSize, selected
             "reviewCount": product.reviewCount || 15,
             "bestRating": "5",
             "worstRating": "1"
-        },
-        "review": [
-            {
-                "@type": "Review",
-                "author": {
-                    "@type": "Person",
-                    "name": "John M."
-                },
-                "datePublished": "2024-01-10",
-                "reviewBody": "Great product and fast delivery in Nairobi! M-Pesa payment was seamless.",
-                "name": "Excellent service in Kenya",
-                "reviewRating": {
-                    "@type": "Rating",
-                    "bestRating": "5",
-                    "ratingValue": "5",
-                    "worstRating": "1"
-                }
-            },
-            {
-                "@type": "Review",
-                "author": {
-                    "@type": "Person",
-                    "name": "Sarah K."
-                },
-                "datePublished": "2024-01-08",
-                "reviewBody": "Product arrived quickly in Mombasa. Quality is excellent for the price in Kenya.",
-                "name": "Great value for money",
-                "reviewRating": {
-                    "@type": "Rating",
-                    "bestRating": "5",
-                    "ratingValue": "4",
-                    "worstRating": "1"
-                }
-            }
-        ]
+        }
     };
+
+    // Add delivery lead time for thermal printers
+    if (isThermalPrinter) {
+        productSchema.offers.deliveryLeadTime = "P5D";
+    }
 
     // Add color variant if available
     if (selectedColor) {
@@ -484,17 +490,21 @@ function collapseDescriptionOnColorSelect() {
     }
 }
 
-// Add to cart function (FIXED - now properly handles the product ID)
-function addToCart(productId, productTitle, currentPrice, initialStock) {
+// Add to cart function (Updated for thermal printers)
+function addToCart(productId, productTitle, currentPrice, initialStock, isThermalPrinter) {
     const qtyInput = document.getElementById('qty');
     const quantity = parseInt(qtyInput.value);
-    const maxStock = parseInt(qtyInput.max);
     
-    // Final validation
-    if (quantity > maxStock) {
-        showNotification(`Cannot add to cart! Only ${maxStock} units available in Kenya.`, 'error');
-        qtyInput.value = maxStock;
-        return;
+    // Skip stock validation for thermal printers
+    if (!isThermalPrinter) {
+        const maxStock = parseInt(qtyInput.max);
+        
+        // Final validation
+        if (quantity > maxStock) {
+            showNotification(`Cannot add to cart! Only ${maxStock} units available in Kenya.`, 'error');
+            qtyInput.value = maxStock;
+            return;
+        }
     }
     
     if (quantity < 1) {
@@ -528,8 +538,8 @@ function addToCart(productId, productTitle, currentPrice, initialStock) {
     if (existingItemIndex > -1) {
         // Update quantity if item exists
         const newQty = cart[existingItemIndex].qty + quantity;
-        if (newQty > maxStock) {
-            showNotification(`Cannot add more! You already have ${cart[existingItemIndex].qty} in cart, only ${maxStock} available total in Kenya.`, 'error');
+        if (!isThermalPrinter && newQty > initialStock) {
+            showNotification(`Cannot add more! You already have ${cart[existingItemIndex].qty} in cart, only ${initialStock} available total in Kenya.`, 'error');
             return;
         }
         cart[existingItemIndex].qty = newQty;
@@ -544,12 +554,18 @@ function addToCart(productId, productTitle, currentPrice, initialStock) {
             color: color,
             size: size,
             model: model,
-            img: document.getElementById('main-image') ? document.getElementById('main-image').src : ''
+            img: document.getElementById('main-image') ? document.getElementById('main-image').src : '',
+            isSpecialOrder: isThermalPrinter || false
         });
     }
 
     localStorage.setItem('de_cart', JSON.stringify(cart));
-    showNotification(`Added ${quantity} item${quantity > 1 ? 's' : ''} to cart - Ready for Kenya delivery`, 'success');
+    
+    if (isThermalPrinter) {
+        showNotification(`Order placed for ${quantity} thermal printer${quantity > 1 ? 's' : ''}! We'll contact you about the 5-7 days importing process.`, 'success');
+    } else {
+        showNotification(`Added ${quantity} item${quantity > 1 ? 's' : ''} to cart - Ready for Kenya delivery`, 'success');
+    }
 
     // Update cart count with animation
     const badge = document.getElementById('cart-count');
@@ -608,7 +624,7 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-function setupProductInteractions() {
+function setupProductInteractions(isThermalPrinter) {
     console.log('🔄 Setting up product interactions...');
     
     // Description toggle
@@ -708,12 +724,14 @@ function setupProductInteractions() {
         });
 
         // Click event
-        addToCartBtn.addEventListener('click', handleAddToCart);
+        addToCartBtn.addEventListener('click', function() {
+            handleAddToCart(isThermalPrinter);
+        });
         
         // Touch event for mobile
         addToCartBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            handleAddToCart();
+            handleAddToCart(isThermalPrinter);
         }, { passive: false });
         
         console.log('✅ Add to cart listener added');
@@ -784,14 +802,14 @@ function selectSizeOption(button) {
     updateStructuredDataOnChange();
 }
 
-function handleAddToCart() {
+function handleAddToCart(isThermalPrinter) {
     // Get product info from the current page elements
     const productTitle = document.querySelector('h1') ? document.querySelector('h1').textContent : 'Product';
     const priceElement = document.getElementById('product-price');
     const priceText = priceElement ? priceElement.textContent : 'KES 0';
     const currentPrice = parseFloat(priceText.replace('KES', '').replace(/,/g, '').trim());
     const qtyInput = document.getElementById('qty');
-    const initialStock = parseInt(qtyInput.max);
+    const initialStock = qtyInput ? parseInt(qtyInput.max) : 0;
     
     // Get product ID from URL parameters
     const params = new URLSearchParams(window.location.search);
@@ -803,7 +821,7 @@ function handleAddToCart() {
     }
     
     // Call the fixed addToCart function
-    addToCart(productId, productTitle, currentPrice, initialStock);
+    addToCart(productId, productTitle, currentPrice, initialStock, isThermalPrinter);
 }
 
 // Update structured data when product options change
@@ -829,7 +847,11 @@ function updateStructuredDataOnChange() {
         const qtyInput = document.getElementById('qty');
         const initialStock = qtyInput ? parseInt(qtyInput.max) : 0;
         
-        addProductStructuredData(product, selectedColor, selectedSize, selectedModel, currentPrice, initialStock);
+        const isThermalPrinter = product.title.toLowerCase().includes('thermal') || 
+                                product.category && product.category.toLowerCase().includes('thermal') ||
+                                product.tags && product.tags.some(tag => tag.toLowerCase().includes('thermal'));
+        
+        addProductStructuredData(product, selectedColor, selectedSize, selectedModel, currentPrice, initialStock, isThermalPrinter);
     }
 }
 
