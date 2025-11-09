@@ -1,7 +1,13 @@
 User-agent: *
 Allow: /
-Disallow: /admin/
 Disallow: /cart.html
-Disallow: /checkout.html
+Disallow: /order-history.html
 
 Sitemap: https://www.deenice.store/sitemap.xml
+
+# Kenya-specific crawlers
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
