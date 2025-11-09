@@ -1,11 +1,11 @@
-// product-page.js - FOR SINGLE PRODUCT DETAIL PAGE (WITH KENYA SEO ENHANCEMENTS)
+// product-page.js - FOR SINGLE PRODUCT DETAIL PAGE (KENYA SEO ENHANCED - CLEAN)
 (async () => {
     // 1. Initial Setup and Parameter Retrieval
     const params = new URLSearchParams(location.search);
     const id = params.get('id');
     const container = document.getElementById('product-page');
 
-    console.log('🔄 Loading product page for ID:', id);
+    console.log('Loading product page for ID:', id);
 
     let products = [];
     let product = null;
@@ -17,16 +17,16 @@
         
         if (storefrontProducts) {
             products = JSON.parse(storefrontProducts);
-            console.log('📦 Loaded products from storefront cache:', products.length);
+            console.log('Loaded products from storefront cache:', products.length);
         } else {
             // Fallback to original JSON file
-            console.log('📦 No storefront cache, loading from JSON...');
+            console.log('No storefront cache, loading from JSON...');
             const res = await fetch('data/products.json');
             if (!res.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error! status: ${res.status}`);
             }
             products = await res.json();
-            console.log('📦 Loaded products from JSON file:', products.length);
+            console.log('Loaded products from JSON file:', products.length);
         }
 
         // Find the product by ID, fallback to the first product if not found
@@ -36,10 +36,10 @@
             throw new Error('Product not found');
         }
 
-        console.log('✅ Found product:', product.title);
+        console.log('Found product:', product.title);
 
     } catch (error) {
-        console.error("❌ Error loading product data:", error);
+        console.error("Error loading product data:", error);
         if (container) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 60px 20px; color: #666;">
@@ -57,7 +57,7 @@
 
     // Stop if no product or container found
     if (!product || !container) {
-        console.error("❌ Product or container element not found.");
+        console.error("Product or container element not found.");
         container.innerHTML = `
             <div style="text-align: center; padding: 40px; color: #666;">
                 <p>Product not found. Please try another product.</p>
@@ -137,14 +137,13 @@
 
                 <!-- Kenya Delivery Badge -->
                 <div style="background: #e3f2fd; color: #1976d2; padding: 8px 15px; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; font-size: 0.9em; font-weight: 500;">
-                    <span>🇰🇪</span>
                     <span>Available in Kenya</span>
                 </div>
 
                 <!-- Special Stock status for Thermal Printers -->
                 ${isThermalPrinter ? `
                 <div class="stock-status special-order" style="font-weight: 500; padding: 12px; border-radius: 8px; margin: 15px 0; background: #fff3cd; border: 1px solid #ffeaa7; color: #856404;">
-                    <strong>📦 Available on Order</strong>
+                    <strong>Available on Order</strong>
                     <div style="font-size: 0.9em; margin-top: 5px; font-weight: normal;">
                         Importing duration: 5-7 days
                     </div>
@@ -166,7 +165,6 @@
                 <!-- Kenya Shipping Info -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #007bff;">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <span style="font-size: 1.2em;">🚚</span>
                         <strong style="color: #333;">Kenya Delivery Information</strong>
                     </div>
                     <div style="font-size: 0.9em; color: #666;">
@@ -192,7 +190,7 @@
                         <p style="margin: 0; line-height: 1.6; color: #515154;">${product.description}</p>
                         <!-- Kenya-specific content -->
                         <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 6px; border-left: 4px solid #ffc107;">
-                            <strong>🇰🇪 Available in Kenya:</strong> ${isThermalPrinter ? 'This product is available for special order with 5-7 days importing duration.' : 'This product is available for delivery across Kenya.'}
+                            <strong>Available in Kenya:</strong> ${isThermalPrinter ? 'This product is available for special order with 5-7 days importing duration.' : 'This product is available for delivery across Kenya.'}
                         </div>
                     </div>
                 </div>
@@ -279,18 +277,17 @@
                 <!-- M-Pesa Payment Info -->
                 <div style="text-align: center; margin-top: 15px; color: #666; font-size: 0.9em;">
                     <div style="display: inline-flex; align-items: center; gap: 8px; background: #f8f9fa; padding: 8px 15px; border-radius: 20px;">
-                        <span style="color: #00A859;">📱</span>
                         <span>M-Pesa & Bank Transfer Accepted</span>
                     </div>
                 </div>
                 
                 ${isThermalPrinter ? `
                     <div class="special-order-notice" style="margin-top: 15px; text-align: center; color: #856404; font-size: 0.9em; font-style: italic;">
-                        ⚠️ Special Order Item: This thermal printer requires 5-7 days importing duration. We'll contact you after order confirmation.
+                        Special Order Item: This thermal printer requires 5-7 days importing duration. We'll contact you after order confirmation.
                     </div>
                 ` : initialStock > 0 && initialStock <= 5 ? `
                     <div class="stock-notice" style="margin-top: 15px; text-align: center; color: #856404; font-size: 0.9em; font-style: italic;">
-                        ⚠️ Limited availability in Kenya. Recommended to complete your purchase soon.
+                        Limited availability in Kenya. Recommended to complete your purchase soon.
                     </div>
                 ` : ''}
                 
@@ -303,19 +300,19 @@
                 <!-- Kenya Trust Badges -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 25px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
                     <div style="text-align: center;">
-                        <div style="font-size: 1.5em;">🇰🇪</div>
+                        <div style="font-size: 1.2em; color: #007bff; margin-bottom: 5px;">●</div>
                         <div style="font-size: 0.8em; font-weight: 600;">Kenyan Business</div>
                     </div>
                     <div style="text-align: center;">
-                        <div style="font-size: 1.5em;">🚚</div>
+                        <div style="font-size: 1.2em; color: #007bff; margin-bottom: 5px;">●</div>
                         <div style="font-size: 0.8em; font-weight: 600;">Nationwide Delivery</div>
                     </div>
                     <div style="text-align: center;">
-                        <div style="font-size: 1.5em;">📱</div>
+                        <div style="font-size: 1.2em; color: #007bff; margin-bottom: 5px;">●</div>
                         <div style="font-size: 0.8em; font-weight: 600;">M-Pesa Pay</div>
                     </div>
                     <div style="text-align: center;">
-                        <div style="font-size: 1.5em;">✅</div>
+                        <div style="font-size: 1.2em; color: #007bff; margin-bottom: 5px;">●</div>
                         <div style="font-size: 0.8em; font-weight: 600;">Quality Tested</div>
                     </div>
                 </div>
@@ -330,7 +327,7 @@
         </div>
     `;
 
-    console.log('✅ Product page rendered successfully');
+    console.log('Product page rendered successfully');
 
     // 5. Add Enhanced Structured Data for Kenya SEO
     addProductStructuredData(product, selectedColor, selectedSize, selectedModel, currentPrice, initialStock, isThermalPrinter);
@@ -428,7 +425,7 @@ function addProductStructuredData(product, selectedColor, selectedSize, selected
     script.text = JSON.stringify(productSchema);
     document.head.appendChild(script);
     
-    console.log('✅ Enhanced Kenya product structured data added');
+    console.log('Enhanced Kenya product structured data added');
 }
 
 // Quantity validation function
@@ -625,7 +622,7 @@ function showNotification(message, type = 'info') {
 }
 
 function setupProductInteractions(isThermalPrinter) {
-    console.log('🔄 Setting up product interactions...');
+    console.log('Setting up product interactions...');
     
     // Description toggle
     const descriptionHeader = document.querySelector('.description-header');
@@ -636,7 +633,7 @@ function setupProductInteractions(isThermalPrinter) {
             e.preventDefault();
             toggleDescription();
         }, { passive: false });
-        console.log('✅ Description toggle listener added');
+        console.log('Description toggle listener added');
     }
 
     // Thumbnail switching
@@ -654,7 +651,7 @@ function setupProductInteractions(isThermalPrinter) {
                 switchMainImage(img);
             }, { passive: false });
         });
-        console.log('✅ Thumbnail listeners added');
+        console.log('Thumbnail listeners added');
     }
 
     // Color selection with auto-collapse
@@ -672,7 +669,7 @@ function setupProductInteractions(isThermalPrinter) {
                 selectColorOption(opt);
             }, { passive: false });
         });
-        console.log('✅ Color option listeners added');
+        console.log('Color option listeners added');
     }
 
     // Size selection
@@ -691,7 +688,7 @@ function setupProductInteractions(isThermalPrinter) {
                 selectSizeOption(button);
             }, { passive: false });
         });
-        console.log('✅ Size button listeners added');
+        console.log('Size button listeners added');
     }
 
     // Model selection
@@ -702,7 +699,7 @@ function setupProductInteractions(isThermalPrinter) {
             // Update structured data when model changes
             updateStructuredDataOnChange();
         });
-        console.log('✅ Model selector listener added');
+        console.log('Model selector listener added');
     }
 
     // Add to cart - FIXED: Get product info from the current page
@@ -734,10 +731,10 @@ function setupProductInteractions(isThermalPrinter) {
             handleAddToCart(isThermalPrinter);
         }, { passive: false });
         
-        console.log('✅ Add to cart listener added');
+        console.log('Add to cart listener added');
     }
 
-    console.log('🎉 All product interactions setup complete');
+    console.log('All product interactions setup complete');
 }
 
 // Helper functions for better organization
