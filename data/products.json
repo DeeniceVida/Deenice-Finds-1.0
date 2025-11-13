@@ -258,9 +258,9 @@
   "currency": "KES",
   "description": "Demo product 7 — premium placeholder description.",
   "images": [
-    "https://i.postimg.cc/xT35t3WK/image.png",
-    "https://i.postimg.cc/k4tGgwxc/image.png",
-    "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01eNtG3s1uHY1Toi0YJ__3365246012-0-cib_yboagq.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058558/O1CN01E3Yusm1uHY1dSJSzg__3365246012-0-cib_js3u4c.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763059568/O1CN01rVANYh1uHY1YwHHeX__3365246012-0-cib_nrf4ke.jpg"
   ],
   "variations": [
     {
