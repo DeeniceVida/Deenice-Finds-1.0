@@ -1,30 +1,30 @@
 async function loadProducts() {
-  const res = await fetch('data/products.json');
-  const products = await res.json();
-  return products;
+  const res = await fetch('data/products.json');
+  const products = await res.json();
+  return products;
 }
 
 function createProductCard(p) {
-  const el = document.createElement('a');
-  el.className = 'product-card';
-  el.href = `product.html?id=${encodeURIComponent(p.id)}`;
-  el.innerHTML = `
-    <img loading="lazy" src="${p.images[0]}" alt="${p.title}" />
-    <h3>${p.title}</h3>
-    <div class="price">${p.price.toLocaleString()} ${p.currency}</div>
-  `;
-  return el;
+  const el = document.createElement('a');
+  el.className = 'product-card';
+  el.href = `product.html?id=${encodeURIComponent(p.id)}`;
+  el.innerHTML = `
+    <img loading="lazy" src="${p.images[0]}" alt="${p.title}" />
+    <h3>${p.title}</h3>
+    <div class="price">${p.price.toLocaleString()} ${p.currency}</div>
+  `;
+  return el;
 }
 
 async function renderGrid() {
-  const grid = document.getElementById('product-grid');
-  if (!grid) return;
-  const products = await loadProducts();
-  products.slice(0, 10).forEach(p => grid.appendChild(createProductCard(p)));
+  const grid = document.getElementById('product-grid');
+  if (!grid) return;
+  const products = await loadProducts();
+  products.slice(0, 10).forEach(p => grid.appendChild(createProductCard(p)));
 
-  const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
-  const badge = document.getElementById('cart-count');
-  if (badge) badge.textContent = cart.length || 0;
+  const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
+  const badge = document.getElementById('cart-count');
+  if (badge) badge.textContent = cart.length || 0;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -123,55 +123,55 @@ function closeAllSubmenus() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* SEARCH LOGIC                                                               */
+/* SEARCH LOGIC                                                               */
 /* -------------------------------------------------------------------------- */
 function showInitialSuggestions() {
-  const suggestions = document.getElementById('search-suggestions');
-  suggestions.innerHTML = '';
-  const picks = window._products_for_suggestions || [];
-  picks.slice(0, 6).forEach(m => {
-    const r = document.createElement('div');
-    r.className = 'suggestion';
-    r.innerHTML = `<a href="product.html?id=${encodeURIComponent(m.id)}">
-      <img src="${m.images[0]}" width="56" height="56" style="object-fit:cover;border-radius:6px;margin-right:8px"/>${m.title}
-    </a>`;
-    suggestions.appendChild(r);
-  });
+  const suggestions = document.getElementById('search-suggestions');
+  suggestions.innerHTML = '';
+  const picks = window._products_for_suggestions || [];
+  picks.slice(0, 6).forEach(m => {
+    const r = document.createElement('div');
+    r.className = 'suggestion';
+    r.innerHTML = `<a href="product.html?id=${encodeURIComponent(m.id)}">
+      <img src="${m.images[0]}" width="56" height="56" style="object-fit:cover;border-radius:6px;margin-right:8px"/>${m.title}
+    </a>`;
+    suggestions.appendChild(r);
+  });
 }
 
 function setupSearch(products) {
-  window._products_for_suggestions = products;
-  const toggle = document.getElementById('search-toggle');
-  const box = document.getElementById('search-box');
-  const input = document.getElementById('search-input');
-  const suggestions = document.getElementById('search-suggestions');
+  window._products_for_suggestions = products;
+  const toggle = document.getElementById('search-toggle');
+  const box = document.getElementById('search-box');
+  const input = document.getElementById('search-input');
+  const suggestions = document.getElementById('search-suggestions');
 
-  toggle.addEventListener('click', () => {
-    box.classList.toggle('hidden');
-    if (!box.classList.contains('hidden')) {
-      input.focus();
-      showInitialSuggestions();
-    }
-  });
+  toggle.addEventListener('click', () => {
+    box.classList.toggle('hidden');
+    if (!box.classList.contains('hidden')) {
+      input.focus();
+      showInitialSuggestions();
+    }
+  });
 
-  input.addEventListener('input', e => {
-    const q = e.target.value.toLowerCase();
-    suggestions.innerHTML = '';
-    if (!q) return showInitialSuggestions();
+  input.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    suggestions.innerHTML = '';
+    if (!q) return showInitialSuggestions();
 
-    const matches = products
-      .filter(p => (p.title + p.description).toLowerCase().includes(q))
-      .slice(0, 6);
+    const matches = products
+      .filter(p => (p.title + p.description).toLowerCase().includes(q))
+      .slice(0, 6);
 
-    matches.forEach(m => {
-      const r = document.createElement('div');
-      r.className = 'suggestion';
-      r.innerHTML = `<a href="product.html?id=${encodeURIComponent(m.id)}">
-        <img src="${m.images[0]}" width="56" height="56" style="object-fit:cover;border-radius:6px;margin-right:8px"/>${m.title}
-      </a>`;
-      suggestions.appendChild(r);
-    });
-  });
+    matches.forEach(m => {
+      const r = document.createElement('div');
+      r.className = 'suggestion';
+      r.innerHTML = `<a href="product.html?id=${encodeURIComponent(m.id)}">
+        <img src="${m.images[0]}" width="56" height="56" style="object-fit:cover;border-radius:6px;margin-right:8px"/>${m.title}
+      </a>`;
+      suggestions.appendChild(r);
+    });
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -180,38 +180,38 @@ function setupSearch(products) {
 
 // TOP SLIDES DATA (Renamed from 'slides')
 const topSlides = [
-    {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418668/ad_1_desktop_3x-100_hmbljc.jpg",
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418667/ad_1_mobile_3x-100_edwyal.jpg"
-    },
-    {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418672/as_2_desktop_3x-100_is2hkt.jpg",
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418669/ad_1_mobile_copy_3x-100_dy46n7.jpg"
-    },
-    {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418908/as_4_desktop_3x-100_vhin3a.jpg",
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_4_mobile_3x-100_hgjitp.jpg"
-    },
-    {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418670/ad_3_desktop_3x-100_l6ydnv.jpg",
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418671/ad_3_mobile_3x-100_lgtdpr.jpg"
-    },
-    {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418672/ad_5_desktop_3x-100_jksvwz.jpg",
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_5_mobile_3x-100_ze7qzo.jpg"
-    }
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418668/ad_1_desktop_3x-100_hmbljc.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418667/ad_1_mobile_3x-100_edwyal.jpg"
+    },
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418672/as_2_desktop_3x-100_is2hkt.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418669/ad_1_mobile_copy_3x-100_dy46n7.jpg"
+    },
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418908/as_4_desktop_3x-100_vhin3a.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_4_mobile_3x-100_hgjitp.jpg"
+    },
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418670/ad_3_desktop_3x-100_l6ydnv.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418671/ad_3_mobile_3x-100_lgtdpr.jpg"
+    },
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418672/ad_5_desktop_3x-100_jksvwz.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_5_mobile_3x-100_ze7qzo.jpg"
+    }
 ];
 
 // BOTTOM SLIDES DATA (Unique content)
 const bottomSlides = [
-    {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418908/as_4_desktop_3x-100_vhin3a.jpg", // REPLACE with unique content
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_4_mobile_3x-100_hgjitp.jpg" // REPLACE with unique content
-    },
-    {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418670/ad_3_desktop_3x-100_l6ydnv.jpg", // REPLACE with unique content
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418671/ad_3_mobile_3x-100_lgtdpr.jpg" // REPLACE with unique content
-    }
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418908/as_4_desktop_3x-100_vhin3a.jpg", // REPLACE with unique content
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_4_mobile_3x-100_hgjitp.jpg" // REPLACE with unique content
+    },
+    {
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418670/ad_3_desktop_3x-100_l6ydnv.jpg", // REPLACE with unique content
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418671/ad_3_mobile_3x-100_lgtdpr.jpg" // REPLACE with unique content
+    }
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -429,30 +429,30 @@ window.addEventListener("resize", () => {
 });
 
 /* -------------------------------------------------------------------------- */
-/* SCROLL ANIMATION                                                           */
+/* SCROLL ANIMATION                                                           */
 /* -------------------------------------------------------------------------- */
 function revealOnScroll() {
-  const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15 });
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
 
-  reveals.forEach(r => observer.observe(r));
+  reveals.forEach(r => observer.observe(r));
 }
 
 /* -------------------------------------------------------------------------- */
 /* INITIALIZE (UPDATED)                                                       */
 /* -------------------------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', async () => {
-  const products = await loadProducts();
-  renderGrid();
-  setupSearch(products);
-  setupAllOffers(); // Calls the function that initializes both sliders
-  setupMobileNav();
-  revealOnScroll();
+  const products = await loadProducts();
+  renderGrid();
+  setupSearch(products);
+  setupAllOffers(); // Calls the function that initializes both sliders
+  setupMobileNav();
+  revealOnScroll();
 });
