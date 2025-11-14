@@ -2,8 +2,9 @@
 async function loadProducts() {
   try {
     const res = await fetch('data/products.json');
+    if (!res.ok) throw new Error('Failed to load products');
     const products = await res.json();
-    return products;
+    return Array.isArray(products) ? products : [];
   } catch (error) {
     console.error('Error loading products:', error);
     return [];
@@ -11,6 +12,8 @@ async function loadProducts() {
 }
 
 function createProductCard(p) {
+  if (!p) return document.createElement('div');
+  
   const el = document.createElement('a');
   el.className = 'product-card';
   el.href = `product.html?id=${encodeURIComponent(p.id)}`;
@@ -20,12 +23,18 @@ function createProductCard(p) {
   const stockText = getStockText(stock);
   const isAvailable = stock > 0;
 
+  const firstImage = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : 'https://via.placeholder.com/300x300?text=No+Image';
+  const price = p.price || 0;
+  const originalPrice = p.originalPrice;
+  const currency = p.currency || 'KES';
+
   el.innerHTML = `
-    <img loading="lazy" src="${p.images[0]}" alt="${p.title}" />
-    <h3>${p.title}</h3>
+    <img loading="lazy" src="${firstImage}" alt="${p.title || 'Product'}" 
+         onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'"/>
+    <h3>${p.title || 'Untitled Product'}</h3>
     <div class="price">
-      ${p.originalPrice ? `<span class="original-price">${p.currency} ${p.originalPrice.toLocaleString()}</span>` : ''}
-      <span class="current-price">${p.currency} ${p.price.toLocaleString()}</span>
+      ${originalPrice && originalPrice > price ? `<span class="original-price">${currency} ${originalPrice.toLocaleString()}</span>` : ''}
+      <span class="current-price">${currency} ${price.toLocaleString()}</span>
     </div>
     <div class="product-stock stock-${stockStatus}">
       ${stockText}
@@ -62,7 +71,7 @@ async function renderProducts() {
     // Show all products (or limit if you want)
     const productsToShow = products.slice(0, 12); // Show first 12 products
     
-    if (productsToShow.length === 0) {
+    if (!Array.isArray(productsToShow) || productsToShow.length === 0) {
       grid.innerHTML = `
         <div style="text-align: center; padding: 60px 20px; color: #666;">
           <div style="margin-bottom: 15px; font-size: 3em;">📦</div>
@@ -74,33 +83,41 @@ async function renderProducts() {
     }
 
     productsToShow.forEach(p => {
-      grid.appendChild(createProductCard(p));
+      if (p && p.id) {
+        grid.appendChild(createProductCard(p));
+      }
     });
 
   } catch (error) {
     console.error('Error rendering products:', error);
     const grid = document.getElementById('product-grid');
-    grid.innerHTML = `
-      <div style="text-align: center; padding: 60px 20px; color: #666;">
-        <div style="margin-bottom: 15px; font-size: 3em; color: #dc3545;">⚠️</div>
-        <div style="margin-bottom: 10px;">Unable to Load Products</div>
-        <small>Please check your internet connection</small>
-        <div style="margin-top: 20px;">
-          <button onclick="window.location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
-            Try Again
-          </button>
+    if (grid) {
+      grid.innerHTML = `
+        <div style="text-align: center; padding: 60px 20px; color: #666;">
+          <div style="margin-bottom: 15px; font-size: 3em; color: #dc3545;">⚠️</div>
+          <div style="margin-bottom: 10px;">Unable to Load Products</div>
+          <small>Please check your internet connection</small>
+          <div style="margin-top: 20px;">
+            <button onclick="window.location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
+              Try Again
+            </button>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
   }
 }
 
 function updateCartCount() {
-  const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
-  const badge = document.getElementById('cart-count');
-  if (badge) {
-    const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-    badge.textContent = totalItems;
+  try {
+    const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
+    const badge = document.getElementById('cart-count');
+    if (badge) {
+      const totalItems = Array.isArray(cart) ? cart.reduce((sum, item) => sum + (item.qty || 0), 0) : 0;
+      badge.textContent = totalItems;
+    }
+  } catch (error) {
+    console.error('Error updating cart count:', error);
   }
 }
 
@@ -186,24 +203,33 @@ function closeAllSubmenus() {
 /* -------------------------------------------------------------------------- */
 function showInitialSuggestions() {
   const suggestions = document.getElementById('search-suggestions');
+  if (!suggestions) return;
+  
   suggestions.innerHTML = '';
   const picks = window._products_for_suggestions || [];
   picks.slice(0, 6).forEach(m => {
+    if (!m || !m.id) return;
+    
     const r = document.createElement('div');
     r.className = 'suggestion';
+    const firstImage = Array.isArray(m.images) && m.images.length > 0 ? m.images[0] : 'https://via.placeholder.com/300x300?text=No+Image';
     r.innerHTML = `<a href="product.html?id=${encodeURIComponent(m.id)}">
-      <img src="${m.images[0]}" width="56" height="56" style="object-fit:cover;border-radius:6px;margin-right:8px"/>${m.title}
+      <img src="${firstImage}" width="56" height="56" style="object-fit:cover;border-radius:6px;margin-right:8px"/>${m.title || 'Product'}
     </a>`;
     suggestions.appendChild(r);
   });
 }
 
 function setupSearch(products) {
-  window._products_for_suggestions = products;
+  if (!Array.isArray(products)) return;
+  
+  window._products_for_suggestions = products.filter(p => p && p.id);
   const toggle = document.getElementById('search-toggle');
   const box = document.getElementById('search-box');
   const input = document.getElementById('search-input');
   const suggestions = document.getElementById('search-suggestions');
+
+  if (!toggle || !box || !input || !suggestions) return;
 
   toggle.addEventListener('click', () => {
     box.classList.toggle('hidden');
@@ -219,14 +245,15 @@ function setupSearch(products) {
     if (!q) return showInitialSuggestions();
 
     const matches = products
-      .filter(p => (p.title + p.description).toLowerCase().includes(q))
+      .filter(p => p && (p.title + (p.description || '')).toLowerCase().includes(q))
       .slice(0, 6);
 
     matches.forEach(m => {
       const r = document.createElement('div');
       r.className = 'suggestion';
+      const firstImage = Array.isArray(m.images) && m.images.length > 0 ? m.images[0] : 'https://via.placeholder.com/300x300?text=No+Image';
       r.innerHTML = `<a href="product.html?id=${encodeURIComponent(m.id)}">
-        <img src="${m.images[0]}" width="56" height="56" style="object-fit:cover;border-radius:6px;margin-right:8px"/>${m.title}
+        <img src="${firstImage}" width="56" height="56" style="object-fit:cover;border-radius:6px;margin-right:8px"/>${m.title || 'Product'}
       </a>`;
       suggestions.appendChild(r);
     });
