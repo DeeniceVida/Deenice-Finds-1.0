@@ -1,48 +1,24 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
-  <title>Products — Deenice Finds</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
+  <title>Products — Deenice Finds</title>
 
-  <!-- ✅ Styles -->
-  <link rel="stylesheet" href="css/styles.css" />
-    <!-- Add this before your other scripts -->
-<script src="js/categories-manager.js"></script>
-<script src="js/config.js"></script>
-<script src="js/products-page.js"></script>
-<!-- ... other scripts ... -->
+  <!-- ✅ Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
 
-  <!-- ✅ Google Analytics (replace G-XXXXXXXX with your ID) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXX');
-  </script>
+  <!-- ✅ Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXX');
+  </script>
 
-  <!-- ✅ Facebook Pixel (replace PIXEL_ID with your ID) -->
-  <script>
-    !(function(f,b,e,v,n,t,s){
-      if(f.fbq)return;
-      n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;
-      n.push=n;
-      n.loaded=!0;
-      n.version='2.0';
-      n.queue=[];
-      t=b.createElement(e);
-      t.async=!0;
-      t.src=v;
-      s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)
-    })(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', 'PIXEL_ID');
-    fbq('track', 'PageView');
-  </script>
-    <!-- ✅ Facebook Pixel (replace PIXEL_ID with your ID) -->
+  <!-- ✅ Facebook Pixel -->
   <script>
     !(function(f,b,e,v,n,t,s){
       if(f.fbq)return;
@@ -62,9 +38,9 @@
     fbq('track', 'PageView');
   </script>
 
-  <!-- 🟢 ADD PRODUCTS PAGE STOCK CSS HERE 🟢 -->
+  <!-- 🟢 PRODUCTS PAGE STOCK CSS -->
   <style>
-      /* UNIVERSAL product styles - Same for desktop and mobile */
+    /* UNIVERSAL product styles - Same for desktop and mobile */
     .products-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -144,11 +120,28 @@
         color: #721c24;
     }
 
+    .stock-special-order {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+
     .out-of-stock-badge {
         position: absolute;
         top: 10px;
         right: 10px;
         background: #dc3545;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: bold;
+    }
+
+    .special-order-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #1565c0;
         color: white;
         padding: 4px 8px;
         border-radius: 4px;
@@ -200,91 +193,60 @@
             height: 120px;
         }
     }
-    /* Products page stock status */
-    .product-stock {
-        font-size: 0.85em;
-        margin-top: 5px;
+
+    /* Loading spinner */
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
     }
 
-    .stock-in-stock {
-        color: #28a745;
-        font-weight: 500;
-    }
-
-    .stock-low-stock {
-        color: #ffc107;
-        font-weight: 500;
-    }
-
-    .stock-out-of-stock {
-        color: #dc3545;
-        font-weight: 500;
-    }
-
-    .product-card.out-of-stock {
-        opacity: 0.7;
-        position: relative;
-    }
-
-    .product-card.out-of-stock::after {
-        content: "Out of Stock";
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: #dc3545;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.8em;
-        font-weight: bold;
-    }
-
-    .out-of-stock-btn {
-        background: #6c757d !important;
-        cursor: not-allowed !important;
-        opacity: 0.6 !important;
-    }
-
-    .out-of-stock-btn:hover {
-        transform: none !important;
-        box-shadow: none !important;
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 
 <body>
-  <!-- ✅ Header -->
-  <header class="site-header">
-    <a href="index.html" class="logo">Deenice Finds</a>
-    <nav>
-      <a href="products.html" class="active">Products</a>
-      <a href="cart.html">Cart <span id="cart-count"></span></a>
-    </nav>
-  </header>
+  <!-- ✅ Header -->
+  <header class="site-header">
+    <a href="index.html" class="logo">Deenice Finds</a>
+    <nav>
+      <a href="products.html" class="active">Products</a>
+      <a href="cart.html">Cart <span id="cart-count">0</span></a>
+    </nav>
+  </header>
 
-     <!-- ✅ Main Content -->
+  <!-- ✅ Main Content -->
   <main class="page-content">
     <h1>Our Products</h1>
     <div id="products-grid" class="products-grid">
         <div style="text-align: center; padding: 40px; color: #666;">
+            <div class="loading-spinner"></div>
             <p>Loading products...</p>
         </div>
     </div>
   </main>
 
-  <!-- ✅ Footer -->
-  <footer class="site-footer">
-    <!-- NEW POLICY LINKS SECTION -->
-    <div class="policy-links">
-      <a href="returns.html">Refund & Returns</a>
-      <span class="separator">|</span>
-      <a href="shipping.html">Shipping Policy</a>
-    </div>
-    <p>&copy; 2025 Deenice Finds. All rights reserved.</p>
-  </footer>
+  <!-- ✅ Footer -->
+  <footer class="site-footer">
+    <!-- NEW POLICY LINKS SECTION -->
+    <div class="policy-links">
+      <a href="returns.html">Refund & Returns</a>
+      <span class="separator">|</span>
+      <a href="shipping.html">Shipping Policy</a>
+    </div>
+    <p>&copy; 2025 Deenice Finds. All rights reserved.</p>
+  </footer>
 
-  <!-- ✅ Scripts -->
-  <script src="js/config.js"></script>
-  <script src="js/products-page.js"></script>
+  <!-- ✅ Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/categories-manager.js"></script>
+  <script src="js/products-page.js"></script>
 </body>
 </html>
