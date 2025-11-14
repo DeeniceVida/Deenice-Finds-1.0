@@ -1,4 +1,4 @@
-// site.js - Enhanced with featured products loading
+// site.js - SIMPLIFIED VERSION - Just loads products normally
 async function loadProducts() {
   try {
     const res = await fetch('data/products.json');
@@ -15,12 +15,10 @@ function createProductCard(p) {
   el.className = 'product-card';
   el.href = `product.html?id=${encodeURIComponent(p.id)}`;
   
-  // Calculate stock status
   const stock = p.stock || 0;
-  const isThermalPrinter = p.title.toLowerCase().includes('thermal');
-  const stockStatus = getStockStatus(stock, isThermalPrinter);
-  const stockText = getStockText(stock, isThermalPrinter);
-  const isAvailable = stock > 0 || isThermalPrinter;
+  const stockStatus = getStockStatus(stock);
+  const stockText = getStockText(stock);
+  const isAvailable = stock > 0;
 
   el.innerHTML = `
     <img loading="lazy" src="${p.images[0]}" alt="${p.title}" />
@@ -30,77 +28,65 @@ function createProductCard(p) {
       <span class="current-price">${p.currency} ${p.price.toLocaleString()}</span>
     </div>
     <div class="product-stock stock-${stockStatus}">
-      ${stockText} ${stock > 0 && !isThermalPrinter ? `• ${stock} units available in Kenya` : ''}
-      ${isThermalPrinter ? '• Importing: 5-7 days' : ''}
+      ${stockText}
     </div>
-    ${!isAvailable && !isThermalPrinter ? '<div class="out-of-stock-badge">Out of Stock</div>' : ''}
-    ${isThermalPrinter ? '<div class="special-order-badge">Available on Order</div>' : ''}
+    ${!isAvailable ? '<div class="out-of-stock-badge">Out of Stock</div>' : ''}
   `;
   
   return el;
 }
 
-// Helper functions for stock status
-function getStockStatus(stock, isThermalPrinter = false) {
-  if (isThermalPrinter) return 'special-order';
+// Simple stock helper functions
+function getStockStatus(stock) {
   if (stock > 10) return 'in-stock';
   if (stock > 0) return 'low-stock';
   return 'out-of-stock';
 }
 
-function getStockText(stock, isThermalPrinter = false) {
-  if (isThermalPrinter) return 'Available on Order';
+function getStockText(stock) {
   if (stock > 10) return 'In Stock Kenya';
   if (stock > 0) return 'Low Stock Kenya';
   return 'Out of Stock Kenya';
 }
 
-async function renderFeaturedProducts() {
+async function renderProducts() {
   const grid = document.getElementById('product-grid');
   if (!grid) return;
 
   try {
-    // Show loading state
-    grid.innerHTML = `
-      <div style="text-align: center; padding: 60px 20px; color: #666;">
-        <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
-        <div style="margin-bottom: 10px;">Loading Featured Products in Kenya...</div>
-        <small>Please wait while we load the best tech products for Kenyan customers</small>
-      </div>
-    `;
-
     const products = await loadProducts();
     
-    // Clear loading state
+    // Clear any existing content
     grid.innerHTML = '';
     
-    // Show featured products (first 8 products or all if less than 8)
-    const featuredProducts = products.slice(0, 8);
+    // Show all products (or limit if you want)
+    const productsToShow = products.slice(0, 12); // Show first 12 products
     
-    if (featuredProducts.length === 0) {
+    if (productsToShow.length === 0) {
       grid.innerHTML = `
         <div style="text-align: center; padding: 60px 20px; color: #666;">
           <div style="margin-bottom: 15px; font-size: 3em;">📦</div>
-          <div style="margin-bottom: 10px;">No Featured Products Available</div>
-          <small>Check back later for new arrivals in Kenya</small>
+          <div style="margin-bottom: 10px;">No Products Available</div>
+          <small>Check back later for new arrivals</small>
         </div>
       `;
       return;
     }
 
-    featuredProducts.forEach(p => {
+    productsToShow.forEach(p => {
       grid.appendChild(createProductCard(p));
     });
 
   } catch (error) {
-    console.error('Error rendering featured products:', error);
+    console.error('Error rendering products:', error);
+    const grid = document.getElementById('product-grid');
     grid.innerHTML = `
       <div style="text-align: center; padding: 60px 20px; color: #666;">
         <div style="margin-bottom: 15px; font-size: 3em; color: #dc3545;">⚠️</div>
         <div style="margin-bottom: 10px;">Unable to Load Products</div>
-        <small>Please check your internet connection and try again</small>
+        <small>Please check your internet connection</small>
         <div style="margin-top: 20px;">
-          <button onclick="renderFeaturedProducts()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
+          <button onclick="window.location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
             Try Again
           </button>
         </div>
@@ -119,7 +105,7 @@ function updateCartCount() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* ✅ FIXED: MOBILE NAVIGATION — with proper submenu closing                  */
+/* MOBILE NAVIGATION (Keep this as is) */
 /* -------------------------------------------------------------------------- */
 function setupMobileNav() {
   const hamburger = document.querySelector('.hamburger');
@@ -128,57 +114,42 @@ function setupMobileNav() {
 
   if (!hamburger || !nav) return;
 
-  // Toggle main menu
   hamburger.addEventListener('click', e => {
     e.stopPropagation();
     nav.classList.toggle('open');
     hamburger.classList.toggle('open');
     
-    // Close all submenus when hamburger closes
     if (!nav.classList.contains('open')) {
       closeAllSubmenus();
     }
   });
 
-  // Handle parent submenu toggling (for mobile)
   document.querySelectorAll('.main-nav .has-sub > a').forEach(link => {
     link.addEventListener('click', e => {
       const parent = link.parentElement;
-
-      // Mobile only
       if (window.innerWidth <= 900) {
         const subMenu = parent.querySelector('.sub');
-
-        // If submenu is not open yet, just open it (don't navigate)
         if (!parent.classList.contains('open')) {
           e.preventDefault();
           e.stopPropagation();
-
-          // Close all other submenus first
           closeAllSubmenus();
-          
-          // Open this submenu
           parent.classList.add('open');
-        } 
-        // If already open and user taps again, go to link
-        else {
+        } else {
           window.location.href = link.getAttribute('href');
         }
       }
     });
   });
 
-  // Allow submenu items to navigate normally
   document.querySelectorAll('.main-nav .has-sub .sub a').forEach(subLink => {
     subLink.addEventListener('click', e => {
-      e.stopPropagation(); // keep nav stable
+      e.stopPropagation();
       nav.classList.remove('open');
       hamburger.classList.remove('open');
       closeAllSubmenus();
     });
   });
 
-  // Close everything when tapping outside
   document.addEventListener('click', e => {
     if (!e.target.closest('.main-nav') && !e.target.closest('.hamburger')) {
       nav.classList.remove('open');
@@ -187,7 +158,6 @@ function setupMobileNav() {
     }
   });
 
-  // Close submenus when clicking on any non-submenu link in main nav
   document.querySelectorAll('.main-nav > ul > li:not(.has-sub) > a').forEach(link => {
     link.addEventListener('click', () => {
       nav.classList.remove('open');
@@ -196,7 +166,6 @@ function setupMobileNav() {
     });
   });
 
-  // Close submenus when pressing Escape key
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       closeAllSubmenus();
@@ -206,7 +175,6 @@ function setupMobileNav() {
   });
 }
 
-// Function to close all submenus
 function closeAllSubmenus() {
   document.querySelectorAll('.main-nav .has-sub').forEach(item => {
     item.classList.remove('open');
@@ -214,7 +182,7 @@ function closeAllSubmenus() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* SEARCH LOGIC                                                               */
+/* SEARCH LOGIC (Keep this as is) */
 /* -------------------------------------------------------------------------- */
 function showInitialSuggestions() {
   const suggestions = document.getElementById('search-suggestions');
@@ -266,10 +234,8 @@ function setupSearch(products) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* SLIDER DATA AND LOGIC - ALL REFACTORED                                     */
+/* SLIDER LOGIC (Keep this as is) */
 /* -------------------------------------------------------------------------- */
-
-// TOP SLIDES DATA (Renamed from 'slides')
 const topSlides = [
     {
       desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418668/ad_1_desktop_3x-100_hmbljc.jpg",
@@ -293,7 +259,6 @@ const topSlides = [
     }
 ];
 
-// BOTTOM SLIDES DATA (Unique content)
 const bottomSlides = [
     {
       desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418908/as_4_desktop_3x-100_vhin3a.jpg",
@@ -305,21 +270,16 @@ const bottomSlides = [
     }
 ];
 
-/* -------------------------------------------------------------------------- */
-/* ✅ SMOOTH SLIDER FUNCTION - FIXED TRANSITIONS & TIMING                     */
-/* -------------------------------------------------------------------------- */
 function initializeSlider(slidesData, sliderId, prevId, nextId, dotsId) {
     const container = document.getElementById(sliderId);
     const dots = document.getElementById(dotsId);
     if (!container || !dots) return;
 
-    // Clear existing content
     container.innerHTML = "";
     dots.innerHTML = "";
 
     const isMobile = window.innerWidth <= 900;
     
-    // Build Slides
     slidesData.forEach((s, i) => {
         const slide = document.createElement("div");
         slide.className = "slide";
@@ -495,7 +455,7 @@ window.addEventListener("resize", () => {
 });
 
 /* -------------------------------------------------------------------------- */
-/* SCROLL ANIMATION                                                           */
+/* SCROLL ANIMATION */
 /* -------------------------------------------------------------------------- */
 function revealOnScroll() {
   const reveals = document.querySelectorAll('.reveal');
@@ -512,11 +472,11 @@ function revealOnScroll() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* INITIALIZE (UPDATED)                                                       */
+/* INITIALIZE EVERYTHING */
 /* -------------------------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', async () => {
   const products = await loadProducts();
-  renderFeaturedProducts(); // This replaces the old renderGrid()
+  renderProducts(); // This loads products normally
   setupSearch(products);
   setupAllOffers();
   setupMobileNav();
@@ -524,5 +484,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateCartCount();
 });
 
-// Make functions globally available
-window.renderFeaturedProducts = renderFeaturedProducts;
+// Make function globally available
+window.renderProducts = renderProducts;
