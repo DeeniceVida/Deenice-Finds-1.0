@@ -1,30 +1,121 @@
+// site.js - Enhanced with featured products loading
 async function loadProducts() {
-  const res = await fetch('data/products.json');
-  const products = await res.json();
-  return products;
+  try {
+    const res = await fetch('data/products.json');
+    const products = await res.json();
+    return products;
+  } catch (error) {
+    console.error('Error loading products:', error);
+    return [];
+  }
 }
 
 function createProductCard(p) {
   const el = document.createElement('a');
   el.className = 'product-card';
   el.href = `product.html?id=${encodeURIComponent(p.id)}`;
+  
+  // Calculate stock status
+  const stock = p.stock || 0;
+  const isThermalPrinter = p.title.toLowerCase().includes('thermal');
+  const stockStatus = getStockStatus(stock, isThermalPrinter);
+  const stockText = getStockText(stock, isThermalPrinter);
+  const isAvailable = stock > 0 || isThermalPrinter;
+
   el.innerHTML = `
     <img loading="lazy" src="${p.images[0]}" alt="${p.title}" />
     <h3>${p.title}</h3>
-    <div class="price">${p.price.toLocaleString()} ${p.currency}</div>
+    <div class="price">
+      ${p.originalPrice ? `<span class="original-price">${p.currency} ${p.originalPrice.toLocaleString()}</span>` : ''}
+      <span class="current-price">${p.currency} ${p.price.toLocaleString()}</span>
+    </div>
+    <div class="product-stock stock-${stockStatus}">
+      ${stockText} ${stock > 0 && !isThermalPrinter ? `• ${stock} units available in Kenya` : ''}
+      ${isThermalPrinter ? '• Importing: 5-7 days' : ''}
+    </div>
+    ${!isAvailable && !isThermalPrinter ? '<div class="out-of-stock-badge">Out of Stock</div>' : ''}
+    ${isThermalPrinter ? '<div class="special-order-badge">Available on Order</div>' : ''}
   `;
+  
   return el;
 }
 
-async function renderGrid() {
+// Helper functions for stock status
+function getStockStatus(stock, isThermalPrinter = false) {
+  if (isThermalPrinter) return 'special-order';
+  if (stock > 10) return 'in-stock';
+  if (stock > 0) return 'low-stock';
+  return 'out-of-stock';
+}
+
+function getStockText(stock, isThermalPrinter = false) {
+  if (isThermalPrinter) return 'Available on Order';
+  if (stock > 10) return 'In Stock Kenya';
+  if (stock > 0) return 'Low Stock Kenya';
+  return 'Out of Stock Kenya';
+}
+
+async function renderFeaturedProducts() {
   const grid = document.getElementById('product-grid');
   if (!grid) return;
-  const products = await loadProducts();
-  products.slice(0, 10).forEach(p => grid.appendChild(createProductCard(p)));
 
+  try {
+    // Show loading state
+    grid.innerHTML = `
+      <div style="text-align: center; padding: 60px 20px; color: #666;">
+        <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+        <div style="margin-bottom: 10px;">Loading Featured Products in Kenya...</div>
+        <small>Please wait while we load the best tech products for Kenyan customers</small>
+      </div>
+    `;
+
+    const products = await loadProducts();
+    
+    // Clear loading state
+    grid.innerHTML = '';
+    
+    // Show featured products (first 8 products or all if less than 8)
+    const featuredProducts = products.slice(0, 8);
+    
+    if (featuredProducts.length === 0) {
+      grid.innerHTML = `
+        <div style="text-align: center; padding: 60px 20px; color: #666;">
+          <div style="margin-bottom: 15px; font-size: 3em;">📦</div>
+          <div style="margin-bottom: 10px;">No Featured Products Available</div>
+          <small>Check back later for new arrivals in Kenya</small>
+        </div>
+      `;
+      return;
+    }
+
+    featuredProducts.forEach(p => {
+      grid.appendChild(createProductCard(p));
+    });
+
+  } catch (error) {
+    console.error('Error rendering featured products:', error);
+    grid.innerHTML = `
+      <div style="text-align: center; padding: 60px 20px; color: #666;">
+        <div style="margin-bottom: 15px; font-size: 3em; color: #dc3545;">⚠️</div>
+        <div style="margin-bottom: 10px;">Unable to Load Products</div>
+        <small>Please check your internet connection and try again</small>
+        <div style="margin-top: 20px;">
+          <button onclick="renderFeaturedProducts()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
+            Try Again
+          </button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function updateCartCount() {
   const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
   const badge = document.getElementById('cart-count');
-  if (badge) badge.textContent = cart.length || 0;
+  if (badge) {
+    const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+    badge.textContent = totalItems;
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -205,12 +296,12 @@ const topSlides = [
 // BOTTOM SLIDES DATA (Unique content)
 const bottomSlides = [
     {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418908/as_4_desktop_3x-100_vhin3a.jpg", // REPLACE with unique content
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_4_mobile_3x-100_hgjitp.jpg" // REPLACE with unique content
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418908/as_4_desktop_3x-100_vhin3a.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418673/ad_4_mobile_3x-100_hgjitp.jpg"
     },
     {
-      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418670/ad_3_desktop_3x-100_l6ydnv.jpg", // REPLACE with unique content
-      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418671/ad_3_mobile_3x-100_lgtdpr.jpg" // REPLACE with unique content
+      desktop: "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418670/ad_3_desktop_3x-100_l6ydnv.jpg",
+      mobile:  "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761418671/ad_3_mobile_3x-100_lgtdpr.jpg"
     }
 ];
 
@@ -243,13 +334,12 @@ function initializeSlider(slidesData, sliderId, prevId, nextId, dotsId) {
     });
 
     let idx = 0;
-    const slideInterval = 5000; // Increased to 5 seconds for better UX
-    const transitionDuration = 800; // Match CSS transition duration
+    const slideInterval = 5000;
+    const transitionDuration = 800;
     let autoSlide;
-    let isTransitioning = false; // CRITICAL: Prevent overlapping transitions
+    let isTransitioning = false;
 
     function showSlide(n) {
-        // Prevent rapid clicking/overlapping transitions
         if (isTransitioning) return;
         isTransitioning = true;
         
@@ -257,20 +347,17 @@ function initializeSlider(slidesData, sliderId, prevId, nextId, dotsId) {
         const currentSlide = ss[idx];
         const nextSlide = ss[n];
         
-        // Remove active class from current slide
         currentSlide.classList.remove("active");
         
-        // Add active class to new slide
         setTimeout(() => {
             nextSlide.classList.add("active");
             idx = n;
             refreshDots();
             
-            // Reset transition flag after transition completes
             setTimeout(() => {
                 isTransitioning = false;
             }, transitionDuration);
-        }, 50); // Small delay to ensure CSS transition works properly
+        }, 50);
     }
 
     function refreshDots() {
@@ -309,10 +396,8 @@ function initializeSlider(slidesData, sliderId, prevId, nextId, dotsId) {
         if (autoSlide) clearInterval(autoSlide);
     }
 
-    // Start automatic slideshow
     startAutoSlide();
 
-    // Setup Controls
     document.getElementById(prevId)?.addEventListener("click", (e) => {
         e.stopPropagation();
         if (!isTransitioning) {
@@ -329,14 +414,13 @@ function initializeSlider(slidesData, sliderId, prevId, nextId, dotsId) {
         }
     });
 
-    // Enhanced swipe gestures with better timing
     let startX = 0;
     let startTime = 0;
     
     container.addEventListener("touchstart", (e) => {
         startX = e.touches[0].clientX;
         startTime = Date.now();
-        stopAutoSlide(); // Pause autoplay during interaction
+        stopAutoSlide();
     });
     
     container.addEventListener("touchend", (e) => {
@@ -345,7 +429,6 @@ function initializeSlider(slidesData, sliderId, prevId, nextId, dotsId) {
         const diff = endX - startX;
         const timeDiff = endTime - startTime;
         
-        // Only register as swipe if movement is significant and quick
         if (Math.abs(diff) > 50 && timeDiff < 300 && !isTransitioning) {
             if (diff > 0) {
                 prev();
@@ -354,39 +437,30 @@ function initializeSlider(slidesData, sliderId, prevId, nextId, dotsId) {
             }
         }
         
-        // Restart autoplay after a delay
         setTimeout(startAutoSlide, 3000);
     });
 
-    // Pause on hover (desktop only) with better timing
     if (!isMobile) {
         container.addEventListener("mouseenter", () => {
             stopAutoSlide();
         });
         
         container.addEventListener("mouseleave", () => {
-            // Wait a bit before restarting to avoid immediate transition
             setTimeout(startAutoSlide, 1000);
         });
     }
 
-    // Handle tab visibility changes
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
             stopAutoSlide();
         } else {
-            // Don't restart immediately when tab becomes visible
             setTimeout(startAutoSlide, 2000);
         }
     });
 
-    // Preload images for smoother transitions
     preloadSliderImages(slidesData, isMobile);
 }
 
-/* -------------------------------------------------------------------------- */
-/* ✅ IMAGE PRELOADING FOR SMOOTHER TRANSITIONS                               */
-/* -------------------------------------------------------------------------- */
 function preloadSliderImages(slidesData, isMobile) {
     slidesData.forEach(slide => {
         const img = new Image();
@@ -394,11 +468,7 @@ function preloadSliderImages(slidesData, isMobile) {
     });
 }
 
-/* -------------------------------------------------------------------------- */
-/* ✅ GLOBAL SLIDER SETUP FUNCTION - Calls both sliders                       */
-/* -------------------------------------------------------------------------- */
 function setupAllOffers() {
-    // 1. Initialize the TOP Slider (using original IDs)
     initializeSlider(
         topSlides,
         "offers-slider",
@@ -407,7 +477,6 @@ function setupAllOffers() {
         "offers-dots"
     );
 
-    // 2. Initialize the BOTTOM Slider (using new unique IDs)
     initializeSlider(
         bottomSlides,
         "bottom-offers-slider",
@@ -417,15 +486,12 @@ function setupAllOffers() {
     );
 }
 
-/* -------------------------------------------------------------------------- */
-/* ✅ OPTIMIZED RESIZE HANDLER                                                */
-/* -------------------------------------------------------------------------- */
 let resizeTimeout;
 window.addEventListener("resize", () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
         setupAllOffers();
-    }, 250); // Reduced from 400ms for faster response
+    }, 250);
 });
 
 /* -------------------------------------------------------------------------- */
@@ -450,9 +516,13 @@ function revealOnScroll() {
 /* -------------------------------------------------------------------------- */
 document.addEventListener('DOMContentLoaded', async () => {
   const products = await loadProducts();
-  renderGrid();
+  renderFeaturedProducts(); // This replaces the old renderGrid()
   setupSearch(products);
-  setupAllOffers(); // Calls the function that initializes both sliders
+  setupAllOffers();
   setupMobileNav();
   revealOnScroll();
+  updateCartCount();
 });
+
+// Make functions globally available
+window.renderFeaturedProducts = renderFeaturedProducts;
