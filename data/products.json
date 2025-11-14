@@ -254,41 +254,80 @@
   {
   "id": "p8",
   "title": "Work Desk Pegboard Organizer",
-  "price": 4800,  // Add this line
+  "price": 4800,
   "basePrice": 4800,
   "currency": "KES",
-  "description": "Demo product 7 — premium placeholder description.",
+  "description": "Transform your workspace with this modular pegboard organizer system. Perfect for keeping your desk tidy and all your essentials within reach. Features multiple accessories and customizable layouts.",
   "images": [
     "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01eNtG3s1uHY1Toi0YJ__3365246012-0-cib_yboagq.jpg",
     "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058558/O1CN01E3Yusm1uHY1dSJSzg__3365246012-0-cib_js3u4c.jpg",
-    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763059568/O1CN01rVANYh1uHY1YwHHeX__3365246012-0-cib_nrf4ke.jpg"
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763059568/O1CN01rVANYh1uHY1YwHHeX__3365246012-0-cib_nrf4ke.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01XiBoBT1uHY1FaY7Ki__3365246012-0-cib_j7bhsw.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058558/O1CN01F8N0xR1uHY1ajmBa9__3365246012-0-cib_v7qvvw.jpg"
   ],
-  "colors": [  // Add this colors array
+  "colors": [
     {
       "name": "Black",
       "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01XiBoBT1uHY1FaY7Ki__3365246012-0-cib_j7bhsw.jpg"
     },
     {
-      "name": "White", 
+      "name": "White",
       "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058558/O1CN01F8N0xR1uHY1ajmBa9__3365246012-0-cib_v7qvvw.jpg"
     }
   ],
-  "sizes": [  // Add this sizes array
+  "sizes": [
     {
-      "label": "Size l (60x30cm)",
+      "label": "Size 1 (60x30cm)",
       "price": 4800
     },
     {
-      "label": "Size 2 (90x30cm)", 
+      "label": "Size 2 (90x30cm)",
       "price": 6200
     }
   ],
   "variations": [
-    // ... keep your existing variations if needed for detailed product page
+    {
+      "name": "Size 1 (60x30cm)",
+      "colors": [
+        {
+          "name": "Black",
+          "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01XiBoBT1uHY1FaY7Ki__3365246012-0-cib_j7bhsw.jpg",
+          "priceAdjustment": 0
+        },
+        {
+          "name": "White",
+          "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058558/O1CN01F8N0xR1uHY1ajmBa9__3365246012-0-cib_v7qvvw.jpg",
+          "priceAdjustment": 0
+        }
+      ]
+    },
+    {
+      "name": "Size 2 (90x30cm)",
+      "colors": [
+        {
+          "name": "Black",
+          "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01eNtG3s1uHY1Toi0YJ__3365246012-0-cib_yboagq.jpg",
+          "priceAdjustment": 1400
+        },
+        {
+          "name": "White",
+          "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058558/O1CN01E3Yusm1uHY1dSJSzg__3365246012-0-cib_js3u4c.jpg",
+          "priceAdjustment": 1400
+        }
+      ]
+    }
   ],
-  "sku": "DEMO-7",
+  "specs": [
+    {"label": "Material", "value": "High-quality Pegboard board with metal hooks"},
+    {"label": "Frame Colors", "value": "Black, White"},
+    {"label": "Accessories Included", "value": "Multiple hooks, shelves, and containers"},
+    {"label": "Installation", "value": "Easy wall mounting with included hardware"},
+    {"label": "Weight Capacity", "value": "Up to 5kg per hook"}
+  ],
+  "sku": "PEG-001",
   "stock": 17,
-  "category": "office-organizers"
+  "category": "office-organizers",
+  "tags": ["desk organizer", "pegboard", "office", "storage", "workspace"]
 },
   {
     "id": "p9",
