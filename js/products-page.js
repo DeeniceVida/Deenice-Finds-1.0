@@ -1,5 +1,10 @@
 // products-page.js - FOR PRODUCTS LISTING PAGE (KENYA SEO ENHANCED)
-(async function(){
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('Products page initialized');
+    await initializeProductsPage();
+});
+
+async function initializeProductsPage() {
     const grid = document.getElementById('products-grid');
     if (!grid) {
         console.error('Products grid element not found');
@@ -9,7 +14,7 @@
     // Show proper loading state
     grid.innerHTML = `
         <div style="text-align: center; padding: 60px 20px; color: #666;">
-            <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+            <div class="loading-spinner"></div>
             <div style="margin-bottom: 10px;">Loading Products in Kenya...</div>
             <small>Please wait while we load the latest inventory for Kenyan customers</small>
         </div>
@@ -24,7 +29,7 @@
         console.error('❌ Error loading products:', error);
         showErrorState(error);
     }
-})();
+}
 
 // SINGLE loadAndRenderProducts function with category support
 async function loadAndRenderProducts() {
@@ -65,8 +70,14 @@ async function loadAndRenderProducts() {
     renderProductsGrid(products);
     
     // Update page title and heading with category for Kenya SEO
+    updatePageMetadata(category, products);
+    
+    console.log('✅ Rendered', products.length, 'products for category:', category || 'all');
+}
+
+function updatePageMetadata(category, products) {
     if (category && category !== 'all') {
-        const categories = typeof categoriesManager !== 'undefined' ? categoriesManager.getCategories() : [];
+        const categories = window.categoriesManager ? categoriesManager.getCategories() : [];
         const currentCategory = categories.find(cat => cat.id === category);
         
         if (currentCategory) {
@@ -79,29 +90,32 @@ async function loadAndRenderProducts() {
             }
             
             // Update meta description for Kenya SEO
-            const metaDescription = document.querySelector('meta[name="description"]');
-            if (metaDescription) {
-                metaDescription.content = `Buy ${currentCategory.name} in Kenya. Best prices in Nairobi, Mombasa, Kisumu. Delivery nationwide. M-Pesa accepted.`;
-            }
+            updateMetaDescription(`Buy ${currentCategory.name} in Kenya. Best prices in Nairobi, Mombasa, Kisumu. Delivery nationwide. M-Pesa accepted.`);
         } else {
             // Fallback for unknown categories
-            document.title = `${category.charAt(0).toUpperCase() + category.slice(1)} — Buy in Kenya | Deenice Finds`;
+            const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1);
+            document.title = `${formattedCategory} — Buy in Kenya | Deenice Finds`;
             
             const pageHeading = document.querySelector('h1');
             if (pageHeading) {
-                pageHeading.textContent = `${category.charAt(0).toUpperCase() + category.slice(1)} in Kenya`;
+                pageHeading.textContent = `${formattedCategory} in Kenya`;
             }
         }
     } else {
         // Update for all products page
         document.title = 'All Products — Buy Tech in Kenya | Deenice Finds';
-        const metaDescription = document.querySelector('meta[name="description"]');
-        if (metaDescription) {
-            metaDescription.content = 'Shop all tech products in Kenya. Phones, earbuds, accessories with delivery nationwide. Best prices in Nairobi, Mombasa, Kisumu. M-Pesa accepted.';
-        }
+        updateMetaDescription('Shop all tech products in Kenya. Phones, earbuds, accessories with delivery nationwide. Best prices in Nairobi, Mombasa, Kisumu. M-Pesa accepted.');
     }
-    
-    console.log('✅ Rendered', products.length, 'products for category:', category || 'all');
+}
+
+function updateMetaDescription(description) {
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.name = 'description';
+        document.head.appendChild(metaDescription);
+    }
+    metaDescription.content = description;
 }
 
 // Product loading logic
@@ -115,7 +129,7 @@ async function loadProductsUniversal() {
         if (storefrontProducts) {
             products = JSON.parse(storefrontProducts);
             console.log('✅ Loaded from storefront cache:', products.length, 'products');
-            return products;
+            return products.filter(p => p && p.id); // Filter out invalid products
         }
     } catch (e) {
         console.log('❌ Storefront cache error, trying next source...');
@@ -125,12 +139,13 @@ async function loadProductsUniversal() {
     try {
         const inventoryProducts = localStorage.getItem('inventory_products');
         if (inventoryProducts) {
-            products = convertInventoryToStorefront(JSON.parse(inventoryProducts));
+            const inventoryData = JSON.parse(inventoryProducts);
+            products = convertInventoryToStorefront(inventoryData);
             console.log('✅ Loaded from inventory cache:', products.length, 'products');
             // Update storefront for next time
             localStorage.setItem('storefront_products', JSON.stringify(products));
             localStorage.setItem('storefront_products_updated', new Date().toISOString());
-            return products;
+            return products.filter(p => p && p.id);
         }
     } catch (e) {
         console.log('❌ Inventory cache error, trying JSON...');
@@ -143,12 +158,17 @@ async function loadProductsUniversal() {
         if (!response.ok) throw new Error('Failed to load products');
         products = await response.json();
         
+        // Validate products data
+        if (!Array.isArray(products)) {
+            throw new Error('Invalid products data format');
+        }
+        
         // Save to cache for next time
         localStorage.setItem('storefront_products', JSON.stringify(products));
         localStorage.setItem('storefront_products_updated', new Date().toISOString());
         
         console.log('✅ Loaded from JSON file:', products.length, 'products');
-        return products;
+        return products.filter(p => p && p.id);
     } catch (error) {
         console.error('❌ Failed to load from JSON:', error);
         throw error;
@@ -157,40 +177,59 @@ async function loadProductsUniversal() {
 
 // Convert admin inventory format to storefront format
 function convertInventoryToStorefront(inventoryProducts) {
+    if (!Array.isArray(inventoryProducts)) return [];
+    
     return inventoryProducts.map(product => {
+        if (!product) return null;
+        
         const totalStock = product.colorStock ? 
-            Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0) : 
-            product.stock || 0;
+            Object.values(product.colorStock).reduce((sum, stock) => sum + (stock || 0), 0) : 
+            (product.stock || 0);
             
         return {
-            id: product.id,
-            title: product.name,
-            price: product.price,
-            originalPrice: product.originalData?.originalPrice,
-            currency: product.originalData?.currency || 'KES',
-            description: product.description,
-            images: product.originalData?.images || [product.image],
-            colors: product.colors,
-            sizes: product.originalData?.sizes,
-            models: product.originalData?.models,
-            specs: product.originalData?.specs,
-            available_status: product.originalData?.available_status,
-            sku: product.originalData?.sku,
+            id: product.id || Math.random().toString(36).substr(2, 9),
+            title: product.name || product.title || 'Untitled Product',
+            price: product.price || 0,
+            originalPrice: product.originalPrice || product.originalData?.originalPrice,
+            currency: product.currency || product.originalData?.currency || 'KES',
+            description: product.description || '',
+            images: product.images || product.originalData?.images || [product.image].filter(Boolean) || ['https://via.placeholder.com/300x300?text=No+Image'],
+            colors: product.colors || [],
+            sizes: product.sizes || product.originalData?.sizes,
+            models: product.models || product.originalData?.models,
+            specs: product.specs || product.originalData?.specs,
+            available_status: product.available_status || product.originalData?.available_status,
+            sku: product.sku || product.originalData?.sku,
             stock: totalStock,
             category: product.category,
             colorStock: product.colorStock,
             availableColors: product.availableColors,
             tags: product.tags || []
         };
-    });
+    }).filter(Boolean);
 }
 
 // Render products grid with Kenya SEO enhancements
 function renderProductsGrid(products) {
     const grid = document.getElementById('products-grid');
+    if (!grid) return;
+    
     grid.innerHTML = '';
 
+    if (!Array.isArray(products) || products.length === 0) {
+        grid.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px; color: #666;">
+                <div style="font-size: 1.2em; margin-bottom: 15px;">📦</div>
+                <div style="margin-bottom: 10px;">No Products Available</div>
+                <small>Check back later for new arrivals in Kenya</small>
+            </div>
+        `;
+        return;
+    }
+
     products.forEach(p => {
+        if (!p || !p.id) return;
+        
         const availableStock = getProductStock(p);
         const isThermalPrinter = isProductThermalPrinter(p);
         const stockStatus = getStockStatus(availableStock, isThermalPrinter);
@@ -201,15 +240,20 @@ function renderProductsGrid(products) {
         el.className = `product-card ${!isAvailable && !isThermalPrinter ? 'out-of-stock' : ''}`;
         el.href = `product.html?id=${encodeURIComponent(p.id)}`;
         
+        const firstImage = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : 'https://via.placeholder.com/300x300?text=No+Image';
+        const price = p.price || 0;
+        const originalPrice = p.originalPrice;
+        const currency = p.currency || 'KES';
+        
         el.innerHTML = `
-            <img src="${p.images[0]}" alt="${p.title} - Buy in Kenya" 
+            <img src="${firstImage}" alt="${p.title || 'Product'} - Buy in Kenya" 
                  onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'"/>
-            <h3>${p.title}</h3>
+            <h3>${p.title || 'Untitled Product'}</h3>
             <div class="price">
-                ${p.originalPrice ? `
-                    <span class="original-price">${p.currency} ${p.originalPrice.toLocaleString()}</span>
+                ${originalPrice && originalPrice > price ? `
+                    <span class="original-price">${currency} ${originalPrice.toLocaleString()}</span>
                 ` : ''}
-                <span class="current-price">${p.currency} ${p.price.toLocaleString()}</span>
+                <span class="current-price">${currency} ${price.toLocaleString()}</span>
             </div>
             <div class="product-stock stock-${stockStatus}">
                 ${stockText} ${availableStock > 0 && !isThermalPrinter ? `• ${availableStock} units available in Kenya` : ''}
@@ -228,16 +272,24 @@ function renderProductsGrid(products) {
 
 // Helper functions with thermal printer support
 function getProductStock(product) {
+    if (!product) return 0;
+    
     if (product.colorStock && Object.keys(product.colorStock).length > 0) {
-        return Object.values(product.colorStock).reduce((sum, stock) => sum + stock, 0);
+        return Object.values(product.colorStock).reduce((sum, stock) => sum + (stock || 0), 0);
     }
     return product.stock || 0;
 }
 
 function isProductThermalPrinter(product) {
-    return product.title.toLowerCase().includes('thermal') || 
-           product.category && product.category.toLowerCase().includes('thermal') ||
-           product.tags && product.tags.some(tag => tag.toLowerCase().includes('thermal'));
+    if (!product) return false;
+    
+    const title = (product.title || '').toLowerCase();
+    const category = (product.category || '').toLowerCase();
+    const tags = Array.isArray(product.tags) ? product.tags : [];
+    
+    return title.includes('thermal') || 
+           category.includes('thermal') ||
+           tags.some(tag => tag.toLowerCase().includes('thermal'));
 }
 
 function getStockStatus(stock, isThermalPrinter = false) {
@@ -258,24 +310,23 @@ function hasAvailableColors(product) {
     return !product.availableColors || product.availableColors.length > 0;
 }
 
-function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
 // Add this function to filter products by category
 function filterProductsByCategory(products, categoryId) {
     if (!categoryId || categoryId === 'all') return products;
+    if (!Array.isArray(products)) return [];
     
     return products.filter(product => {
+        if (!product) return false;
+        
         // Match by category ID or name
-        const productCategory = product.category?.toLowerCase() || '';
+        const productCategory = (product.category || '').toLowerCase();
         const targetCategory = categoryId.toLowerCase();
         
         // Check if product category matches the target category
         // Also allow partial matches for flexibility
         return productCategory.includes(targetCategory) || 
-               product.title.toLowerCase().includes(targetCategory) ||
-               (product.tags && Array.isArray(product.tags) && product.tags.some(tag => 
+               (product.title || '').toLowerCase().includes(targetCategory) ||
+               (Array.isArray(product.tags) && product.tags.some(tag => 
                    tag.toLowerCase().includes(targetCategory)
                ));
     });
@@ -283,9 +334,11 @@ function filterProductsByCategory(products, categoryId) {
 
 function showErrorState(error) {
     const grid = document.getElementById('products-grid');
+    if (!grid) return;
+    
     grid.innerHTML = `
         <div style="text-align: center; padding: 60px 20px; color: #666;">
-            <div style="margin-bottom: 15px; font-size: 3em; color: #dc3545;">●</div>
+            <div style="margin-bottom: 15px; font-size: 3em; color: #dc3545;">⚠️</div>
             <div style="margin-bottom: 10px; font-weight: bold;">Unable to Load Products in Kenya</div>
             <p style="margin-bottom: 20px; font-size: 0.9em;">
                 ${error.message || 'Please check your internet connection and try again.'}
@@ -311,7 +364,7 @@ function clearAllCache() {
     
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key.includes('product') || key.includes('inventory') || key.includes('storefront')) {
+        if (key && (key.includes('product') || key.includes('inventory') || key.includes('storefront'))) {
             if (!keysToKeep.includes(key)) {
                 keysToRemove.push(key);
             }
@@ -329,35 +382,43 @@ function clearAllCache() {
 
 // Update cart count function
 function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
-    const badge = document.getElementById('cart-count');
-    if (badge) {
-        const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-        badge.textContent = totalItems;
+    try {
+        const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
+        const badge = document.getElementById('cart-count');
+        if (badge) {
+            const totalItems = Array.isArray(cart) ? cart.reduce((sum, item) => sum + (item.qty || 0), 0) : 0;
+            badge.textContent = totalItems;
+        }
+    } catch (error) {
+        console.error('Error updating cart count:', error);
     }
 }
 
 // Enhanced Kenya SEO Structured Data
 function addProductsStructuredData(products) {
+    if (!Array.isArray(products) || products.length === 0) return;
+    
     const urlParams = new URLSearchParams(window.location.search);
     const category = urlParams.get('cat');
     
-    const itemListElement = products.slice(0, 10).map(product => {
+    const itemListElement = products.slice(0, 10).map((product, index) => {
+        if (!product) return null;
+        
         const availableStock = getProductStock(product);
         const isThermalPrinter = isProductThermalPrinter(product);
         
         return {
             "@type": "ListItem",
-            "position": products.indexOf(product) + 1,
+            "position": index + 1,
             "item": {
                 "@type": "Product",
-                "name": product.title,
-                "description": product.description,
-                "image": product.images[0],
+                "name": product.title || 'Product',
+                "description": product.description || '',
+                "image": Array.isArray(product.images) ? product.images[0] : '',
                 "offers": {
                     "@type": "Offer",
-                    "price": product.price,
-                    "priceCurrency": "KES",
+                    "price": product.price || 0,
+                    "priceCurrency": product.currency || "KES",
                     "availability": isThermalPrinter ? "https://schema.org/PreOrder" : 
                                    (availableStock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"),
                     "url": `https://www.deenice.store/product.html?id=${product.id}`,
@@ -366,7 +427,7 @@ function addProductsStructuredData(products) {
                 }
             }
         };
-    });
+    }).filter(Boolean);
 
     const breadcrumbList = {
         "@context": "https://schema.org",
@@ -443,16 +504,8 @@ window.addEventListener('categoriesUpdated', function() {
     }, 300);
 });
 
-// Export for global access
-window.refreshProducts = loadAndRenderProducts;
-window.clearAllCache = clearAllCache;
-window.filterProductsByCategory = filterProductsByCategory;
-
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Products page DOM loaded - Kenya SEO Enhanced');
-    
-    // Add Kenya-focused hidden SEO content
+// Add Kenya-focused hidden SEO content
+function addHiddenSEOContent() {
     const urlParams = new URLSearchParams(window.location.search);
     const category = urlParams.get('cat');
     
@@ -475,4 +528,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     document.body.appendChild(hiddenSeoContent);
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Products page DOM loaded - Kenya SEO Enhanced');
+    addHiddenSEOContent();
 });
+
+// Export for global access
+window.refreshProducts = loadAndRenderProducts;
+window.clearAllCache = clearAllCache;
+window.filterProductsByCategory = filterProductsByCategory;
