@@ -23,12 +23,62 @@ async function initializeProductsPage() {
     try {
         await loadAndRenderProducts();
         updateCartCount();
+        addCacheClearButton(); // Add cache clear button
         console.log('✅ Products loaded successfully for Kenya');
 
     } catch (error) {
         console.error('❌ Error loading products:', error);
         showErrorState(error);
     }
+}
+
+// Cache clearing button for users
+function addCacheClearButton() {
+    // Remove existing button if any
+    const existingBtn = document.getElementById('cache-clear-btn');
+    if (existingBtn) existingBtn.remove();
+
+    const clearBtn = document.createElement('button');
+    clearBtn.id = 'cache-clear-btn';
+    clearBtn.innerHTML = '🔄 Clear Cache';
+    clearBtn.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 9999;
+        background: #ff6b35;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.8em;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+    `;
+    
+    clearBtn.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+    });
+    
+    clearBtn.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    });
+    
+    clearBtn.addEventListener('click', function() {
+        if (confirm('Clear product cache and reload? This will fix missing products.')) {
+            localStorage.removeItem('storefront_products');
+            localStorage.removeItem('inventory_products');
+            localStorage.removeItem('storefront_products_updated');
+            alert('Cache cleared! Reloading...');
+            setTimeout(() => location.reload(), 1000);
+        }
+    });
+    
+    document.body.appendChild(clearBtn);
 }
 
 // SINGLE loadAndRenderProducts function with category support
@@ -118,18 +168,29 @@ function updateMetaDescription(description) {
     metaDescription.content = description;
 }
 
-// Product loading logic
+// Product loading logic - UPDATED WITH CACHE BUSTING
 async function loadProductsUniversal() {
     let products = [];
     
-    // STRATEGY 1: Try storefront_products (admin updates)
+    // STRATEGY 1: Try storefront_products (admin updates) - WITH CACHE CHECK
     try {
         const storefrontProducts = localStorage.getItem('storefront_products');
+        const cacheVersion = localStorage.getItem('cache_version');
+        const currentVersion = '2.0'; // Must match config.js
         
-        if (storefrontProducts) {
+        // Only use cache if version matches
+        if (storefrontProducts && cacheVersion === currentVersion) {
             products = JSON.parse(storefrontProducts);
             console.log('✅ Loaded from storefront cache:', products.length, 'products');
-            return products.filter(p => p && p.id); // Filter out invalid products
+            
+            // Validate cache has new product IDs
+            const hasNewIds = products.some(p => p.id === 'selfie-monitor-screen' || p.id === 'pegboard-organizer');
+            if (hasNewIds) {
+                return products.filter(p => p && p.id);
+            } else {
+                console.log('🔄 Cache has old IDs, refreshing...');
+                localStorage.removeItem('storefront_products');
+            }
         }
     } catch (e) {
         console.log('❌ Storefront cache error, trying next source...');
@@ -151,10 +212,10 @@ async function loadProductsUniversal() {
         console.log('❌ Inventory cache error, trying JSON...');
     }
     
-    // STRATEGY 3: Load from JSON file (fresh data)
+    // STRATEGY 3: Load from JSON file (fresh data) - WITH CACHE BUSTING
     console.log('📦 Loading fresh from JSON file...');
     try {
-        const response = await fetch('data/products.json');
+        const response = await fetch('data/products.json?v=' + Date.now()); // Cache bust
         if (!response.ok) throw new Error('Failed to load products');
         products = await response.json();
         
@@ -163,15 +224,39 @@ async function loadProductsUniversal() {
             throw new Error('Invalid products data format');
         }
         
+        // Validate we have the new product IDs
+        const newProductIds = ['selfie-monitor-screen', 'pegboard-organizer', 'car-phone-mount'];
+        const hasNewProducts = newProductIds.every(id => products.some(p => p.id === id));
+        
+        if (!hasNewProducts) {
+            throw new Error('Products JSON missing new product IDs');
+        }
+        
         // Save to cache for next time
         localStorage.setItem('storefront_products', JSON.stringify(products));
         localStorage.setItem('storefront_products_updated', new Date().toISOString());
         
-        console.log('✅ Loaded from JSON file:', products.length, 'products');
+        console.log('✅ Loaded fresh from JSON file:', products.length, 'products');
         return products.filter(p => p && p.id);
     } catch (error) {
         console.error('❌ Failed to load from JSON:', error);
-        throw error;
+        
+        // Try without cache bust as fallback
+        try {
+            console.log('🔄 Trying without cache bust...');
+            const response = await fetch('data/products.json');
+            if (!response.ok) throw new Error('Failed to load products');
+            products = await response.json();
+            
+            localStorage.setItem('storefront_products', JSON.stringify(products));
+            localStorage.setItem('storefront_products_updated', new Date().toISOString());
+            
+            console.log('✅ Loaded from JSON (fallback):', products.length, 'products');
+            return products.filter(p => p && p.id);
+        } catch (fallbackError) {
+            console.error('❌ Fallback also failed:', fallbackError);
+            throw error;
+        }
     }
 }
 
@@ -359,7 +444,7 @@ function showErrorState(error) {
 
 // Cache management
 function clearAllCache() {
-    const keysToKeep = ['de_cart', 'admin_token', 'admin_logged_in', 'deenice_categories'];
+    const keysToKeep = ['de_cart', 'admin_token', 'admin_logged_in', 'deenice_categories', 'cache_version'];
     const keysToRemove = [];
     
     for (let i = 0; i < localStorage.length; i++) {
