@@ -14,7 +14,7 @@
     try {
         // ✅ ADDED: Cache validation and clearing
         const cacheVersion = localStorage.getItem('cache_version');
-        const currentVersion = '2.0'; // Must match config.js
+        const currentVersion = '2.1'; // 🔥 UPDATED to match config.js
         
         // Clear cache if version mismatch or has old product IDs
         if (cacheVersion !== currentVersion) {
