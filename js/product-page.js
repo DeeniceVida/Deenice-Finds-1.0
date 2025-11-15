@@ -29,11 +29,12 @@
             console.log('Loaded products from JSON file:', products.length);
         }
 
-        // Find the product by ID, fallback to the first product if not found
-        product = products.find(x => x.id === id) || products[0];
+        // ✅ FIXED: Find the product by ID - NO FALLBACK to first product
+        product = products.find(x => x.id === id);
         
         if (!product) {
-            throw new Error('Product not found');
+            const availableIds = products.map(p => p.id).join(', ');
+            throw new Error(`Product with ID "${id}" not found. Available products: ${availableIds}`);
         }
 
         console.log('Found product:', product.title);
@@ -43,12 +44,19 @@
         if (container) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 60px 20px; color: #666;">
-                    <div style="margin-bottom: 10px; font-weight: bold;">Error Loading Product</div>
-                    <p style="margin-bottom: 20px;">${error.message || 'Please check your connection and try again.'}</p>
-                    <button onclick="location.reload()" 
-                            style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
-                        Try Again
-                    </button>
+                    <div style="margin-bottom: 15px; font-size: 3em;">❌</div>
+                    <div style="margin-bottom: 10px; font-weight: bold;">Product Not Found</div>
+                    <p style="margin-bottom: 20px;">${error.message || 'The product you\'re looking for is not available.'}</p>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="window.location.href='products.html'" 
+                                style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            Browse All Products
+                        </button>
+                        <button onclick="location.reload()" 
+                                style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            Try Again
+                        </button>
+                    </div>
                 </div>
             `;
         }
