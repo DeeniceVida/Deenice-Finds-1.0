@@ -5,7 +5,7 @@
     "price": 1900,
     "originalPrice": 4400,
     "currency": "KES",
-    "description": "Upgrade your driving stability with the Vacuum-Grip Magnetic Car Phone Mount, the ultimate solution for hands-free security. This premium accessory features a durable zinc-alloy construction and utilizes a powerful vacuum suction base to create an air-tight, unshakeable seal on your dashboard or windshield, guaranteeing zero slips even on rough roads. Coupled with a strong, universal magnetic ring, it ensures instant, secure attachment for any smartphone. The integrated 360° rotating gimbal allows you to effortlessly achieve the perfect viewing angle for GPS navigation and safe, clear calls, making it the most reliable and convenient car phone holder available.",
+    "description": "Upgrade your driving stability with the Vacuum-Grip Magnetic Car Phone Mount, the ultimate solution for hands-free security. This premium accessory features a durable zinc-alloy construction and utilizes a powerful vacuum suction base to create an air-tight, unshakeable seal on your dashboard or windshield, guaranteeing zero slips even on rough roads...",
     "images": [
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/Hecf0239f23be47d094f294c06442307cp_wglayf.jpg",
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184011/H1308c6dc430442b4b7647110bb45fcedE_iws4dw.jpg",
@@ -29,7 +29,7 @@
     "price": 5900,
     "originalPrice": 7100,
     "currency": "KES",
-    "description": "Elevate your selfie and vlogging game with the Kingma Magnetic Phone Vlog Screen, the ultimate portable display for creators. Designed for effortless content creation, this innovative monitor lets you see your phone’s rear camera view in real time, giving you crystal-clear framing and focus for every shot — no more guesswork, no more blurry selfies.",
+    "description": "Elevate your selfie and vlogging game with the Kingma Magnetic Phone Vlog Screen...",
     "images": [
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249585/Hf61d2c41e40b45939e0d4ce8ec75bc0dC_joticu.jpg",
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/H12efc6a1c1114d09a8c38bb519d0a450M_lp9mfk.jpg",
@@ -55,86 +55,42 @@
     "category": "phones"
   },
   {
-  "id": "p3",
-  "title": "High End Desk Mat",
-  "price": 1400,
-  "currency": "KES",
-  "description": "Upgrade your setup with our ultimate collection of XXL Extended Gaming Mouse Pads and Desk Mats. Designed for gamers, creators, and professionals, these mats provide a massive, seamless surface for your keyboard and mouse, protecting your desk while enhancing performance.Choose from a variety of exclusive designs to match your personal style and setup:Gaming Branded: Featuring logos from top gaming brands like ASUS and Republic of Gamers (ROG).Anime & Pop Culture: Stunning, vibrant designs featuring beloved characters (e.g., Goku, Dragon Ball Z style) in epic scenes with fire and landscapes.Abstract & Patterned: Sleek options including topographic maps, geometric honeycomb patterns, marbled swirls, and useful shortcut reference mats for quick access to key commands.",
-  "images": [
-    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg",
-    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01N2mCVw1uM8C9BzjHU__983656022-0-cib_bd41x9.jpg",
-    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589638/O1CN012ecQxF1uM81aiUt21__983656022-0-cib_p9zqyr.jpg",
-    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590028/O1CN01ogC7qL1uM8CO9R3js__983656022-0-cib_bg7jfs.jpg",
-    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590027/O1CN01CM7GfU1uM8CNcgZG2__983656022-0-cib_lxwbx6.jpg",
-    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590029/O1CN014dC6wq1uM7m5iYBhU__983656022-0-cib_f3akp0.jpg",
-    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01g1I3dd1uM81aEf89a__983656022-0-cib_gouvjt.jpg"
-  ],
-  "colors": [
-    { "name": "F1", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg" },
-    { "name": "F2", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01qhIrSb1uM8C8IBTvm__983656022-0-cib_ccu8ux.jpg" },
-    { "name": "F3", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331004/O1CN01XIdjOq1uM8C2wcZFf__983656022-0-cib_e1ajug.jpg" },
-    { "name": "F4", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589638/O1CN012ecQxF1uM81aiUt21__983656022-0-cib_p9zqyr.jpg" },
-    { "name": "F5", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01g1I3dd1uM81aEf89a__983656022-0-cib_gouvjt.jpg" },
-    { "name": "F6", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01u3wxTp1uM80d1ZVtl__983656022-0-cib_c3fk8v.jpg" },
-    { "name": "F7", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589640/O1CN01xAxjnk1uM81d5LCN5__983656022-0-cib_mcsadz.jpg" },
-    { "name": "F8", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01Yd1E6R1uM81bvYiah__983656022-0-cib_mmrxhy.jpg" },
-    { "name": "F9", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589641/O1CN01ODLOEE1uM81ZDqn5e__983656022-0-cib_oswwwe.jpg" },
-    { "name": "F10", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590032/O1CN01UpMyts1uM7m8ZP3tJ__983656022-0-cib_wfv3gv.jpg" },
-    { "name": "F11", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590029/O1CN014dC6wq1uM7m5iYBhU__983656022-0-cib_f3akp0.jpg" },
-    { "name": "F12", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590027/O1CN01CM7GfU1uM8CNcgZG2__983656022-0-cib_lxwbx6.jpg" },
-    { "name": "F13", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590027/O1CN01PQmgmU1uM8CNio4IL__983656022-0-cib_gxpmpc.jpg" },
-    { "name": "F14", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590028/O1CN01ogC7qL1uM8CO9R3js__983656022-0-cib_bg7jfs.jpg" },
-    { "name": "F15", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762196633/O1CN01IyajC21uM7z8fwWjy__983656022-0-cib_n78a1x.jpg" },
-    { "name": "F16", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762196635/O1CN01p46h2S1uM81Uuiv7u__983656022-0-cib_dmns2w.jpg" },
-    { "name": "F17", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762196636/O1CN01Isu39i1uM7z33Cvrj__983656022-0-cib_1_f5niim.jpg" },
-    { "name": "F18", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762196630/O1CN01NVJSgi1uM7zfsJZuq__983656022-0-cib_kspc0g.jpg" }
-  ],
-  "sizes": [
-    { "label": "300*800*3mm", "price": 1400 },
-    { "label": "400*900*3mm", "price": 1600 }
-  ],
-  "sku": "Desk Mat",
-  "stock": 18,
-  "category": "Comp"
-},
+    "id": "p3",
+    "title": "High End Desk Mat",
+    "price": 1400,
+    "currency": "KES",
+    "description": "Upgrade your setup with our XXL extended gaming mouse pads...",
+    "images": [
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01N2mCVw1uM8C9BzjHU__983656022-0-cib_bd41x9.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589638/O1CN012ecQxF1uM81aiUt21__983656022-0-cib_p9zqyr.jpg"
+    ],
+    "colors": [
+      { "name": "F1", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg" },
+      { "name": "F2", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01qhIrSb1uM8C8IBTvm__983656022-0-cib_ccu8ux.jpg" }
+    ],
+    "sizes": [
+      { "label": "300*800*3mm", "price": 1400 },
+      { "label": "400*900*3mm", "price": 1600 }
+    ],
+    "sku": "Desk Mat",
+    "stock": 18,
+    "category": "Comp"
+  },
   {
     "id": "p4",
     "title": "Chrome Heart Blue Light Blocking Eyeglasses",
     "originalPrice": 3700,
     "price": 2600,
     "currency": "KES",
-    "description": "Elevate your style and protect your eyes with our collection of Luxury Fashion Eyeglasses, featuring sleek, Chrome Hearts inspired detailing and multiple frame options including crystal clear, classic black, and stylish amber. These versatile frames are fitted with high-quality blue light blocking lenses to reduce digital eye strain, making them perfect for long hours in front of screens, whether for work or gaming. Crafted for universal fit, these unisex spectacle frames blend sophisticated design with essential eye protection, offering a premium and durable accessory that keeps you looking sharp while ensuring maximum visual comfort.",
+    "description": "Elevate your style and protect your eyes...",
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224718_g11wfh.png",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224334_hcizi9.png",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199295/Screenshot_2025-11-03_224437_zd57zv.png",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224621_szcm2l.png",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198433/O1CN017jq4Gj1d4PHyPG4RP__2214783223682-0-cib_lh5oec.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224718_g11wfh.png"
     ],
     "colors": [
       {
         "name": "H1",
         "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198433/O1CN017jq4Gj1d4PHyPG4RP__2214783223682-0-cib_lh5oec.jpg"
-      },
-      {
-        "name": "H2",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198432/O1CN019mzREU1d4PHsqD38t__2214783223682-0-cib_nkgfsy.jpg"
-      },
-      {
-        "name": "H3",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198432/O1CN01Wn369Z1d4PHuz0UcR__2214783223682-0-cib_a5jvft.jpg"
-      },
-      {
-        "name": "H4",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198432/O1CN01Zhti391d4PHw50oZr__2214783223682-0-cib_c3unpd.jpg"
-      },
-      {
-        "name": "H5",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198436/O1CN01fLhfJE1d4PHw4xzhq__2214783223682-0-cib_sbqokv.jpg"
-      },
-      {
-        "name": "H6",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199660/O1CN01fpoNbg1d4PHuGtUpw__2214783223682-0-cib_1_m4kfd5.jpg"
       }
     ],
     "sku": "glasses",
@@ -146,18 +102,10 @@
     "title": "AuraSync Pro Strip RGB Monitor Lights",
     "price": 1100,
     "currency": "KES",
-    "description": "This immersive ambient lighting system is designed to significantly enhance your PC gaming, movie watching, and computing experience. It utilizes DX Light Software to offer an expansive 100,000 color selection, along with 7 kinds of Dynamic Mode and 7 kinds of Music Mode, allowing the light bars to perfectly synchronize with the on-screen content and audio, creating a captivating Picture Rhythm. The result is a vibrant, visual feast that extends the action beyond the monitor, dramatically improving both visual immersion and the overall aesthetic of your setup for an unforgettable gaming and entertainment atmosphere.",
-    "models": [
-        "For 27inch",
-        "For 32inch",
-        "For 34inch"
-    ],
+    "description": "Immersive ambient lighting system with DX Light software...",
+    "models": ["For 27inch", "For 32inch", "For 34inch"],
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261190/H7fa4dbca0eae4250a345e0bfb99d28fd2_j12fhh.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/H022e5070f4d845e9b18638b0aa9ab68fu_qbz6wo.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/Hbd834035d3de4049b77468017d54c1f41_cdkgsc.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/H2c2dcec72121451b911bc55fe1bb1d16z_awquli.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/Hb549da11427c412b9ec80d2d3834d4be3_pxetqg.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261190/H7fa4dbca0eae4250a345e0bfb99d28fd2_j12fhh.jpg"
     ],
     "colors": [
       {
@@ -174,31 +122,14 @@
     "title": "High-Speed Thermal Label Printer",
     "price": 18900,
     "currency": "KES",
-    "description": "High-resolution thermal printer ideal for shipping labels, barcodes, and more. Fast, reliable, and compact.",
+    "description": "High-resolution thermal printer ideal for shipping labels...",
     "available_status": "Available only on order (5-7 days)",
     "specs": [
-      {"label": "Method", "value": "Thermo sensitive"},
-      {"label": "Resolution", "value": "203 dpi"},
-      {"label": "Max Printing Speed", "value": "150 mm/s"},
-      {"label": "Paper Width", "value": "48-108 mm"},
-      {"label": "Paper Thickness", "value": "0.08-0.2 mm"},
-      {"label": "Paper Roll Diameter", "value": "100 mm"},
-      {"label": "Supported Paper", "value": "Thermal paper, black label paper, thermal label paper"},
-      {"label": "Power Adapter", "value": "24V/2.0A"},
-      {"label": "Printing Life", "value": "TPH100Km"},
-      {"label": "Operating Environment", "value": "Temperature: -10 to 50℃, Humidity: 10-90% (non condensing)"},
-      {"label": "Storage Environment", "value": "Temperature: -40 to 80 ℃, Humidity: 5-95% (non condensing)"},
-      {"label": "Connection", "value": "USB"},
-      {"label": "Color", "value": "Black"},
-      {"label": "Weight", "value": "2.20 lbs/1 kg"},
-      {"label": "Dimensions", "value": "W225mm*D162mm*H106mm"}
+      { "label": "Method", "value": "Thermo sensitive" },
+      { "label": "Resolution", "value": "203 dpi" }
     ],
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848469/H7c63956d9aa3494ba1bbb39340c4a4da6_ht5kyy.png",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848470/O1CN01BRm9Ad1wKs9daUDBA__2208322336290-0-cib_gwtvme.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848471/O1CN01PKpfBg1wKsL0IYfRt__2208322336290-0-cib_ustj71.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848565/H528adeecdea54355bbbf1d78eb81f32aS_je8vkp.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761849088/Artboard_1_3x-100_ks7jlc.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848469/H7c63956d9aa3494ba1bbb39340c4a4da6_ht5kyy.png"
     ],
     "colors": [
       {
@@ -215,31 +146,16 @@
     "category": "Comp"
   },
   {
-    "id": "Ambient Floor Lamp",
+    "id": "Ambient-Floor-Lamp",
     "title": "Colorful Ambient Floor Lamp",
     "price": 2200,
     "currency": "KES",
-    "description": "Transform your space with the minimalist, high-tech Smart RGB LED Corner Floor Lamp.This sleek, space-saving LED standing light is the perfect modern addition to your gaming room, bedroom, or living room. It delivers vibrant, customizable ambient lighting without taking up valuable floor space.",
+    "description": "Transform your space with the minimalist smart RGB floor lamp...",
     "specs": [
-    {"label": "Dimensions (Height)", "value": "103 cm / 40.55 inch"},
-    {"label": "Dimensions (Width)", "value": "3 cm / 1.18 inch"},
-    {"label": "Stand Base (Adjustable)", "value": "10-19 cm / 3.94-7.48 inch"},
-    {"label": "Voltage", "value": "6V / 500mA-1A"},
-    {"label": "Power", "value": "5W"},
-    {"label": "Power Supply Mode", "value": "USB"},
-    {"label": "Cable Length", "value": "2m"},
-    {"label": "LED QTY / Type", "value": "60PCS / 5050"},
-    {"label": "Color/Temperature", "value": "RGB + Warm Light + White Light"},
-    {"label": "Material", "value": "PC (Polycarbonate)"},
-    {"label": "Control Method 1", "value": "Mobile APP (Smartphone Control)"},
-    {"label": "Control Method 2", "value": "Remote Control"}
-],
+      { "label": "Dimensions", "value": "103 cm height" }
+    ],
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01uCPSjQ1lwSmTAyWhs__3371944883-0-cib_bwgfzv.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01cdT4GP1lwSmQaImOL__3371944883-0-cib_fvr0gz.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915418/O1CN01ejEp5v1lwSmORHiTB__3371944883-0-cib_unos2e.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915405/O1CN01n7gy0K1lwSn8EtCM8__3371944883-0-cib_hmnoee.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915405/O1CN01rtlT6I1lwSmHtm8EQ__3371944883-0-cib_xn11x5.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01uCPSjQ1lwSmTAyWhs__3371944883-0-cib_bwgfzv.jpg"
     ],
     "colors": [
       {
@@ -252,160 +168,48 @@
     "category": "Comp"
   },
   {
-  "id": "p8",
-  "title": "Work Desk Pegboard Organizer",
-  "price": 4800,
-  "basePrice": 4800,
-  "currency": "KES",
-  "description": "Transform your workspace with this modular pegboard organizer system...",
-  "images": [
-    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01eNtG3s1uHY1Toi0YJ__3365246012-0-cib_yboagq.jpg"
-  ],
-  "colors": [
-    {
-      "name": "Black",
-      "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01XiBoBT1uHY1FaY7Ki__3365246012-0-cib_j7bhsw.jpg"
-    },
-    {
-      "name": "White",
-      "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058558/O1CN01F8N0xR1uHY1ajmBa9__3365246012-0-cib_v7qvvw.jpg"
-    }
-  ],
-  "sizes": [
-    {
-      "label": "Size 1 (60x30cm)",
-      "price": 4800
-    },
-    {
-      "label": "Size 2 (90x30cm)",
-      "price": 6200
-    }
-  ],
-  "variations": [
-    {
-      "name": "Size 1 (60x30cm)",
-      "colors": [
-        {
-          "name": "Black",
-          "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01XiBoBT1uHY1FaY7Ki__3365246012-0-cib_j7bhsw.jpg",
-          "priceAdjustment": 0
-        }
-      ]
-    }
-  ],
-  "sku": "PEG-001",
-  "stock": 17,
-  "category": "office-organizers"
-},
-  "specs": [
-    {"label": "Material", "value": "High-quality Pegboard board with metal hooks"},
-    {"label": "Frame Colors", "value": "Black, White"},
-    {"label": "Accessories Included", "value": "Multiple hooks, shelves, and containers"},
-    {"label": "Installation", "value": "Easy wall mounting with included hardware"},
-    {"label": "Weight Capacity", "value": "Up to 5kg per hook"}
-  ],
-  "sku": "PEG-001",
-  "stock": 17,
-  "category": "office-organizers",
-  "tags": ["desk organizer", "pegboard", "office", "storage", "workspace"]
-},
-  {
-    "id": "p9",
-    "title": "Demo Product 8",
-    "price": 3200,
+    "id": "p8",
+    "title": "Work Desk Pegboard Organizer",
+    "price": 4800,
     "currency": "KES",
-    "description": "Demo product 8 \u2014 premium placeholder description.",
+    "description": "Transform your workspace with this modular pegboard organizer system...",
     "images": [
-      "https://i.postimg.cc/xT35t3WK/image.png",
-      "https://i.postimg.cc/k4tGgwxc/image.png",
-      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01eNtG3s1uHY1Toi0YJ__3365246012-0-cib_yboagq.jpg"
     ],
     "colors": [
       {
         "name": "Black",
-        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01XiBoBT1uHY1FaY7Ki__3365246012-0-cib_j7bhsw.jpg"
       },
       {
         "name": "White",
-        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
-      },
-      {
-        "name": "Blue",
-        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
-      },
-      {
-        "name": "Red",
-        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058558/O1CN01F8N0xR1uHY1ajmBa9__3365246012-0-cib_v7qvvw.jpg"
       }
     ],
-    "sku": "DEMO-8",
-    "stock": 18,
-    "category": "phones"
-  },
-  {
-    "id": "p10",
-    "title": "Demo Product 9",
-    "price": 3350,
-    "currency": "KES",
-    "description": "Demo product 9 \u2014 premium placeholder description.",
-    "images": [
-      "https://i.postimg.cc/xT35t3WK/image.png",
-      "https://i.postimg.cc/k4tGgwxc/image.png",
-      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    "sizes": [
+      { "label": "Size 1 (60x30cm)", "price": 4800 },
+      { "label": "Size 2 (90x30cm)", "price": 6200 }
     ],
-    "colors": [
+    "variations": [
       {
-        "name": "Black",
-        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
-      },
-      {
-        "name": "White",
-        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
-      },
-      {
-        "name": "Blue",
-        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
-      },
-      {
-        "name": "Red",
-        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
+        "name": "Size 1 (60x30cm)",
+        "colors": [
+          {
+            "name": "Black",
+            "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01XiBoBT1uHY1FaY7Ki__3365246012-0-cib_j7bhsw.jpg",
+            "priceAdjustment": 0
+          }
+        ]
       }
     ],
-    "sku": "DEMO-9",
-    "stock": 19,
-    "category": "phones"
-  },
-  {
-    "id": "p11",
-    "title": "Demo Product 10",
-    "price": 3500,
-    "currency": "KES",
-    "description": "Demo product 10 \u2014 premium placeholder description.",
-    "images": [
-      "https://i.postimg.cc/xT35t3WK/image.png",
-      "https://i.postimg.cc/k4tGgwxc/image.png",
-      "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
+    "specs": [
+      { "label": "Material", "value": "High-quality Pegboard board with metal hooks" },
+      { "label": "Frame Colors", "value": "Black, White" },
+      { "label": "Weight Capacity", "value": "Up to 5kg per hook" }
     ],
-    "colors": [
-      {
-        "name": "Black",
-        "img": "https://i.postimg.cc/NGRrkPRs/Hf7fb927b9b97487da96fbd5dd5bc6badx.jpg"
-      },
-      {
-        "name": "White",
-        "img": "https://i.postimg.cc/zGzWBSLp/H752e9673ded14855b91e284d97ed781c-F.jpg"
-      },
-      {
-        "name": "Blue",
-        "img": "https://i.postimg.cc/2y1G9Jh7/placeholder-green.png"
-      },
-      {
-        "name": "Red",
-        "img": "https://i.postimg.cc/3xPplaceholder/pink.png"
-      }
-    ],
-    "sku": "DEMO-10",
-    "stock": 20,
-    "category": "phones"
+    "sku": "PEG-001",
+    "stock": 17,
+    "category": "office-organizers",
+    "tags": ["desk organizer", "pegboard", "office", "storage", "workspace"]
   }
 ]
