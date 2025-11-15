@@ -310,7 +310,46 @@
     <div id="orders-container">
         <!-- Orders will be loaded here -->
     </div>
-
+    <script>
+// Ensure order sync is initialized on order history page
+document.addEventListener('DOMContentLoaded', function() {
+    // Force initialize order sync if not already done
+    if (!window.orderSync) {
+        console.log('🔄 Manually initializing OrderSyncManager...');
+        window.orderSync = new OrderSyncManager();
+    }
+    
+    // Add real-time update listener directly to order history
+    if (typeof orderHistory !== 'undefined') {
+        // Listen for admin updates
+        window.addEventListener('adminOrderUpdate', function(e) {
+            console.log('📢 Direct admin update received in order history:', e.detail);
+            orderHistory.loadOrders().then(() => orderHistory.renderOrders());
+        });
+        
+        // Listen for storage changes
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'de_order_history') {
+                console.log('💾 Storage change detected in order history');
+                orderHistory.loadOrders().then(() => orderHistory.renderOrders());
+            }
+        });
+    }
+    
+    // Test function for debugging
+    window.testOrderUpdate = function(orderId, newStatus) {
+        const event = new CustomEvent('adminOrderUpdate', {
+            detail: {
+                orderId: orderId,
+                newStatus: newStatus,
+                timestamp: new Date().toISOString()
+            }
+        });
+        window.dispatchEvent(event);
+        alert(`Test update sent: ${orderId} -> ${newStatus}`);
+    };
+});
+</script>
     <script src="js/order-history.js"></script>
     <script src="js/order-sync.js"></script>
 </body>
