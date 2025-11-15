@@ -157,12 +157,22 @@
                     <img id="main-image" src="${product.images[0]}" alt="${product.title} - Buy in Kenya" 
                          onerror="this.onerror=null;this.src='https://via.placeholder.com/400x400?text=No+Image';"/>
                 </div>
-                <div class="product-thumbs">
-                    ${product.images.map((im, idx) => `
-                        <img data-src="${im}" ${idx === 0 ? 'class="selected"' : ''} src="${im}" 
-                             alt="${product.title} - Image ${idx + 1}"
-                             style="cursor: pointer; border: 2px solid ${idx === 0 ? '#007bff' : 'transparent'}; border-radius: 4px;" />
-                    `).join('')}
+                
+                <!-- Enhanced Thumbnails with Slider -->
+                <div class="product-thumbs-container">
+                    <div class="product-thumbs" id="product-thumbs">
+                        ${product.images.map((im, idx) => `
+                            <img data-src="${im}" ${idx === 0 ? 'class="selected"' : ''} src="${im}" 
+                                 alt="${product.title} - Image ${idx + 1}"
+                                 class="thumb-image" />
+                        `).join('')}
+                    </div>
+                    
+                    <!-- Navigation arrows for many thumbnails -->
+                    ${product.images.length > 4 ? `
+                        <button class="thumb-nav thumb-prev" aria-label="Previous thumbnails">‹</button>
+                        <button class="thumb-nav thumb-next" aria-label="Next thumbnails">›</button>
+                    ` : ''}
                 </div>
             </div>
 
@@ -369,6 +379,100 @@
     // 6. Setup Event Listeners
     setupProductInteractions(isThermalPrinter);
 })();
+
+// Enhanced thumbnail switching with slider support
+function switchMainImage(img) {
+    const mainImage = document.getElementById('main-image');
+    if (mainImage) {
+        mainImage.src = img.dataset.src || img.src;
+        // Update alt text for SEO
+        mainImage.alt = `${document.querySelector('h1').textContent} - ${img.alt}`;
+    }
+    
+    // Update selected thumbnail
+    document.querySelectorAll('.thumb-image').forEach(i => {
+        i.classList.remove('selected');
+    });
+    img.classList.add('selected');
+    
+    // Scroll thumbnail into view if needed
+    if (img.parentElement.scrollWidth > img.parentElement.clientWidth) {
+        img.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+        });
+    }
+}
+
+// Setup thumbnail slider navigation
+function setupThumbnailSlider() {
+    const thumbsContainer = document.querySelector('.product-thumbs');
+    const prevBtn = document.querySelector('.thumb-prev');
+    const nextBtn = document.querySelector('.thumb-next');
+    
+    if (!thumbsContainer) return;
+    
+    // Only setup navigation if there are many thumbnails
+    if (prevBtn && nextBtn) {
+        const scrollAmount = 200;
+        
+        prevBtn.addEventListener('click', () => {
+            thumbsContainer.scrollBy({
+                left: -scrollAmount,
+                behavior: 'smooth'
+            });
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            thumbsContainer.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Show/hide arrows based on scroll position
+        const updateNavButtons = () => {
+            const scrollLeft = thumbsContainer.scrollLeft;
+            const scrollWidth = thumbsContainer.scrollWidth;
+            const clientWidth = thumbsContainer.clientWidth;
+            
+            prevBtn.style.opacity = scrollLeft > 0 ? '1' : '0.5';
+            prevBtn.disabled = scrollLeft <= 0;
+            nextBtn.style.opacity = scrollLeft < (scrollWidth - clientWidth - 10) ? '1' : '0.5';
+            nextBtn.disabled = scrollLeft >= (scrollWidth - clientWidth - 10);
+        };
+        
+        thumbsContainer.addEventListener('scroll', updateNavButtons);
+        updateNavButtons(); // Initial check
+    }
+    
+    // Add click events to all thumbnails
+    const thumbnails = document.querySelectorAll('.thumb-image');
+    thumbnails.forEach(img => {
+        // Click event
+        img.addEventListener('click', () => {
+            switchMainImage(img);
+        });
+        
+        // Touch event for mobile
+        img.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            switchMainImage(img);
+        }, { passive: false });
+        
+        // Keyboard navigation
+        img.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                switchMainImage(img);
+            }
+        });
+        
+        // Make thumbnails focusable for accessibility
+        img.setAttribute('tabindex', '0');
+    });
+}
 
 // Cache clearing function for product page
 function clearProductCacheAndReload() {
@@ -671,7 +775,6 @@ function setupProductInteractions(isThermalPrinter) {
     const descriptionHeader = document.querySelector('.description-header');
     if (descriptionHeader) {
         descriptionHeader.addEventListener('click', toggleDescription);
-        // Add touch event for mobile
         descriptionHeader.addEventListener('touchstart', function(e) {
             e.preventDefault();
             toggleDescription();
@@ -679,23 +782,9 @@ function setupProductInteractions(isThermalPrinter) {
         console.log('Description toggle listener added');
     }
 
-    // Thumbnail switching
-    const thumbnails = document.querySelectorAll('.product-thumbs img');
-    if (thumbnails.length > 0) {
-        thumbnails.forEach(img => {
-            // Click event
-            img.addEventListener('click', () => {
-                switchMainImage(img);
-            });
-            
-            // Touch event for mobile
-            img.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                switchMainImage(img);
-            }, { passive: false });
-        });
-        console.log('Thumbnail listeners added');
-    }
+    // Enhanced thumbnail switching with slider
+    setupThumbnailSlider();
+    console.log('Thumbnail slider listeners added');
 
     // Color selection with auto-collapse
     const colorOptions = document.querySelectorAll('.color-option:not(.disabled)');
@@ -781,21 +870,6 @@ function setupProductInteractions(isThermalPrinter) {
 }
 
 // Helper functions for better organization
-function switchMainImage(img) {
-    const mainImage = document.getElementById('main-image');
-    if (mainImage) {
-        mainImage.src = img.dataset.src;
-        // Update alt text for SEO
-        mainImage.alt = `${document.querySelector('h1').textContent} - ${img.alt}`;
-    }
-    document.querySelectorAll('.product-thumbs img').forEach(i => {
-        i.classList.remove('selected');
-        i.style.borderColor = 'transparent';
-    });
-    img.classList.add('selected');
-    img.style.borderColor = '#007bff';
-}
-
 function selectColorOption(opt) {
     if (opt.classList.contains('disabled')) return;
     
