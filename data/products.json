@@ -1,11 +1,11 @@
 [
   {
-    "id": "p1",
+    "id": "car-phone-mount",
     "title": "Vacuum-Grip Magnetic Car Phone Mount",
     "price": 1900,
     "originalPrice": 4400,
     "currency": "KES",
-    "description": "Upgrade your driving stability with the Vacuum-Grip Magnetic Car Phone Mount, the ultimate solution for hands-free security. This premium accessory features a durable zinc-alloy construction and utilizes a powerful vacuum suction base to create an air-tight, unshakeable seal on your dashboard or windshield, guaranteeing zero slips even on rough roads...",
+    "description": "Upgrade your driving stability with the Vacuum-Grip Magnetic Car Phone Mount, the ultimate solution for hands-free security. This premium accessory features a durable zinc-alloy construction and utilizes a powerful vacuum suction base to create an air-tight, unshakeable seal on your dashboard or windshield, guaranteeing zero slips even on rough roads. Compatible with all smartphones and magnetic cases.",
     "images": [
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/Hecf0239f23be47d094f294c06442307cp_wglayf.jpg",
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184011/H1308c6dc430442b4b7647110bb45fcedE_iws4dw.jpg",
@@ -21,15 +21,16 @@
     ],
     "sku": "PS-A156",
     "stock": 25,
-    "category": "accessories"
+    "category": "accessories",
+    "tags": ["car accessory", "phone mount", "magnetic", "car", "driving"]
   },
   {
-    "id": "p2",
-    "title": "Selfie Monitor Screen",
+    "id": "selfie-monitor-screen",
+    "title": "Selfie Monitor Screen for Vlogging",
     "price": 5900,
     "originalPrice": 7100,
     "currency": "KES",
-    "description": "Elevate your selfie and vlogging game with the Kingma Magnetic Phone Vlog Screen...",
+    "description": "Elevate your selfie and vlogging game with the Kingma Magnetic Phone Vlog Screen. This innovative accessory features a high-quality mirror screen that attaches magnetically to your phone, allowing you to see yourself while recording. Perfect for content creators, influencers, and anyone who wants perfect framing in every shot.",
     "images": [
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249585/Hf61d2c41e40b45939e0d4ce8ec75bc0dC_joticu.jpg",
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761249545/H12efc6a1c1114d09a8c38bb519d0a450M_lp9mfk.jpg",
@@ -50,62 +51,73 @@
         "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761248556/1761248523799_oo188t.jpg"
       }
     ],
-    "sku": "DEMO-2",
+    "sku": "PS-SELFIE-01",
     "stock": 12,
-    "category": "phones"
+    "category": "accessories",
+    "tags": ["selfie", "vlogging", "content creation", "mirror", "phone accessory"]
   },
   {
-    "id": "p3",
-    "title": "High End Desk Mat",
+    "id": "gaming-desk-mat",
+    "title": "XXL Extended Gaming Desk Mat",
     "price": 1400,
     "currency": "KES",
-    "description": "Upgrade your setup with our XXL extended gaming mouse pads...",
+    "description": "Upgrade your setup with our XXL extended gaming mouse pads. This premium desk mat provides a smooth surface for both gaming and work, protecting your desk while offering precise mouse control. The non-slip rubber base keeps it firmly in place during intense gaming sessions.",
     "images": [
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg",
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01N2mCVw1uM8C9BzjHU__983656022-0-cib_bd41x9.jpg",
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589638/O1CN012ecQxF1uM81aiUt21__983656022-0-cib_p9zqyr.jpg"
     ],
     "colors": [
-      { "name": "F1", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg" },
-      { "name": "F2", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01qhIrSb1uM8C8IBTvm__983656022-0-cib_ccu8ux.jpg" }
+      { 
+        "name": "F1 Design", 
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg" 
+      },
+      { 
+        "name": "F2 Design", 
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01qhIrSb1uM8C8IBTvm__983656022-0-cib_ccu8ux.jpg" 
+      }
     ],
     "sizes": [
-      { "label": "300*800*3mm", "price": 1400 },
-      { "label": "400*900*3mm", "price": 1600 }
+      { "label": "300×800×3mm", "price": 1400 },
+      { "label": "400×900×3mm", "price": 1600 }
     ],
-    "sku": "Desk Mat",
+    "sku": "PS-DESKMAT-01",
     "stock": 18,
-    "category": "Comp"
+    "category": "computer-accessories",
+    "tags": ["gaming", "desk mat", "mouse pad", "office", "setup"]
   },
   {
-    "id": "p4",
+    "id": "blue-light-glasses",
     "title": "Chrome Heart Blue Light Blocking Eyeglasses",
-    "originalPrice": 3700,
     "price": 2600,
+    "originalPrice": 3700,
     "currency": "KES",
-    "description": "Elevate your style and protect your eyes...",
+    "description": "Elevate your style and protect your eyes with these premium blue light blocking glasses. Featuring the popular Chrome Heart design, these glasses reduce eye strain from screen time while making a fashion statement. Perfect for gamers, office workers, and anyone who spends hours in front of digital screens.",
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224718_g11wfh.png"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224718_g11wfh.png",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198433/O1CN017jq4Gj1d4PHyPG4RP__2214783223682-0-cib_lh5oec.jpg"
     ],
     "colors": [
       {
-        "name": "H1",
+        "name": "Black Frame",
         "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198433/O1CN017jq4Gj1d4PHyPG4RP__2214783223682-0-cib_lh5oec.jpg"
       }
     ],
-    "sku": "glasses",
+    "sku": "PS-GLASSES-01",
     "stock": 13,
-    "category": "Wearables"
+    "category": "wearables",
+    "tags": ["blue light", "glasses", "eye protection", "fashion", "gaming"]
   },
   {
-    "id": "p5",
-    "title": "AuraSync Pro Strip RGB Monitor Lights",
+    "id": "rgb-monitor-lights",
+    "title": "AuraSync Pro RGB Monitor Backlight",
     "price": 1100,
     "currency": "KES",
-    "description": "Immersive ambient lighting system with DX Light software...",
-    "models": ["For 27inch", "For 32inch", "For 34inch"],
+    "description": "Immersive ambient lighting system with DX Light software control. These RGB monitor lights create a stunning backlight effect that reduces eye strain and enhances your gaming or movie experience. Easy to install with adhesive strips and controllable via mobile app.",
+    "models": ["For 27-inch", "For 32-inch", "For 34-inch"],
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261190/H7fa4dbca0eae4250a345e0bfb99d28fd2_j12fhh.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261190/H7fa4dbca0eae4250a345e0bfb99d28fd2_j12fhh.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261191/Hb6b8d7c6f2a84e7c8f5d2d7d6c5a5e5fZ_ympq6h.jpg"
     ],
     "colors": [
       {
@@ -113,23 +125,28 @@
         "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261190/H7fa4dbca0eae4250a345e0bfb99d28fd2_j12fhh.jpg"
       }
     ],
-    "sku": "DEMO-4",
+    "sku": "PS-RGB-01",
     "stock": 14,
-    "category": "Comps"
+    "category": "computer-accessories",
+    "tags": ["rgb", "monitor lights", "gaming", "ambient", "backlight"]
   },
   {
     "id": "thermal-label-printer",
     "title": "High-Speed Thermal Label Printer",
     "price": 18900,
     "currency": "KES",
-    "description": "High-resolution thermal printer ideal for shipping labels...",
-    "available_status": "Available only on order (5-7 days)",
+    "description": "Professional thermal label printer ideal for shipping labels, barcodes, and receipts. Features high-resolution printing at 203 dpi, fast printing speed, and compatibility with various label sizes. Perfect for small businesses, e-commerce stores, and shipping departments.",
+    "available_status": "Available on order (5-7 days import)",
     "specs": [
-      { "label": "Method", "value": "Thermo sensitive" },
-      { "label": "Resolution", "value": "203 dpi" }
+      { "label": "Print Method", "value": "Thermal sensitive" },
+      { "label": "Resolution", "value": "203 dpi" },
+      { "label": "Print Speed", "value": "Up to 100mm/s" },
+      { "label": "Connectivity", "value": "USB" }
     ],
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848469/H7c63956d9aa3494ba1bbb39340c4a4da6_ht5kyy.png"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848469/H7c63956d9aa3494ba1bbb39340c4a4da6_ht5kyy.png",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848489/O1CN01e63pJj1wKs9WIvBXn__2208322336290-0-cib_oqaorx.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848470/Hb3727df828794bd18c256d9a157926a5h_tbraiq.png"
     ],
     "colors": [
       {
@@ -141,21 +158,26 @@
         "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848470/Hb3727df828794bd18c256d9a157926a5h_tbraiq.png"
       }
     ],
-    "sku": "DEMO-5",
+    "sku": "PS-THERMAL-01",
     "stock": 15,
-    "category": "Comp"
+    "category": "computer-accessories",
+    "tags": ["thermal printer", "shipping", "labels", "barcode", "business"]
   },
   {
-    "id": "Ambient-Floor-Lamp",
-    "title": "Colorful Ambient Floor Lamp",
+    "id": "ambient-floor-lamp",
+    "title": "Smart RGB Ambient Floor Lamp",
     "price": 2200,
     "currency": "KES",
-    "description": "Transform your space with the minimalist smart RGB floor lamp...",
+    "description": "Transform your space with this minimalist smart RGB floor lamp. Features 16 million colors, multiple lighting modes, and remote control. Perfect for creating ambiance in bedrooms, living rooms, or gaming setups. Adjustable brightness and color temperature.",
     "specs": [
-      { "label": "Dimensions", "value": "103 cm height" }
+      { "label": "Dimensions", "value": "103 cm height" },
+      { "label": "Colors", "value": "16 million RGB" },
+      { "label": "Control", "value": "Remote control" },
+      { "label": "Power", "value": "LED energy saving" }
     ],
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01uCPSjQ1lwSmTAyWhs__3371944883-0-cib_bwgfzv.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01uCPSjQ1lwSmTAyWhs__3371944883-0-cib_bwgfzv.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01cdT4GP1lwSmQaImOL__3371944883-0-cib_fvr0gz.jpg"
     ],
     "colors": [
       {
@@ -163,18 +185,21 @@
         "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01cdT4GP1lwSmQaImOL__3371944883-0-cib_fvr0gz.jpg"
       }
     ],
-    "sku": "ambient",
+    "sku": "PS-LAMP-01",
     "stock": 15,
-    "category": "Comp"
+    "category": "home-accessories",
+    "tags": ["floor lamp", "rgb", "smart lighting", "ambient", "decor"]
   },
   {
-    "id": "p8",
-    "title": "Work Desk Pegboard Organizer",
+    "id": "pegboard-organizer",
+    "title": "Modular Desk Pegboard Organizer",
     "price": 4800,
     "currency": "KES",
-    "description": "Transform your workspace with this modular pegboard organizer system...",
+    "description": "Transform your workspace with this modular pegboard organizer system. Keep your desk clutter-free with customizable hooks, shelves, and containers. Made from high-quality materials with a weight capacity of up to 5kg per hook. Perfect for organizing tools, stationery, gaming accessories, and more.",
     "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01eNtG3s1uHY1Toi0YJ__3365246012-0-cib_yboagq.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01eNtG3s1uHY1Toi0YJ__3365246012-0-cib_yboagq.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01XiBoBT1uHY1FaY7Ki__3365246012-0-cib_j7bhsw.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058558/O1CN01F8N0xR1uHY1ajmBa9__3365246012-0-cib_v7qvvw.jpg"
     ],
     "colors": [
       {
@@ -187,53 +212,18 @@
       }
     ],
     "sizes": [
-      { "label": "Size 1 (60x30cm)", "price": 4800 },
-      { "label": "Size 2 (90x30cm)", "price": 6200 }
-    ],
-    "variations": [
-      {
-        "name": "Size 1 (60x30cm)",
-        "colors": [
-          {
-            "name": "Black",
-            "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1763058557/O1CN01XiBoBT1uHY1FaY7Ki__3365246012-0-cib_j7bhsw.jpg",
-            "priceAdjustment": 0
-          }
-        ]
-      }
+      { "label": "Size 1 (60×30cm)", "price": 4800 },
+      { "label": "Size 2 (90×30cm)", "price": 6200 }
     ],
     "specs": [
-      { "label": "Material", "value": "High-quality Pegboard board with metal hooks" },
+      { "label": "Material", "value": "High-quality pegboard with metal hooks" },
       { "label": "Frame Colors", "value": "Black, White" },
-      { "label": "Weight Capacity", "value": "Up to 5kg per hook" }
+      { "label": "Weight Capacity", "value": "Up to 5kg per hook" },
+      { "label": "Included", "value": "Pegboard, hooks, shelves, containers" }
     ],
-    "sku": "PEG-001",
+    "sku": "PS-PEG-001",
     "stock": 17,
-    "category": "office-organizers",
-    "tags": ["desk organizer", "pegboard", "office", "storage", "workspace"]
-  },
-  {
-    "id": "p9",
-    "title": "Vacuum-Grip Magnetic Car Phone Mount",
-    "price": 1900,
-    "originalPrice": 4400,
-    "currency": "KES",
-    "description": "Upgrade your driving stability with the Vacuum-Grip Magnetic Car Phone Mount, the ultimate solution for hands-free security. This premium accessory features a durable zinc-alloy construction and utilizes a powerful vacuum suction base to create an air-tight, unshakeable seal on your dashboard or windshield, guaranteeing zero slips even on rough roads...",
-    "images": [
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/Hecf0239f23be47d094f294c06442307cp_wglayf.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184011/H1308c6dc430442b4b7647110bb45fcedE_iws4dw.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184011/H14fe408ee8ca40f68a4a4b4ef291b571P_evbsom.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/H9f40dad94df24db48620ba1da47ac688t_x5mahn.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184047/H990876ba26a649b1b7f298300cbd3f01r_wsl14b.jpg"
-    ],
-    "colors": [
-      {
-        "name": "Black",
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/Hecf0239f23be47d094f294c06442307cp_wglayf.jpg"
-      }
-    ],
-    "sku": "PS-A156",
-    "stock": 25,
-    "category": "accessories"
-  },
+    "category": "office-accessories",
+    "tags": ["desk organizer", "pegboard", "office", "storage", "workspace", "modular"]
+  }
 ]
