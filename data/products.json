@@ -212,4 +212,30 @@
     "category": "office-organizers",
     "tags": ["desk organizer", "pegboard", "office", "storage", "workspace"]
   }
+],
+[
+  {
+    "id": "p9",
+    "title": "Vacuum-Grip Magnetic Car Phone Mount",
+    "price": 1900,
+    "originalPrice": 4400,
+    "currency": "KES",
+    "description": "Upgrade your driving stability with the Vacuum-Grip Magnetic Car Phone Mount, the ultimate solution for hands-free security. This premium accessory features a durable zinc-alloy construction and utilizes a powerful vacuum suction base to create an air-tight, unshakeable seal on your dashboard or windshield, guaranteeing zero slips even on rough roads...",
+    "images": [
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/Hecf0239f23be47d094f294c06442307cp_wglayf.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184011/H1308c6dc430442b4b7647110bb45fcedE_iws4dw.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184011/H14fe408ee8ca40f68a4a4b4ef291b571P_evbsom.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/H9f40dad94df24db48620ba1da47ac688t_x5mahn.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184047/H990876ba26a649b1b7f298300cbd3f01r_wsl14b.jpg"
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762184012/Hecf0239f23be47d094f294c06442307cp_wglayf.jpg"
+      }
+    ],
+    "sku": "PS-A156",
+    "stock": 25,
+    "category": "accessories"
+  },
 ]
