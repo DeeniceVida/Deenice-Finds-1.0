@@ -7,9 +7,9 @@ window.DEENICE_CONFIG = {
   serviceFeePctOver750: 0.045
 };
 
-// AUTO-CACHE REFRESH SYSTEM
+// AUTO-CACHE REFRESH SYSTEM - UPDATED TO FORCE REFRESH
 (function() {
-    const CACHE_VERSION = '2.0'; // Increment this when you update products
+    const CACHE_VERSION = '2.1'; // 🔥 INCREMENTED THIS - This will force cache refresh
     
     console.log('🔒 Loading cache management system...');
     
