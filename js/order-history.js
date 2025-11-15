@@ -13,22 +13,42 @@ class OrderHistory {
     }
 
     async loadOrders() {
-        try {
-            console.log('📥 Loading orders...');
-            
-            // Use localStorage as primary source (will be synced by order-sync.js)
-            this.orders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-            console.log('✅ Loaded orders from localStorage:', this.orders.length);
-
-            // Sort orders by date (newest first)
-            this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-            
-        } catch (error) {
-            console.error('Error loading orders:', error);
-            this.orders = [];
+    try {
+        console.log('📥 Loading orders...');
+        
+        // Try multiple storage locations
+        let orders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        
+        // If no orders in main storage, check backup
+        if (orders.length === 0) {
+            const backup = JSON.parse(localStorage.getItem('de_order_history_backup') || '[]');
+            if (backup.length > 0) {
+                orders = backup;
+                localStorage.setItem('de_order_history', JSON.stringify(orders));
+                console.log('✅ Restored orders from backup:', orders.length);
+            }
         }
-    }
+        
+        // If still no orders, try to sync with server
+        if (orders.length === 0 && navigator.onLine) {
+            console.log('🔄 No local orders, attempting server sync...');
+            if (window.orderSync) {
+                orders = await window.orderSync.syncOrders();
+            }
+        }
+        
+        this.orders = orders;
+        console.log('✅ Final loaded orders:', this.orders.length);
 
+        // Sort orders by date (newest first)
+        this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
+        
+    } catch (error) {
+        console.error('Error loading orders:', error);
+        // Final fallback - empty array
+        this.orders = [];
+    }
+}
     setupEventListeners() {
         // Filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
