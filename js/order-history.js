@@ -374,6 +374,89 @@ Phone: ${order.customer?.phone || 'Not provided'}
         }
     }
     // Add to OrderHistory class in order-history.js
+
+// NEW: Setup real-time admin update listening
+setupAdminUpdateListener() {
+    console.log('👂 Setting up admin update listener in order history...');
+    
+    // Listen for admin update events
+    window.addEventListener('adminOrderUpdate', (e) => {
+        console.log('📢 Admin update received in order history:', e.detail);
+        this.handleAdminUpdate(e.detail);
+    });
+    
+    // Listen for storage changes
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'de_order_history') {
+            console.log('🔄 Storage change detected, refreshing orders...');
+            this.loadOrders().then(() => this.renderOrders());
+        }
+    });
+    
+    // Refresh when page becomes visible
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            console.log('📱 Page visible, checking for updates...');
+            this.loadOrders().then(() => this.renderOrders());
+        }
+    });
+}
+
+// NEW: Handle admin updates
+handleAdminUpdate(updateDetail) {
+    const { orderId, newStatus } = updateDetail;
+    console.log(`🔄 Processing admin update: ${orderId} -> ${newStatus}`);
+    
+    // Find and update the order locally
+    const orderIndex = this.orders.findIndex(order => order.id === orderId);
+    if (orderIndex > -1) {
+        this.orders[orderIndex].status = newStatus;
+        this.orders[orderIndex].statusUpdated = new Date().toISOString();
+        
+        // Re-render the specific order card
+        this.renderOrders();
+        
+        // Show visual feedback
+        this.highlightUpdatedOrder(orderId, newStatus);
+        
+        console.log(`✅ Updated order ${orderId} to ${newStatus} in UI`);
+    } else {
+        // Order not found, do a full refresh
+        console.log(`⚠️ Order ${orderId} not found, doing full refresh...`);
+        this.loadOrders().then(() => this.renderOrders());
+    }
+}
+
+// NEW: Highlight updated order
+highlightUpdatedOrder(orderId, newStatus) {
+    const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+    if (orderCard) {
+        // Add highlight animation
+        orderCard.style.transition = 'all 0.5s ease';
+        orderCard.style.backgroundColor = '#f0f8ff';
+        
+        setTimeout(() => {
+            orderCard.style.backgroundColor = '';
+        }, 2000);
+        
+        // Update status badge with animation
+        const statusBadge = orderCard.querySelector('.order-status');
+        if (statusBadge) {
+            statusBadge.textContent = this.getStatusText(newStatus);
+            statusBadge.className = `order-status ${this.getStatusClass(newStatus)} updated`;
+        }
+    }
+}
+
+// Update your init method to include the listener
+async init() {
+    await this.loadOrders();
+    this.renderOrders();
+    this.setupEventListeners();
+    this.setupRealTimeUpdates();
+    this.setupAdminUpdateListener(); // ADD THIS LINE
+}
+    // Add to OrderHistory class in order-history.js
 setupRealTimeUpdates() {
     // Listen for storage changes
     window.addEventListener('storage', (e) => {
