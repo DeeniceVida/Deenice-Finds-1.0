@@ -64,19 +64,33 @@
     "description": "Upgrade your setup with our XXL extended gaming mouse pads. This premium desk mat provides a smooth surface for both gaming and work, protecting your desk while offering precise mouse control. The non-slip rubber base keeps it firmly in place during intense gaming sessions.",
     "images": [
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01N2mCVw1uM8C9BzjHU__983656022-0-cib_bd41x9.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589638/O1CN012ecQxF1uM81aiUt21__983656022-0-cib_p9zqyr.jpg"
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01N2mCVw1uM8C9BzjHU__983656022-0-cib_bd41x9.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589638/O1CN012ecQxF1uM81aiUt21__983656022-0-cib_p9zqyr.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590028/O1CN01ogC7qL1uM8CO9R3js__983656022-0-cib_bg7jfs.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590027/O1CN01CM7GfU1uM8CNcgZG2__983656022-0-cib_lxwbx6.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590029/O1CN014dC6wq1uM7m5iYBhU__983656022-0-cib_f3akp0.jpg",
+    "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01g1I3dd1uM81aEf89a__983656022-0-cib_gouvjt.jpg"
     ],
     "colors": [
-      { 
-        "name": "F1 Design", 
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg" 
-      },
-      { 
-        "name": "F2 Design", 
-        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01qhIrSb1uM8C8IBTvm__983656022-0-cib_ccu8ux.jpg" 
-      }
-    ],
+    { "name": "F1", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01pShnu61uM8C8fyD0r__983656022-0-cib_aobmee.jpg" },
+    { "name": "F2", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331005/O1CN01qhIrSb1uM8C8IBTvm__983656022-0-cib_ccu8ux.jpg" },
+    { "name": "F3", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761331004/O1CN01XIdjOq1uM8C2wcZFf__983656022-0-cib_e1ajug.jpg" },
+    { "name": "F4", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589638/O1CN012ecQxF1uM81aiUt21__983656022-0-cib_p9zqyr.jpg" },
+    { "name": "F5", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01g1I3dd1uM81aEf89a__983656022-0-cib_gouvjt.jpg" },
+    { "name": "F6", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01u3wxTp1uM80d1ZVtl__983656022-0-cib_c3fk8v.jpg" },
+    { "name": "F7", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589640/O1CN01xAxjnk1uM81d5LCN5__983656022-0-cib_mcsadz.jpg" },
+    { "name": "F8", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589639/O1CN01Yd1E6R1uM81bvYiah__983656022-0-cib_mmrxhy.jpg" },
+    { "name": "F9", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761589641/O1CN01ODLOEE1uM81ZDqn5e__983656022-0-cib_oswwwe.jpg" },
+    { "name": "F10", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590032/O1CN01UpMyts1uM7m8ZP3tJ__983656022-0-cib_wfv3gv.jpg" },
+    { "name": "F11", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590029/O1CN014dC6wq1uM7m5iYBhU__983656022-0-cib_f3akp0.jpg" },
+    { "name": "F12", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590027/O1CN01CM7GfU1uM8CNcgZG2__983656022-0-cib_lxwbx6.jpg" },
+    { "name": "F13", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590027/O1CN01PQmgmU1uM8CNio4IL__983656022-0-cib_gxpmpc.jpg" },
+    { "name": "F14", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761590028/O1CN01ogC7qL1uM8CO9R3js__983656022-0-cib_bg7jfs.jpg" },
+    { "name": "F15", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762196633/O1CN01IyajC21uM7z8fwWjy__983656022-0-cib_n78a1x.jpg" },
+    { "name": "F16", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762196635/O1CN01p46h2S1uM81Uuiv7u__983656022-0-cib_dmns2w.jpg" },
+    { "name": "F17", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762196636/O1CN01Isu39i1uM7z33Cvrj__983656022-0-cib_1_f5niim.jpg" },
+    { "name": "F18", "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762196630/O1CN01NVJSgi1uM7zfsJZuq__983656022-0-cib_kspc0g.jpg" }
+  ],
     "sizes": [
       { "label": "300×800×3mm", "price": 1400 },
       { "label": "400×900×3mm", "price": 1600 }
@@ -95,12 +109,35 @@
     "description": "Elevate your style and protect your eyes with these premium blue light blocking glasses. Featuring the popular Chrome Heart design, these glasses reduce eye strain from screen time while making a fashion statement. Perfect for gamers, office workers, and anyone who spends hours in front of digital screens.",
     "images": [
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224718_g11wfh.png",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224334_hcizi9.png",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199295/Screenshot_2025-11-03_224437_zd57zv.png",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199289/Screenshot_2025-11-03_224621_szcm2l.png",
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198433/O1CN017jq4Gj1d4PHyPG4RP__2214783223682-0-cib_lh5oec.jpg"
     ],
     "colors": [
       {
-        "name": "Black Frame",
+        "name": "H1",
         "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198433/O1CN017jq4Gj1d4PHyPG4RP__2214783223682-0-cib_lh5oec.jpg"
+      },
+      {
+        "name": "H2",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198432/O1CN019mzREU1d4PHsqD38t__2214783223682-0-cib_nkgfsy.jpg"
+      },
+      {
+        "name": "H3",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198432/O1CN01Wn369Z1d4PHuz0UcR__2214783223682-0-cib_a5jvft.jpg"
+      },
+      {
+        "name": "H4",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198432/O1CN01Zhti391d4PHw50oZr__2214783223682-0-cib_c3unpd.jpg"
+      },
+      {
+        "name": "H5",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762198436/O1CN01fLhfJE1d4PHw4xzhq__2214783223682-0-cib_sbqokv.jpg"
+      },
+      {
+        "name": "H6",
+        "img": "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762199660/O1CN01fpoNbg1d4PHuGtUpw__2214783223682-0-cib_1_m4kfd5.jpg"
       }
     ],
     "sku": "PS-GLASSES-01",
@@ -115,9 +152,12 @@
     "currency": "KES",
     "description": "Immersive ambient lighting system with DX Light software control. These RGB monitor lights create a stunning backlight effect that reduces eye strain and enhances your gaming or movie experience. Easy to install with adhesive strips and controllable via mobile app.",
     "models": ["For 27-inch", "For 32-inch", "For 34-inch"],
-    "images": [
+     "images": [
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261190/H7fa4dbca0eae4250a345e0bfb99d28fd2_j12fhh.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261191/Hb6b8d7c6f2a84e7c8f5d2d7d6c5a5e5fZ_ympq6h.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/H022e5070f4d845e9b18638b0aa9ab68fu_qbz6wo.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/Hbd834035d3de4049b77468017d54c1f41_cdkgsc.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/H2c2dcec72121451b911bc55fe1bb1d16z_awquli.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1762261188/Hb549da11427c412b9ec80d2d3834d4be3_pxetqg.jpg"
     ],
     "colors": [
       {
@@ -138,15 +178,28 @@
     "description": "Professional thermal label printer ideal for shipping labels, barcodes, and receipts. Features high-resolution printing at 203 dpi, fast printing speed, and compatibility with various label sizes. Perfect for small businesses, e-commerce stores, and shipping departments.",
     "available_status": "Available on order (5-7 days import)",
     "specs": [
-      { "label": "Print Method", "value": "Thermal sensitive" },
-      { "label": "Resolution", "value": "203 dpi" },
-      { "label": "Print Speed", "value": "Up to 100mm/s" },
-      { "label": "Connectivity", "value": "USB" }
+      {"label": "Method", "value": "Thermo sensitive"},
+      {"label": "Resolution", "value": "203 dpi"},
+      {"label": "Max Printing Speed", "value": "150 mm/s"},
+      {"label": "Paper Width", "value": "48-108 mm"},
+      {"label": "Paper Thickness", "value": "0.08-0.2 mm"},
+      {"label": "Paper Roll Diameter", "value": "100 mm"},
+      {"label": "Supported Paper", "value": "Thermal paper, black label paper, thermal label paper"},
+      {"label": "Power Adapter", "value": "24V/2.0A"},
+      {"label": "Printing Life", "value": "TPH100Km"},
+      {"label": "Operating Environment", "value": "Temperature: -10 to 50℃, Humidity: 10-90% (non condensing)"},
+      {"label": "Storage Environment", "value": "Temperature: -40 to 80 ℃, Humidity: 5-95% (non condensing)"},
+      {"label": "Connection", "value": "USB"},
+      {"label": "Color", "value": "Black"},
+      {"label": "Weight", "value": "2.20 lbs/1 kg"},
+      {"label": "Dimensions", "value": "W225mm*D162mm*H106mm"}
     ],
     "images": [
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848469/H7c63956d9aa3494ba1bbb39340c4a4da6_ht5kyy.png",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848489/O1CN01e63pJj1wKs9WIvBXn__2208322336290-0-cib_oqaorx.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848470/Hb3727df828794bd18c256d9a157926a5h_tbraiq.png"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848470/O1CN01BRm9Ad1wKs9daUDBA__2208322336290-0-cib_gwtvme.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848471/O1CN01PKpfBg1wKsL0IYfRt__2208322336290-0-cib_ustj71.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761848565/H528adeecdea54355bbbf1d78eb81f32aS_je8vkp.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761849088/Artboard_1_3x-100_ks7jlc.jpg"
     ],
     "colors": [
       {
@@ -169,15 +222,26 @@
     "price": 2200,
     "currency": "KES",
     "description": "Transform your space with this minimalist smart RGB floor lamp. Features 16 million colors, multiple lighting modes, and remote control. Perfect for creating ambiance in bedrooms, living rooms, or gaming setups. Adjustable brightness and color temperature.",
-    "specs": [
-      { "label": "Dimensions", "value": "103 cm height" },
-      { "label": "Colors", "value": "16 million RGB" },
-      { "label": "Control", "value": "Remote control" },
-      { "label": "Power", "value": "LED energy saving" }
+     "specs": [
+    {"label": "Dimensions (Height)", "value": "103 cm / 40.55 inch"},
+    {"label": "Dimensions (Width)", "value": "3 cm / 1.18 inch"},
+    {"label": "Stand Base (Adjustable)", "value": "10-19 cm / 3.94-7.48 inch"},
+    {"label": "Voltage", "value": "6V / 500mA-1A"},
+    {"label": "Power", "value": "5W"},
+    {"label": "Power Supply Mode", "value": "USB"},
+    {"label": "Cable Length", "value": "2m"},
+    {"label": "LED QTY / Type", "value": "60PCS / 5050"},
+    {"label": "Color/Temperature", "value": "RGB + Warm Light + White Light"},
+    {"label": "Material", "value": "PC (Polycarbonate)"},
+    {"label": "Control Method 1", "value": "Mobile APP (Smartphone Control)"},
+    {"label": "Control Method 2", "value": "Remote Control"}
     ],
     "images": [
       "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01uCPSjQ1lwSmTAyWhs__3371944883-0-cib_bwgfzv.jpg",
-      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01cdT4GP1lwSmQaImOL__3371944883-0-cib_fvr0gz.jpg"
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915432/O1CN01cdT4GP1lwSmQaImOL__3371944883-0-cib_fvr0gz.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915418/O1CN01ejEp5v1lwSmORHiTB__3371944883-0-cib_unos2e.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915405/O1CN01n7gy0K1lwSn8EtCM8__3371944883-0-cib_hmnoee.jpg",
+      "https://res.cloudinary.com/dsthpp4oj/image/upload/v1761915405/O1CN01rtlT6I1lwSmHtm8EQ__3371944883-0-cib_xn11x5.jpg"
     ],
     "colors": [
       {
