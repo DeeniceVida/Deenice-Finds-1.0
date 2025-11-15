@@ -12,21 +12,43 @@
 
     // 2. Fetch Data with Enhanced Error Handling
     try {
+        // ✅ ADDED: Cache validation and clearing
+        const cacheVersion = localStorage.getItem('cache_version');
+        const currentVersion = '2.0'; // Must match config.js
+        
+        // Clear cache if version mismatch or has old product IDs
+        if (cacheVersion !== currentVersion) {
+            console.log('🔄 Cache version mismatch, clearing...');
+            localStorage.removeItem('storefront_products');
+            localStorage.removeItem('inventory_products');
+        }
+        
         // Try to load from storefront_products first (admin updates)
         const storefrontProducts = localStorage.getItem('storefront_products');
         
-        if (storefrontProducts) {
+        if (storefrontProducts && cacheVersion === currentVersion) {
             products = JSON.parse(storefrontProducts);
             console.log('Loaded products from storefront cache:', products.length);
+            
+            // Validate cache has new product structure
+            const sampleProduct = products.find(p => p.id === 'selfie-monitor-screen');
+            if (!sampleProduct) {
+                console.log('🔄 Cache has old product structure, loading fresh...');
+                localStorage.removeItem('storefront_products');
+                throw new Error('Cache outdated, loading fresh data');
+            }
         } else {
             // Fallback to original JSON file
-            console.log('No storefront cache, loading from JSON...');
-            const res = await fetch('data/products.json');
+            console.log('No valid storefront cache, loading from JSON...');
+            const res = await fetch('data/products.json?v=' + Date.now()); // Cache bust
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
             products = await res.json();
             console.log('Loaded products from JSON file:', products.length);
+            
+            // Save to cache
+            localStorage.setItem('storefront_products', JSON.stringify(products));
         }
 
         // ✅ FIXED: Find the product by ID - NO FALLBACK to first product
@@ -51,6 +73,10 @@
                         <button onclick="window.location.href='products.html'" 
                                 style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;">
                             Browse All Products
+                        </button>
+                        <button onclick="clearProductCacheAndReload()" 
+                                style="padding: 10px 20px; background: #ff6b35; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            Clear Cache & Retry
                         </button>
                         <button onclick="location.reload()" 
                                 style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">
@@ -343,6 +369,15 @@
     // 6. Setup Event Listeners
     setupProductInteractions(isThermalPrinter);
 })();
+
+// Cache clearing function for product page
+function clearProductCacheAndReload() {
+    localStorage.removeItem('storefront_products');
+    localStorage.removeItem('inventory_products');
+    localStorage.removeItem('storefront_products_updated');
+    alert('Cache cleared! Reloading...');
+    setTimeout(() => location.reload(), 1000);
+}
 
 // Enhanced Product Structured Data Function for Kenya SEO
 function addProductStructuredData(product, selectedColor, selectedSize, selectedModel, currentPrice, initialStock, isThermalPrinter) {
