@@ -168,27 +168,40 @@ function updateMetaDescription(description) {
     metaDescription.content = description;
 }
 
-// Product loading logic - UPDATED WITH CACHE BUSTING
+// Product loading logic - UPDATED WITH BETTER CACHE VALIDATION
 async function loadProductsUniversal() {
     let products = [];
     
-    // STRATEGY 1: Try storefront_products (admin updates) - WITH CACHE CHECK
+    // STRATEGY 1: Try storefront_products (admin updates) - WITH IMPROVED CACHE CHECK
     try {
         const storefrontProducts = localStorage.getItem('storefront_products');
         const cacheVersion = localStorage.getItem('cache_version');
-        const currentVersion = '2.0'; // Must match config.js
+        const currentVersion = '2.1'; // 🔥 UPDATED to match config.js
         
-        // Only use cache if version matches
+        // Only use cache if version matches AND cache is not too old
         if (storefrontProducts && cacheVersion === currentVersion) {
-            products = JSON.parse(storefrontProducts);
-            console.log('✅ Loaded from storefront cache:', products.length, 'products');
+            const cacheTime = localStorage.getItem('storefront_products_updated');
+            const cacheAge = cacheTime ? Date.now() - new Date(cacheTime).getTime() : Infinity;
+            const maxCacheAge = 30 * 60 * 1000; // 30 minutes max cache age
             
-            // Validate cache has new product IDs
-            const hasNewIds = products.some(p => p.id === 'selfie-monitor-screen' || p.id === 'pegboard-organizer');
-            if (hasNewIds) {
-                return products.filter(p => p && p.id);
+            if (cacheAge < maxCacheAge) {
+                products = JSON.parse(storefrontProducts);
+                console.log('✅ Loaded from storefront cache:', products.length, 'products');
+                
+                // Validate cache has the expected product structure
+                const expectedProductIds = ['selfie-monitor-screen', 'pegboard-organizer', 'car-phone-mount'];
+                const hasExpectedProducts = expectedProductIds.every(id => 
+                    products.some(p => p && p.id === id)
+                );
+                
+                if (hasExpectedProducts) {
+                    return products.filter(p => p && p.id);
+                } else {
+                    console.log('🔄 Cache missing expected products, refreshing...');
+                    localStorage.removeItem('storefront_products');
+                }
             } else {
-                console.log('🔄 Cache has old IDs, refreshing...');
+                console.log('🔄 Cache expired, refreshing...');
                 localStorage.removeItem('storefront_products');
             }
         }
@@ -196,40 +209,36 @@ async function loadProductsUniversal() {
         console.log('❌ Storefront cache error, trying next source...');
     }
     
-    // STRATEGY 2: Try inventory_products (admin raw data)
-    try {
-        const inventoryProducts = localStorage.getItem('inventory_products');
-        if (inventoryProducts) {
-            const inventoryData = JSON.parse(inventoryProducts);
-            products = convertInventoryToStorefront(inventoryData);
-            console.log('✅ Loaded from inventory cache:', products.length, 'products');
-            // Update storefront for next time
-            localStorage.setItem('storefront_products', JSON.stringify(products));
-            localStorage.setItem('storefront_products_updated', new Date().toISOString());
-            return products.filter(p => p && p.id);
-        }
-    } catch (e) {
-        console.log('❌ Inventory cache error, trying JSON...');
-    }
-    
-    // STRATEGY 3: Load from JSON file (fresh data) - WITH CACHE BUSTING
+    // STRATEGY 2: Load from JSON file (fresh data) - WITH AGGRESSIVE CACHE BUSTING
     console.log('📦 Loading fresh from JSON file...');
     try {
-        const response = await fetch('data/products.json?v=' + Date.now()); // Cache bust
-        if (!response.ok) throw new Error('Failed to load products');
-        products = await response.json();
+        // 🔥 AGGRESSIVE cache busting
+        const cacheBuster = 'v=' + Date.now() + Math.random();
+        const response = await fetch(`data/products.json?${cacheBuster}`);
         
-        // Validate products data
-        if (!Array.isArray(products)) {
-            throw new Error('Invalid products data format');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        // Validate we have the new product IDs
-        const newProductIds = ['selfie-monitor-screen', 'pegboard-organizer', 'car-phone-mount'];
-        const hasNewProducts = newProductIds.every(id => products.some(p => p.id === id));
+        products = await response.json();
         
-        if (!hasNewProducts) {
-            throw new Error('Products JSON missing new product IDs');
+        // Validate products data structure
+        if (!Array.isArray(products)) {
+            throw new Error('Invalid products data format - expected array');
+        }
+        
+        if (products.length === 0) {
+            throw new Error('No products found in JSON file');
+        }
+        
+        // Validate we have the expected product IDs from your JSON
+        const expectedProductIds = ['selfie-monitor-screen', 'pegboard-organizer', 'car-phone-mount'];
+        const foundProductIds = products.map(p => p.id);
+        console.log('📋 Found product IDs:', foundProductIds);
+        
+        const missingProducts = expectedProductIds.filter(id => !foundProductIds.includes(id));
+        if (missingProducts.length > 0) {
+            console.warn('⚠️ Missing expected products:', missingProducts);
         }
         
         // Save to cache for next time
@@ -238,12 +247,13 @@ async function loadProductsUniversal() {
         
         console.log('✅ Loaded fresh from JSON file:', products.length, 'products');
         return products.filter(p => p && p.id);
+        
     } catch (error) {
         console.error('❌ Failed to load from JSON:', error);
         
-        // Try without cache bust as fallback
+        // Final fallback - try without cache bust
         try {
-            console.log('🔄 Trying without cache bust...');
+            console.log('🔄 Trying final fallback without cache bust...');
             const response = await fetch('data/products.json');
             if (!response.ok) throw new Error('Failed to load products');
             products = await response.json();
@@ -254,8 +264,8 @@ async function loadProductsUniversal() {
             console.log('✅ Loaded from JSON (fallback):', products.length, 'products');
             return products.filter(p => p && p.id);
         } catch (fallbackError) {
-            console.error('❌ Fallback also failed:', fallbackError);
-            throw error;
+            console.error('❌ All loading strategies failed:', fallbackError);
+            throw new Error('Unable to load products. Please check your internet connection and try again.');
         }
     }
 }
