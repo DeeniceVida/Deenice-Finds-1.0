@@ -1,5 +1,4 @@
 window.DEENICE_CONFIG = {
-  // 1. FIX FORMAT: Remove the '+' sign
   whatsappNumber: "254106590617", 
   currency: "KES",
   usdToKesRate: 135,
@@ -8,45 +7,29 @@ window.DEENICE_CONFIG = {
   serviceFeePctOver750: 0.045
 };
 
-// Initialize categories when config loads
-document.addEventListener('DOMContentLoaded', function() {
-  // Wait for categories manager to load
-  setTimeout(() => {
-    if (typeof categoriesManager !== 'undefined') {
-      categoriesManager.updateNavigation();
-    }
-  }, 100);
-});
-// DEMO/PEGBOARD PROTECTION SYSTEM
+// AUTO-CACHE REFRESH SYSTEM
 (function() {
-    console.log('🔒 Loading demo/pegboard protection...');
+    const CACHE_VERSION = '2.0'; // Increment this when you update products
+    
+    console.log('🔒 Loading cache management system...');
+    
+    // Check if we need to refresh cache
+    const lastCacheVersion = localStorage.getItem('cache_version');
+    if (lastCacheVersion !== CACHE_VERSION) {
+        console.log('🔄 Refreshing product cache from version', lastCacheVersion, 'to', CACHE_VERSION);
+        localStorage.removeItem('storefront_products');
+        localStorage.removeItem('inventory_products');
+        localStorage.removeItem('storefront_products_updated');
+        localStorage.setItem('cache_version', CACHE_VERSION);
+        console.log('✅ Cache refreshed to version:', CACHE_VERSION);
+    }
     
     const correctTitle = 'Deenice Finds - Premium Tech Gadgets, Phones & Accessories in Kenya';
-    const correctStoreName = 'Deenice Finds';
     
-    // 1. Clean localStorage on every load
-    const badKeys = [];
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (
-            key.toLowerCase().includes('demo') || 
-            key.toLowerCase().includes('pegboard') ||
-            key === 'storefront_mode' ||
-            key === 'site_mode'
-        )) {
-            badKeys.push(key);
-            localStorage.removeItem(key);
-        }
-    }
-    
-    if (badKeys.length > 0) {
-        console.log('🗑️ Cleaned bad keys:', badKeys);
-    }
-    
-    // 2. Force correct title
+    // Force correct title
     document.title = correctTitle;
     
-    // 3. Monitor and protect title
+    // Monitor and protect title
     const titleObserver = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.target.nodeName === 'TITLE' && document.title !== correctTitle) {
@@ -64,5 +47,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    console.log('✅ Demo/pegboard protection active');
+    console.log('✅ Cache management system active');
 })();
+
+// Initialize categories when config loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        if (typeof categoriesManager !== 'undefined') {
+            categoriesManager.updateNavigation();
+        }
+    }, 100);
+});
