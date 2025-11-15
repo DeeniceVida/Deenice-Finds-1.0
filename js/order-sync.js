@@ -258,3 +258,39 @@ if (document.querySelector('.order-history-page')) {
         }
     });
 }
+// Add to OrderSyncManager class
+setupPersistentStorage() {
+    // Create a backup in more persistent storage
+    if (!localStorage.getItem('de_order_history_backup')) {
+        const currentOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        localStorage.setItem('de_order_history_backup', JSON.stringify(currentOrders));
+    }
+    
+    // Restore from backup if main storage is empty
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'de_order_history' && (!e.newValue || e.newValue === '[]')) {
+            const backup = localStorage.getItem('de_order_history_backup');
+            if (backup && backup !== '[]') {
+                localStorage.setItem('de_order_history', backup);
+                console.log('🔄 Restored orders from backup');
+            }
+        }
+    });
+    
+    // Auto-backup every 5 minutes
+    setInterval(() => {
+        const orders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        if (orders.length > 0) {
+            localStorage.setItem('de_order_history_backup', JSON.stringify(orders));
+        }
+    }, 300000);
+}
+
+// Call this in init()
+init() {
+    console.log('🔄 Enhanced OrderSyncManager initializing...');
+    this.setupPersistentStorage(); // ADD THIS LINE
+    this.startSync();
+    this.setupEventListeners();
+    this.setupSyncMonitoring();
+}
