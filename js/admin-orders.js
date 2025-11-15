@@ -16,6 +16,12 @@ class AdminOrderManager {
             return;
         }
         
+        // Setup session persistence FIRST
+        this.setupSessionPersistence();
+        
+        // Setup data recovery
+        this.recoverOrderData();
+        
         // Show loading state
         this.showLoadingState();
         
@@ -33,19 +39,126 @@ class AdminOrderManager {
         console.log('✅ AdminOrderManager initialized');
     }
 
-    // Fast local load first
+    // NEW: Session persistence setup
+    setupSessionPersistence() {
+        console.log('💾 Setting up session persistence...');
+        
+        // Backup orders when admin updates them
+        const originalUpdateStatus = this.updateStatus.bind(this);
+        this.updateStatus = async function(orderId, newStatus) {
+            await originalUpdateStatus(orderId, newStatus);
+            // Backup the updated orders
+            if (this.orders.length > 0) {
+                localStorage.setItem('de_order_history_backup', JSON.stringify(this.orders));
+                console.log('💾 Orders backed up after status update');
+            }
+        };
+
+        // Backup on delete
+        const originalDeleteOrder = this.deleteOrder.bind(this);
+        this.deleteOrder = async function(orderId) {
+            await originalDeleteOrder(orderId);
+            // Backup after deletion
+            if (this.orders.length > 0) {
+                localStorage.setItem('de_order_history_backup', JSON.stringify(this.orders));
+                console.log('💾 Orders backed up after deletion');
+            }
+        };
+
+        // Backup before page unload
+        window.addEventListener('beforeunload', () => {
+            if (this.orders.length > 0) {
+                localStorage.setItem('de_order_history_backup', JSON.stringify(this.orders));
+                console.log('💾 Orders backed up before page unload');
+            }
+        });
+
+        // Backup periodically (every 2 minutes)
+        setInterval(() => {
+            if (this.orders.length > 0) {
+                localStorage.setItem('de_order_history_backup', JSON.stringify(this.orders));
+                console.log('💾 Periodic backup completed');
+            }
+        }, 120000);
+
+        console.log('✅ Session persistence setup complete');
+    }
+
+    // NEW: Data recovery on initialization
+    recoverOrderData() {
+        console.log('🔄 Checking for data recovery...');
+        
+        const mainOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        const backupOrders = JSON.parse(localStorage.getItem('de_order_history_backup') || '[]');
+        
+        console.log('📊 Storage status:', {
+            mainOrders: mainOrders.length,
+            backupOrders: backupOrders.length
+        });
+        
+        // If main storage is empty but backup has data, restore it
+        if (mainOrders.length === 0 && backupOrders.length > 0) {
+            console.log('🚨 Data loss detected! Restoring from backup...');
+            localStorage.setItem('de_order_history', JSON.stringify(backupOrders));
+            this.showNotification('📦 Orders recovered from backup!', 'success');
+            console.log('✅ Orders recovered from backup:', backupOrders.length);
+            return true;
+        }
+        
+        // If both have data but backup is newer (based on latest order date)
+        if (mainOrders.length > 0 && backupOrders.length > 0) {
+            const mainLatest = this.getLatestOrderDate(mainOrders);
+            const backupLatest = this.getLatestOrderDate(backupOrders);
+            
+            if (backupLatest > mainLatest) {
+                console.log('🔄 Backup has newer data, restoring...');
+                localStorage.setItem('de_order_history', JSON.stringify(backupOrders));
+                this.showNotification('📦 Newer orders restored from backup!', 'success');
+                return true;
+            }
+        }
+        
+        console.log('✅ No data recovery needed');
+        return false;
+    }
+
+    // NEW: Helper to get latest order date
+    getLatestOrderDate(orders) {
+        if (!orders || orders.length === 0) return new Date(0);
+        
+        return new Date(Math.max(...orders.map(order => 
+            new Date(order.statusUpdated || order.orderDate || order.date || 0).getTime()
+        )));
+    }
+
+    // ENHANCED: Load orders with recovery fallback
     loadOrdersFromLocalStorage() {
         try {
-            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            // First try main storage
+            let localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            
+            // If empty, try backup
+            if (localOrders.length === 0) {
+                console.log('📭 No orders in main storage, checking backup...');
+                localOrders = JSON.parse(localStorage.getItem('de_order_history_backup') || '[]');
+                
+                if (localOrders.length > 0) {
+                    // Restore from backup to main storage
+                    localStorage.setItem('de_order_history', JSON.stringify(localOrders));
+                    console.log('✅ Restored orders from backup:', localOrders.length);
+                    this.showNotification('Orders recovered from backup!', 'success');
+                }
+            }
+            
             if (localOrders.length > 0) {
                 this.orders = localOrders;
-                console.log('✅ Loaded orders from localStorage:', this.orders.length);
+                console.log('✅ Loaded orders from storage:', this.orders.length);
             } else {
-                console.log('📭 No orders found in localStorage');
+                console.log('📭 No orders found in any storage');
                 this.orders = [];
             }
         } catch (error) {
-            console.error('❌ Error loading from localStorage:', error);
+            console.error('❌ Error loading from storage:', error);
             this.orders = [];
         }
     }
@@ -63,10 +176,13 @@ class AdminOrderManager {
                 this.orders = data.orders;
                 // Update localStorage with fresh data
                 localStorage.setItem('de_order_history', JSON.stringify(this.orders));
+                // Also update backup
+                localStorage.setItem('de_order_history_backup', JSON.stringify(this.orders));
                 console.log('✅ Synced with backend:', this.orders.length, 'orders');
             } else if (Array.isArray(data)) {
                 this.orders = data;
                 localStorage.setItem('de_order_history', JSON.stringify(this.orders));
+                localStorage.setItem('de_order_history_backup', JSON.stringify(this.orders));
                 console.log('✅ Synced with backend (direct array):', this.orders.length, 'orders');
             }
             
@@ -284,7 +400,7 @@ class AdminOrderManager {
                 }
             }
 
-            // 5. Update localStorage
+            // 5. Update localStorage and backup
             this.updateLocalStorageOrder(orderId, newStatus);
             
             // 6. Show success
@@ -344,7 +460,7 @@ class AdminOrderManager {
         }
     }
 
-    // Update localStorage
+    // Update localStorage and backup
     updateLocalStorageOrder(orderId, newStatus) {
         try {
             const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
@@ -356,7 +472,10 @@ class AdminOrderManager {
                 if (newStatus === 'completed') {
                     localOrders[orderIndex].completedDate = new Date().toISOString();
                 }
+                
+                // Update both main storage and backup
                 localStorage.setItem('de_order_history', JSON.stringify(localOrders));
+                localStorage.setItem('de_order_history_backup', JSON.stringify(localOrders));
             }
         } catch (error) {
             console.error('Error updating localStorage:', error);
@@ -382,7 +501,7 @@ class AdminOrderManager {
                 console.log('⚠️ Backend delete failed, but removed locally');
             }
             
-            // Remove from localStorage
+            // Remove from localStorage and update backup
             this.removeOrderFromLocalStorage(orderId);
             
             this.showNotification(`Order #${orderId} deleted`, 'success');
@@ -397,7 +516,10 @@ class AdminOrderManager {
         try {
             const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
             const updatedOrders = localOrders.filter(order => order.id !== orderId);
+            
+            // Update both main storage and backup
             localStorage.setItem('de_order_history', JSON.stringify(updatedOrders));
+            localStorage.setItem('de_order_history_backup', JSON.stringify(updatedOrders));
         } catch (error) {
             console.error('Error removing from localStorage:', error);
         }
@@ -613,6 +735,9 @@ class AdminOrderManager {
                 <td colspan="7" class="empty-state">
                     <h3>No orders found</h3>
                     <p>There are no orders in the system yet.</p>
+                    <button class="btn btn-primary" onclick="adminManager.emergencyRecovery()">
+                        🔄 Try Emergency Recovery
+                    </button>
                 </td>
             </tr>
         `;
@@ -648,39 +773,17 @@ class AdminOrderManager {
         this.renderOrders();
     }
 
-    startSyncMonitoring() {
-        // Auto-refresh every 30 seconds
-        setInterval(() => {
-            this.syncWithBackend();
-        }, 30000);
-    }
-
-    // Print shipping label
-    printShippingLabel(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            if (typeof labelPrinter !== 'undefined') {
-                labelPrinter.printLabel(order);
-                this.showNotification(`Opening print dialog for order #${orderId}`, 'success');
-            } else {
-                this.showNotification('Label printer not loaded.', 'error');
-            }
+    // NEW: Emergency recovery function
+    emergencyRecovery() {
+        console.log('🚨 Manual emergency recovery triggered');
+        const recovered = this.recoverOrderData();
+        if (recovered) {
+            this.loadOrdersFromLocalStorage();
+            this.renderStats();
+            this.renderOrders();
+            this.showNotification('Emergency recovery completed!', 'success');
         } else {
-            this.showNotification(`Order #${orderId} not found!`, 'error');
-        }
-    }
-
-    // Preview label
-    previewShippingLabel(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            if (typeof labelPrinter !== 'undefined') {
-                labelPrinter.previewLabel(order);
-            } else {
-                this.showNotification('Label printer not loaded.', 'error');
-            }
-        } else {
-            this.showNotification(`Order #${orderId} not found!`, 'error');
+            this.showNotification('No backup data found for recovery.', 'error');
         }
     }
 
@@ -1001,9 +1104,53 @@ ORDER #${order.id} - DETAILS
     }
 
     logout() {
+        // Backup current orders before logout
+        const currentOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        if (currentOrders.length > 0) {
+            localStorage.setItem('de_order_history_backup', JSON.stringify(currentOrders));
+            console.log('💾 Orders backed up before logout');
+        }
+        
+        // Clear session but preserve backup
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_logged_in');
+        localStorage.removeItem('admin_user');
+        // DON'T remove de_order_history or de_order_history_backup here
+        
         window.location.href = 'admin-login.html';
+    }
+
+    // NEW: Debug function to check storage status
+    debugOrders() {
+        const mainOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        const backupOrders = JSON.parse(localStorage.getItem('de_order_history_backup') || '[]');
+        const memoryOrders = this.orders;
+        
+        const debugInfo = `
+🔍 DEBUG ORDER STORAGE:
+
+📋 Memory (Current): ${memoryOrders.length} orders
+📦 LocalStorage: ${mainOrders.length} orders  
+💾 Backup: ${backupOrders.length} orders
+
+🆔 Memory Order IDs: ${memoryOrders.map(o => o.id).join(', ') || 'None'}
+🆔 LocalStorage Order IDs: ${mainOrders.map(o => o.id).join(', ') || 'None'}
+🆔 Backup Order IDs: ${backupOrders.map(o => o.id).join(', ') || 'None'}
+
+💡 Status:
+${mainOrders.length === 0 && backupOrders.length > 0 ? '🚨 DATA LOSS DETECTED - Backup available for recovery' : '✅ Storage OK'}
+${memoryOrders.length !== mainOrders.length ? '⚠️ Memory/LocalStorage mismatch' : '✅ Memory/LocalStorage sync OK'}
+        `.trim();
+
+        console.log(debugInfo);
+        alert(debugInfo);
+        
+        return {
+            memory: memoryOrders.length,
+            localStorage: mainOrders.length,
+            backup: backupOrders.length,
+            needsRecovery: mainOrders.length === 0 && backupOrders.length > 0
+        };
     }
 }
 
@@ -1020,5 +1167,12 @@ window.closeItemsModal = function() {
 window.closeOrderDetailsModal = function() {
     if (typeof adminManager !== 'undefined') {
         adminManager.closeOrderDetailsModal();
+    }
+};
+
+// NEW: Global emergency recovery function
+window.emergencyRecovery = function() {
+    if (typeof adminManager !== 'undefined') {
+        adminManager.emergencyRecovery();
     }
 };
