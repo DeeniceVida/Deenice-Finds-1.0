@@ -752,6 +752,27 @@
 
     <script src="js/admin-orders.js"></script>
     <script>
+// Test function to simulate status update (for development)
+function testStatusSync() {
+    const testOrderId = prompt('Enter order ID to test status sync:');
+    if (testOrderId) {
+        const newStatus = prompt('Enter new status (pending/processing/completed/cancelled):');
+        if (newStatus) {
+            // Simulate admin update
+            const event = new CustomEvent('adminOrderUpdate', {
+                detail: {
+                    orderId: testOrderId,
+                    newStatus: newStatus,
+                    timestamp: new Date().toISOString()
+                }
+            });
+            window.dispatchEvent(event);
+            alert(`Test update sent: ${testOrderId} -> ${newStatus}`);
+        }
+    }
+}
+</script>
+    <script>
         // Check if admin is logged in
         const adminToken = localStorage.getItem('admin_token');
         const adminLoggedIn = localStorage.getItem('admin_logged_in');
