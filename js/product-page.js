@@ -162,9 +162,9 @@
                 <div class="product-thumbs-container">
                     <div class="product-thumbs" id="product-thumbs">
                         ${product.images.map((im, idx) => `
-                            <img data-src="${im}" ${idx === 0 ? 'class="selected"' : ''} src="${im}" 
+                            <img data-src="${im}" ${idx === 0 ? 'class="thumb-image selected"' : 'class="thumb-image"'} src="${im}" 
                                  alt="${product.title} - Image ${idx + 1}"
-                                 class="thumb-image" />
+                                 onclick="switchMainImage(this)" />
                         `).join('')}
                     </div>
                     
@@ -380,8 +380,10 @@
     setupProductInteractions(isThermalPrinter);
 })();
 
-// Enhanced thumbnail switching with slider support
+// Enhanced thumbnail switching with slider support - FIXED FUNCTION
 function switchMainImage(img) {
+    console.log('Switching to image:', img.src);
+    
     const mainImage = document.getElementById('main-image');
     if (mainImage) {
         mainImage.src = img.dataset.src || img.src;
@@ -389,11 +391,15 @@ function switchMainImage(img) {
         mainImage.alt = `${document.querySelector('h1').textContent} - ${img.alt}`;
     }
     
-    // Update selected thumbnail
+    // Update selected thumbnail - FIXED SELECTION
     document.querySelectorAll('.thumb-image').forEach(i => {
         i.classList.remove('selected');
     });
     img.classList.add('selected');
+    
+    // Add visual feedback
+    img.style.border = '2px solid #007bff';
+    img.style.opacity = '1';
     
     // Scroll thumbnail into view if needed
     if (img.parentElement.scrollWidth > img.parentElement.clientWidth) {
@@ -405,7 +411,7 @@ function switchMainImage(img) {
     }
 }
 
-// Setup thumbnail slider navigation
+// Setup thumbnail slider navigation - FIXED FUNCTION
 function setupThumbnailSlider() {
     const thumbsContainer = document.querySelector('.product-thumbs');
     const prevBtn = document.querySelector('.thumb-prev');
@@ -447,31 +453,72 @@ function setupThumbnailSlider() {
         updateNavButtons(); // Initial check
     }
     
-    // Add click events to all thumbnails
+    // Add click events to all thumbnails - FIXED EVENT LISTENERS
     const thumbnails = document.querySelectorAll('.thumb-image');
-    thumbnails.forEach(img => {
+    console.log('Found thumbnails:', thumbnails.length);
+    
+    thumbnails.forEach((img, index) => {
+        // Remove any existing event listeners first
+        img.replaceWith(img.cloneNode(true));
+    });
+    
+    // Re-select thumbnails after cloning
+    const refreshedThumbnails = document.querySelectorAll('.thumb-image');
+    
+    refreshedThumbnails.forEach((img, index) => {
         // Click event
-        img.addEventListener('click', () => {
-            switchMainImage(img);
+        img.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Thumbnail clicked:', index, this.src);
+            switchMainImage(this);
         });
         
         // Touch event for mobile
-        img.addEventListener('touchstart', (e) => {
+        img.addEventListener('touchstart', function(e) {
             e.preventDefault();
-            switchMainImage(img);
+            console.log('Thumbnail touched:', index, this.src);
+            switchMainImage(this);
         }, { passive: false });
         
         // Keyboard navigation
-        img.addEventListener('keydown', (e) => {
+        img.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                switchMainImage(img);
+                console.log('Thumbnail keyboard activated:', index, this.src);
+                switchMainImage(this);
             }
         });
         
         // Make thumbnails focusable for accessibility
         img.setAttribute('tabindex', '0');
+        img.style.cursor = 'pointer';
+        img.style.transition = 'all 0.2s ease';
+        
+        // Add hover effects
+        img.addEventListener('mouseenter', function() {
+            if (!this.classList.contains('selected')) {
+                this.style.opacity = '0.8';
+                this.style.transform = 'scale(1.05)';
+            }
+        });
+        
+        img.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('selected')) {
+                this.style.opacity = '1';
+                this.style.transform = 'scale(1)';
+            }
+        });
+        
+        // Set initial selected state
+        if (index === 0) {
+            img.classList.add('selected');
+            img.style.border = '2px solid #007bff';
+        } else {
+            img.style.border = '2px solid transparent';
+        }
     });
+    
+    console.log('Thumbnail event listeners setup complete');
 }
 
 // Cache clearing function for product page
@@ -782,7 +829,7 @@ function setupProductInteractions(isThermalPrinter) {
         console.log('Description toggle listener added');
     }
 
-    // Enhanced thumbnail switching with slider
+    // Enhanced thumbnail switching with slider - CALL THIS FIRST
     setupThumbnailSlider();
     console.log('Thumbnail slider listeners added');
 
