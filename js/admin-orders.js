@@ -200,6 +200,222 @@ class AdminOrderManager {
         }
     }
 
+    // NEW: Sync status changes to client
+    async syncStatusToClient(orderId, newStatus) {
+        try {
+            console.log(`🔄 Syncing status to client: ${orderId} -> ${newStatus}`);
+            
+            // Method 1: Update localStorage directly (immediate)
+            this.updateClientLocalStorage(orderId, newStatus);
+            
+            // Method 2: Trigger sync event for order-sync.js
+            this.triggerClientSyncEvent(orderId, newStatus);
+            
+            // Method 3: Update sync markers for real-time detection
+            this.updateSyncMarkers(orderId, newStatus);
+            
+            console.log('✅ Status change synced to client');
+            
+        } catch (error) {
+            console.error('❌ Failed to sync status to client:', error);
+        }
+    }
+
+    // Update client's localStorage directly
+    updateClientLocalStorage(orderId, newStatus) {
+        try {
+            const clientOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            const orderIndex = clientOrders.findIndex(order => order.id === orderId);
+            
+            if (orderIndex > -1) {
+                clientOrders[orderIndex].status = newStatus;
+                clientOrders[orderIndex].statusUpdated = new Date().toISOString();
+                if (newStatus === 'completed') {
+                    clientOrders[orderIndex].completedDate = new Date().toISOString();
+                }
+                
+                localStorage.setItem('de_order_history', JSON.stringify(clientOrders));
+                console.log('✅ Updated client localStorage for order:', orderId);
+            } else {
+                console.log('⚠️ Order not found in client localStorage, may need full sync');
+            }
+        } catch (error) {
+            console.error('Error updating client localStorage:', error);
+        }
+    }
+
+    // Trigger events for order-sync.js to detect
+    triggerClientSyncEvent(orderId, newStatus) {
+        // Custom event that order-sync.js can listen for
+        const statusEvent = new CustomEvent('adminOrderUpdate', {
+            detail: {
+                orderId: orderId,
+                newStatus: newStatus,
+                timestamp: new Date().toISOString()
+            }
+        });
+        window.dispatchEvent(statusEvent);
+        
+        // Also trigger storage event (simulates localStorage change)
+        const syncEvent = new Event('storage');
+        syncEvent.key = 'de_order_sync_markers';
+        window.dispatchEvent(syncEvent);
+        
+        console.log('📢 Triggered client sync events for order:', orderId);
+    }
+
+    // Update sync markers for real-time detection
+    updateSyncMarkers(orderId, newStatus) {
+        try {
+            const markers = JSON.parse(localStorage.getItem('de_order_sync_markers') || '{}');
+            markers[orderId] = {
+                status: newStatus,
+                updated: new Date().toISOString(),
+                source: 'admin'
+            };
+            localStorage.setItem('de_order_sync_markers', JSON.stringify(markers));
+            console.log('📝 Updated sync markers for order:', orderId);
+        } catch (error) {
+            console.error('Error updating sync markers:', error);
+        }
+    }
+
+    // NEW: Enhanced status update with client sync
+    async updateStatus(orderId, newStatus) {
+        try {
+            console.log(`🔄 Updating order ${orderId} to ${newStatus}`);
+            
+            // 1. Find the order locally
+            const order = this.orders.find(o => o.id === orderId);
+            if (!order) {
+                throw new Error(`Order ${orderId} not found locally`);
+            }
+
+            const oldStatus = order.status;
+            
+            // 2. Update locally first for immediate feedback
+            order.status = newStatus;
+            order.statusUpdated = new Date().toISOString();
+            if (newStatus === 'completed') {
+                order.completedDate = new Date().toISOString();
+            }
+            
+            // 3. Update UI immediately
+            this.renderStats();
+            this.renderOrders();
+            
+            // 4. Sync to client immediately (NEW)
+            await this.syncStatusToClient(orderId, newStatus);
+            
+            // 5. Try to update backend
+            try {
+                await this.makeRequest(`/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: newStatus })
+                });
+                console.log('✅ Backend update successful');
+                
+            } catch (backendError) {
+                console.error('❌ Backend update failed:', backendError);
+                
+                // If it's a 404, the order might not exist on server
+                if (backendError.message.includes('404') || backendError.message.includes('not found')) {
+                    console.log('🔄 Order not found on server, attempting to create it...');
+                    await this.createOrderOnServer(order);
+                    
+                    // Retry the status update
+                    await this.makeRequest(`/orders/${orderId}/status`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ status: newStatus })
+                    });
+                    console.log('✅ Order created and status updated on server');
+                } else {
+                    throw backendError;
+                }
+            }
+
+            // 6. Update localStorage and backup
+            this.updateLocalStorageOrder(orderId, newStatus);
+            
+            // 7. Show success
+            this.showNotification(
+                `Order #${orderId} updated from ${oldStatus} to ${newStatus} - Client notified`,
+                'success'
+            );
+            
+        } catch (error) {
+            console.error('❌ Status update failed:', error);
+            
+            // Revert local changes if backend failed
+            const order = this.orders.find(o => o.id === orderId);
+            if (order) {
+                // Keep the new status but mark as unsynced
+                order.unsynced = true;
+                this.renderOrders();
+            }
+            
+            this.showNotification(
+                `Update failed: ${error.message}. Changes saved locally.`,
+                'error'
+            );
+        }
+    }
+
+    // Create order on server if it doesn't exist
+    async createOrderOnServer(order) {
+        try {
+            console.log('🔄 Creating order on server:', order.id);
+            
+            const orderData = {
+                id: order.id,
+                customer: order.customer || {
+                    name: order.name,
+                    city: order.city,
+                    phone: order.phone
+                },
+                items: order.items || [],
+                totalAmount: order.totalAmount || order.total || 0,
+                currency: order.currency || 'KES',
+                orderDate: order.orderDate || new Date().toISOString(),
+                status: order.status || 'pending',
+                delivery: order.delivery || { method: 'home' }
+            };
+
+            await this.makeRequest('/orders', {
+                method: 'POST',
+                body: JSON.stringify(orderData)
+            });
+            
+            console.log('✅ Order created on server');
+            
+        } catch (error) {
+            console.error('❌ Failed to create order on server:', error);
+            throw new Error('Could not create order on server: ' + error.message);
+        }
+    }
+
+    // Update localStorage and backup
+    updateLocalStorageOrder(orderId, newStatus) {
+        try {
+            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            const orderIndex = localOrders.findIndex(order => order.id === orderId);
+            
+            if (orderIndex > -1) {
+                localOrders[orderIndex].status = newStatus;
+                localOrders[orderIndex].statusUpdated = new Date().toISOString();
+                if (newStatus === 'completed') {
+                    localOrders[orderIndex].completedDate = new Date().toISOString();
+                }
+                
+                // Update both main storage and backup
+                localStorage.setItem('de_order_history', JSON.stringify(localOrders));
+                localStorage.setItem('de_order_history_backup', JSON.stringify(localOrders));
+            }
+        } catch (error) {
+            console.error('Error updating localStorage:', error);
+        }
+    }
+
     // Optimized API request with shorter timeout
     async makeRequest(endpoint, options = {}) {
         try {
@@ -346,139 +562,6 @@ class AdminOrderManager {
         } catch (e) {
             console.error('Invalid token format:', e);
             return false;
-        }
-    }
-
-    // FIXED: Status update with comprehensive error handling
-    async updateStatus(orderId, newStatus) {
-        try {
-            console.log(`🔄 Updating order ${orderId} to ${newStatus}`);
-            
-            // 1. Find the order locally
-            const order = this.orders.find(o => o.id === orderId);
-            if (!order) {
-                throw new Error(`Order ${orderId} not found locally`);
-            }
-
-            const oldStatus = order.status;
-            
-            // 2. Update locally first for immediate feedback
-            order.status = newStatus;
-            order.statusUpdated = new Date().toISOString();
-            if (newStatus === 'completed') {
-                order.completedDate = new Date().toISOString();
-            }
-            
-            // 3. Update UI immediately
-            this.renderStats();
-            this.renderOrders();
-            
-            // 4. Try to update backend
-            try {
-                await this.makeRequest(`/orders/${orderId}/status`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ status: newStatus })
-                });
-                console.log('✅ Backend update successful');
-                
-            } catch (backendError) {
-                console.error('❌ Backend update failed:', backendError);
-                
-                // If it's a 404, the order might not exist on server
-                if (backendError.message.includes('404') || backendError.message.includes('not found')) {
-                    console.log('🔄 Order not found on server, attempting to create it...');
-                    await this.createOrderOnServer(order);
-                    
-                    // Retry the status update
-                    await this.makeRequest(`/orders/${orderId}/status`, {
-                        method: 'PUT',
-                        body: JSON.stringify({ status: newStatus })
-                    });
-                    console.log('✅ Order created and status updated on server');
-                } else {
-                    throw backendError;
-                }
-            }
-
-            // 5. Update localStorage and backup
-            this.updateLocalStorageOrder(orderId, newStatus);
-            
-            // 6. Show success
-            this.showNotification(
-                `Order #${orderId} updated from ${oldStatus} to ${newStatus}`,
-                'success'
-            );
-            
-        } catch (error) {
-            console.error('❌ Status update failed:', error);
-            
-            // Revert local changes if backend failed
-            const order = this.orders.find(o => o.id === orderId);
-            if (order) {
-                // Keep the new status but mark as unsynced
-                order.unsynced = true;
-                this.renderOrders();
-            }
-            
-            this.showNotification(
-                `Update failed: ${error.message}. Changes saved locally.`,
-                'error'
-            );
-        }
-    }
-
-    // Create order on server if it doesn't exist
-    async createOrderOnServer(order) {
-        try {
-            console.log('🔄 Creating order on server:', order.id);
-            
-            const orderData = {
-                id: order.id,
-                customer: order.customer || {
-                    name: order.name,
-                    city: order.city,
-                    phone: order.phone
-                },
-                items: order.items || [],
-                totalAmount: order.totalAmount || order.total || 0,
-                currency: order.currency || 'KES',
-                orderDate: order.orderDate || new Date().toISOString(),
-                status: order.status || 'pending',
-                delivery: order.delivery || { method: 'home' }
-            };
-
-            await this.makeRequest('/orders', {
-                method: 'POST',
-                body: JSON.stringify(orderData)
-            });
-            
-            console.log('✅ Order created on server');
-            
-        } catch (error) {
-            console.error('❌ Failed to create order on server:', error);
-            throw new Error('Could not create order on server: ' + error.message);
-        }
-    }
-
-    // Update localStorage and backup
-    updateLocalStorageOrder(orderId, newStatus) {
-        try {
-            const localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-            const orderIndex = localOrders.findIndex(order => order.id === orderId);
-            
-            if (orderIndex > -1) {
-                localOrders[orderIndex].status = newStatus;
-                localOrders[orderIndex].statusUpdated = new Date().toISOString();
-                if (newStatus === 'completed') {
-                    localOrders[orderIndex].completedDate = new Date().toISOString();
-                }
-                
-                // Update both main storage and backup
-                localStorage.setItem('de_order_history', JSON.stringify(localOrders));
-                localStorage.setItem('de_order_history_backup', JSON.stringify(localOrders));
-            }
-        } catch (error) {
-            console.error('Error updating localStorage:', error);
         }
     }
 
@@ -1103,6 +1186,35 @@ ORDER #${order.id} - DETAILS
         }
     }
 
+    // Print shipping label
+    printShippingLabel(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (order) {
+            if (typeof labelPrinter !== 'undefined') {
+                labelPrinter.printLabel(order);
+                this.showNotification(`Opening print dialog for order #${orderId}`, 'success');
+            } else {
+                this.showNotification('Label printer not loaded.', 'error');
+            }
+        } else {
+            this.showNotification(`Order #${orderId} not found!`, 'error');
+        }
+    }
+
+    // Preview label
+    previewShippingLabel(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (order) {
+            if (typeof labelPrinter !== 'undefined') {
+                labelPrinter.previewLabel(order);
+            } else {
+                this.showNotification('Label printer not loaded.', 'error');
+            }
+        } else {
+            this.showNotification(`Order #${orderId} not found!`, 'error');
+        }
+    }
+
     logout() {
         // Backup current orders before logout
         const currentOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
@@ -1140,6 +1252,8 @@ ORDER #${order.id} - DETAILS
 💡 Status:
 ${mainOrders.length === 0 && backupOrders.length > 0 ? '🚨 DATA LOSS DETECTED - Backup available for recovery' : '✅ Storage OK'}
 ${memoryOrders.length !== mainOrders.length ? '⚠️ Memory/LocalStorage mismatch' : '✅ Memory/LocalStorage sync OK'}
+
+🔄 Client Sync Status: ${this.testClientSync()}
         `.trim();
 
         console.log(debugInfo);
@@ -1151,6 +1265,51 @@ ${memoryOrders.length !== mainOrders.length ? '⚠️ Memory/LocalStorage mismat
             backup: backupOrders.length,
             needsRecovery: mainOrders.length === 0 && backupOrders.length > 0
         };
+    }
+
+    // NEW: Test client sync functionality
+    testClientSync() {
+        try {
+            const markers = JSON.parse(localStorage.getItem('de_order_sync_markers') || '{}');
+            const clientOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            
+            return `Markers: ${Object.keys(markers).length}, Client Orders: ${clientOrders.length}`;
+        } catch (error) {
+            return 'Error checking sync status';
+        }
+    }
+
+    // NEW: Force sync all orders to client
+    async forceSyncToClient() {
+        try {
+            console.log('🔄 Forcing sync of all orders to client...');
+            
+            // Update client localStorage with current admin orders
+            localStorage.setItem('de_order_history', JSON.stringify(this.orders));
+            
+            // Create sync markers for all orders
+            const markers = {};
+            this.orders.forEach(order => {
+                markers[order.id] = {
+                    status: order.status,
+                    updated: order.statusUpdated || new Date().toISOString(),
+                    source: 'admin_force_sync'
+                };
+            });
+            localStorage.setItem('de_order_sync_markers', JSON.stringify(markers));
+            
+            // Trigger sync event
+            const syncEvent = new Event('storage');
+            syncEvent.key = 'de_order_sync_markers';
+            window.dispatchEvent(syncEvent);
+            
+            this.showNotification(`Synced ${this.orders.length} orders to client`, 'success');
+            console.log('✅ Force sync to client completed');
+            
+        } catch (error) {
+            console.error('❌ Force sync to client failed:', error);
+            this.showNotification('Failed to sync to client', 'error');
+        }
     }
 }
 
@@ -1174,5 +1333,32 @@ window.closeOrderDetailsModal = function() {
 window.emergencyRecovery = function() {
     if (typeof adminManager !== 'undefined') {
         adminManager.emergencyRecovery();
+    }
+};
+
+// NEW: Global force sync function
+window.forceSyncToClient = function() {
+    if (typeof adminManager !== 'undefined') {
+        adminManager.forceSyncToClient();
+    }
+};
+
+// NEW: Test function for development
+window.testStatusSync = function() {
+    const testOrderId = prompt('Enter order ID to test status sync:');
+    if (testOrderId) {
+        const newStatus = prompt('Enter new status (pending/processing/completed/cancelled):');
+        if (newStatus) {
+            // Simulate admin update
+            const event = new CustomEvent('adminOrderUpdate', {
+                detail: {
+                    orderId: testOrderId,
+                    newStatus: newStatus,
+                    timestamp: new Date().toISOString()
+                }
+            });
+            window.dispatchEvent(event);
+            alert(`Test update sent: ${testOrderId} -> ${newStatus}`);
+        }
     }
 };
