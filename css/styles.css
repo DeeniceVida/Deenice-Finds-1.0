@@ -3356,3 +3356,53 @@ h1 {
     position: relative;
     z-index: 1;
 }
+/* Mobile Touch Improvements */
+@media (max-width: 768px) {
+    /* Prevent accidental button touches during scroll */
+    .add-to-cart-btn, .cart-btn {
+        position: relative;
+    }
+    
+    /* Add touch delay protection */
+    .product-card {
+        padding: 15px 10px;
+    }
+    
+    .add-to-cart-btn {
+        margin-top: 12px;
+        padding: 14px 16px;
+    }
+    
+    /* Improved touch targets */
+    button, .btn, [role="button"] {
+        min-height: 48px;
+        min-width: 48px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+    }
+    
+    /* Prevent zoom on double-tap */
+    button {
+        touch-action: manipulation;
+    }
+    
+    /* Add safe area for bottom buttons */
+    .bottom-nav, .fixed-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* Enhanced button safety for all devices */
+.add-to-cart-btn {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Prevent highlight on tap */
+.add-to-cart-btn:active {
+    transform: scale(0.98);
+    transition: transform 0.1s;
+}
