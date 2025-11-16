@@ -3311,3 +3311,48 @@ h1 {
 .product-card.out-of-stock {
     opacity: 0.7;
 }
+/* Add to cart button touch improvement */
+.add-to-cart-btn, .cart-btn, .buy-now-btn {
+    touch-action: manipulation;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Prevent accidental touches during scroll */
+.product-card, .cart-item {
+    touch-action: pan-y;
+}
+
+/* Add delay for touch events on buttons */
+.add-to-cart-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.add-to-cart-btn::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+}
+
+/* Improved button styling for better touch targets */
+.btn, button {
+    min-height: 44px;
+    padding: 12px 16px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Specific fix for product grid */
+.products-grid .product-card {
+    padding-bottom: 10px;
+}
+
+.products-grid .add-to-cart-btn {
+    margin-top: 8px;
+    position: relative;
+    z-index: 1;
+}
