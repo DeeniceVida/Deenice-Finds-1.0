@@ -1,4 +1,4 @@
-// Order History Management - WITH REAL-TIME SYNC
+// Order History Management - WITH PERMANENT STORAGE & CLIENT SYNC
 class OrderHistory {
     constructor() {
         this.orders = [];
@@ -7,48 +7,70 @@ class OrderHistory {
     }
 
     async init() {
+        console.log('📦 OrderHistory initializing with enhanced storage...');
         await this.loadOrders();
         this.renderOrders();
         this.setupEventListeners();
+        this.setupRealTimeUpdates();
+        this.setupAdminUpdateListener();
+        
+        console.log(`✅ OrderHistory initialized with ${this.orders.length} orders`);
     }
 
     async loadOrders() {
-    try {
-        console.log('📥 Loading orders...');
-        
-        // Try multiple storage locations
-        let orders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-        
-        // If no orders in main storage, check backup
-        if (orders.length === 0) {
-            const backup = JSON.parse(localStorage.getItem('de_order_history_backup') || '[]');
-            if (backup.length > 0) {
-                orders = backup;
-                localStorage.setItem('de_order_history', JSON.stringify(orders));
-                console.log('✅ Restored orders from backup:', orders.length);
+        try {
+            console.log('📥 Loading orders...');
+            
+            // Use clientOrderSync if available (preferred)
+            if (window.clientOrderSync) {
+                this.orders = clientOrderSync.getLocalOrders();
+                console.log(`✅ Loaded ${this.orders.length} orders from clientOrderSync`);
+            } else {
+                // Fallback to direct storage with backup recovery
+                let orders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+                
+                // If no orders in main storage, check backup
+                if (orders.length === 0) {
+                    const backup = JSON.parse(localStorage.getItem('de_order_history_backup') || '[]');
+                    if (backup.length > 0) {
+                        orders = backup;
+                        localStorage.setItem('de_order_history', JSON.stringify(orders));
+                        console.log('✅ Restored orders from backup:', orders.length);
+                    }
+                }
+                
+                this.orders = orders;
+                console.log(`✅ Loaded ${this.orders.length} orders from localStorage`);
             }
-        }
-        
-        // If still no orders, try to sync with server
-        if (orders.length === 0 && navigator.onLine) {
-            console.log('🔄 No local orders, attempting server sync...');
-            if (window.orderSync) {
-                orders = await window.orderSync.syncOrders();
-            }
-        }
-        
-        this.orders = orders;
-        console.log('✅ Final loaded orders:', this.orders.length);
 
-        // Sort orders by date (newest first)
-        this.orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-        
-    } catch (error) {
-        console.error('Error loading orders:', error);
-        // Final fallback - empty array
-        this.orders = [];
+            // Sort orders by date (newest first)
+            this.orders.sort((a, b) => new Date(b.orderDate || b.date) - new Date(a.orderDate || a.date));
+            
+            // If no orders and online, attempt sync
+            if (this.orders.length === 0 && navigator.onLine) {
+                console.log('🔄 No local orders, attempting server sync...');
+                await this.attemptSync();
+            }
+            
+        } catch (error) {
+            console.error('Error loading orders:', error);
+            this.orders = [];
+        }
     }
-}
+
+    // Attempt to sync with server
+    async attemptSync() {
+        if (window.orderSync) {
+            try {
+                await window.orderSync.syncOrders();
+                // Reload orders after sync
+                await this.loadOrders();
+            } catch (error) {
+                console.error('Sync failed:', error);
+            }
+        }
+    }
+
     setupEventListeners() {
         // Filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -81,26 +103,194 @@ class OrderHistory {
         try {
             console.log('🔄 Manual refresh triggered');
             
-            if (window.orderSync) {
+            // Use clientOrderSync if available
+            if (window.clientOrderSync) {
+                await clientOrderSync.manualRefresh();
+                await this.loadOrders();
+                this.renderOrders();
+                this.showNotification('✅ Orders refreshed from server!', 'success');
+            } else if (window.orderSync) {
+                // Fallback to old sync method
                 await window.orderSync.forceSync();
                 await this.loadOrders();
                 this.renderOrders();
-                alert('✅ Orders refreshed from server!');
+                this.showNotification('✅ Orders refreshed from server!', 'success');
             } else {
+                // Basic reload
                 await this.loadOrders();
                 this.renderOrders();
-                alert('✅ Orders reloaded!');
+                this.showNotification('✅ Orders reloaded!', 'success');
             }
         } catch (error) {
             console.error('Refresh failed:', error);
-            alert('❌ Refresh failed. Please try again.');
+            this.showNotification('❌ Refresh failed. Please try again.', 'error');
         }
     }
 
+    setupRealTimeUpdates() {
+        // Listen for storage changes
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'de_order_history') {
+                console.log('🔄 Storage update detected, refreshing orders...');
+                this.loadOrders().then(() => this.renderOrders());
+            }
+        });
+
+        // Listen for custom sync events
+        window.addEventListener('orderHistoryUpdated', (e) => {
+            console.log('📢 Order history updated event received');
+            if (e.detail && e.detail.orders) {
+                this.orders = e.detail.orders;
+                this.renderOrders();
+            } else {
+                this.loadOrders().then(() => this.renderOrders());
+            }
+        });
+
+        // Auto-refresh when page becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('📱 Page visible, checking for updates...');
+                this.loadOrders().then(() => this.renderOrders());
+            }
+        });
+    }
+
+    setupAdminUpdateListener() {
+        console.log('👂 Setting up admin update listener...');
+        
+        // Listen for admin update events
+        window.addEventListener('adminOrderUpdate', (e) => {
+            console.log('📢 Admin update received:', e.detail);
+            this.handleAdminUpdate(e.detail);
+        });
+    }
+
+    handleAdminUpdate(updateDetail) {
+        const { orderId, newStatus } = updateDetail;
+        console.log(`🔄 Processing admin update: ${orderId} -> ${newStatus}`);
+        
+        // Find and update the order locally
+        const orderIndex = this.orders.findIndex(order => order.id === orderId);
+        if (orderIndex > -1) {
+            this.orders[orderIndex].status = newStatus;
+            this.orders[orderIndex].statusUpdated = new Date().toISOString();
+            
+            // Save changes back to storage
+            this.saveToStorage();
+            
+            // Re-render orders
+            this.renderOrders();
+            
+            // Highlight updated order
+            this.highlightUpdatedOrder(orderId, newStatus);
+            
+            console.log(`✅ Updated order ${orderId} to ${newStatus} in UI`);
+        } else {
+            // Order not found, do a full refresh
+            console.log(`⚠️ Order ${orderId} not found, doing full refresh...`);
+            this.loadOrders().then(() => this.renderOrders());
+        }
+    }
+
+    highlightUpdatedOrder(orderId, newStatus) {
+        const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+        if (orderCard) {
+            // Add highlight animation
+            orderCard.style.transition = 'all 0.5s ease';
+            orderCard.style.backgroundColor = '#f0f8ff';
+            
+            setTimeout(() => {
+                orderCard.style.backgroundColor = '';
+            }, 2000);
+            
+            // Update status badge with animation
+            const statusBadge = orderCard.querySelector('.order-status');
+            if (statusBadge) {
+                statusBadge.textContent = this.getStatusText(newStatus);
+                statusBadge.className = `order-status ${this.getStatusClass(newStatus)} updated`;
+            }
+        }
+    }
+
+    // Save orders to storage
+    saveToStorage() {
+        try {
+            if (window.clientOrderSync) {
+                clientOrderSync.saveLocalOrders(this.orders);
+            } else {
+                localStorage.setItem('de_order_history', JSON.stringify(this.orders));
+                localStorage.setItem('de_order_history_backup', JSON.stringify(this.orders));
+            }
+        } catch (error) {
+            console.error('Error saving orders:', error);
+        }
+    }
+
+    // Show notification
+    showNotification(message, type = 'info') {
+        // Remove existing notification
+        const existingNotification = document.querySelector('.order-notification');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+
+        const notification = document.createElement('div');
+        notification.className = `order-notification ${type}`;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            max-width: 300px;
+            background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+            animation: slideIn 0.3s ease;
+        `;
+        
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 4000);
+    }
+
+    // Emergency recovery
+    emergencyRecovery() {
+        console.log('🚨 Emergency recovery triggered');
+        
+        if (window.clientOrderSync) {
+            const recovered = clientOrderSync.emergencyRecovery();
+            if (recovered) {
+                this.loadOrders().then(() => {
+                    this.renderOrders();
+                    this.showNotification('Orders recovered from backup!', 'success');
+                });
+            } else {
+                this.showNotification('No backup available for recovery.', 'error');
+            }
+        } else {
+            // Fallback recovery
+            const backup = JSON.parse(localStorage.getItem('de_order_history_backup') || '[]');
+            if (backup.length > 0) {
+                this.orders = backup;
+                this.saveToStorage();
+                this.renderOrders();
+                this.showNotification(`Recovered ${backup.length} orders from backup!`, 'success');
+            } else {
+                this.showNotification('No backup available for recovery.', 'error');
+            }
+        }
+    }
+
+    // ... (keep all your existing render methods unchanged)
     setFilter(filter) {
         this.currentFilter = filter;
         
-        // Update active filter button
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.filter === filter);
         });
@@ -111,6 +301,11 @@ class OrderHistory {
     renderOrders() {
         const container = document.getElementById('orders-container');
         
+        if (!container) {
+            console.log('ℹ️ Orders container not found on this page');
+            return;
+        }
+
         if (this.orders.length === 0) {
             container.innerHTML = this.getEmptyState();
             this.addRefreshButton();
@@ -135,7 +330,7 @@ class OrderHistory {
     }
 
     createOrderCard(order) {
-        const orderDate = new Date(order.orderDate).toLocaleDateString('en-US', {
+        const orderDate = new Date(order.orderDate || order.date).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -288,6 +483,9 @@ class OrderHistory {
                 <h3>No orders yet</h3>
                 <p>You haven't placed any orders yet. Start shopping to see your order history here!</p>
                 <a href="index.html" class="btn btn-primary">Start Shopping</a>
+                <button class="btn btn-secondary manual-refresh" onclick="orderHistory.emergencyRecovery()" style="margin-top: 10px;">
+                    🔄 Try Emergency Recovery
+                </button>
             </div>
         `;
     }
@@ -311,7 +509,7 @@ class OrderHistory {
 Order Details for #${order.id}
 
 Status: ${this.getStatusText(order.status)}
-Order Date: ${new Date(order.orderDate).toLocaleString()}
+Order Date: ${new Date(order.orderDate || order.date).toLocaleString()}
 ${order.statusUpdated ? `Last Updated: ${new Date(order.statusUpdated).toLocaleString()}` : ''}
 ${order.completedDate ? `Completed: ${new Date(order.completedDate).toLocaleString()}` : ''}
 
@@ -333,18 +531,16 @@ Phone: ${order.customer?.phone || 'Not provided'}
         try {
             await this.manualRefresh();
         } catch (error) {
-            alert('Error refreshing order');
+            this.showNotification('Error refreshing order', 'error');
         }
     }
 
     reorder(orderId) {
         const order = this.orders.find(o => o.id === orderId);
         if (order) {
-            // Add all items from the order to the cart
             const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
             
             order.items.forEach(item => {
-                // Check if item already exists in cart
                 const existingItemIndex = cart.findIndex(cartItem => 
                     cartItem.title === item.title && 
                     cartItem.color === item.color && 
@@ -352,141 +548,23 @@ Phone: ${order.customer?.phone || 'Not provided'}
                 );
 
                 if (existingItemIndex > -1) {
-                    // Update quantity if item exists
                     cart[existingItemIndex].qty += item.qty;
                 } else {
-                    // Add new item to cart
                     cart.push({
                         ...item,
-                        id: Date.now().toString() // New unique ID for cart item
+                        id: Date.now().toString()
                     });
                 }
             });
 
             localStorage.setItem('de_cart', JSON.stringify(cart));
+            this.showNotification('All items from this order have been added to your cart!', 'success');
             
-            alert('All items from this order have been added to your cart!');
-            
-            // Redirect to cart page
             setTimeout(() => {
                 window.location.href = 'cart.html';
             }, 1000);
         }
     }
-    // Add to OrderHistory class in order-history.js
-
-// NEW: Setup real-time admin update listening
-setupAdminUpdateListener() {
-    console.log('👂 Setting up admin update listener in order history...');
-    
-    // Listen for admin update events
-    window.addEventListener('adminOrderUpdate', (e) => {
-        console.log('📢 Admin update received in order history:', e.detail);
-        this.handleAdminUpdate(e.detail);
-    });
-    
-    // Listen for storage changes
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'de_order_history') {
-            console.log('🔄 Storage change detected, refreshing orders...');
-            this.loadOrders().then(() => this.renderOrders());
-        }
-    });
-    
-    // Refresh when page becomes visible
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-            console.log('📱 Page visible, checking for updates...');
-            this.loadOrders().then(() => this.renderOrders());
-        }
-    });
-}
-
-// NEW: Handle admin updates
-handleAdminUpdate(updateDetail) {
-    const { orderId, newStatus } = updateDetail;
-    console.log(`🔄 Processing admin update: ${orderId} -> ${newStatus}`);
-    
-    // Find and update the order locally
-    const orderIndex = this.orders.findIndex(order => order.id === orderId);
-    if (orderIndex > -1) {
-        this.orders[orderIndex].status = newStatus;
-        this.orders[orderIndex].statusUpdated = new Date().toISOString();
-        
-        // Re-render the specific order card
-        this.renderOrders();
-        
-        // Show visual feedback
-        this.highlightUpdatedOrder(orderId, newStatus);
-        
-        console.log(`✅ Updated order ${orderId} to ${newStatus} in UI`);
-    } else {
-        // Order not found, do a full refresh
-        console.log(`⚠️ Order ${orderId} not found, doing full refresh...`);
-        this.loadOrders().then(() => this.renderOrders());
-    }
-}
-
-// NEW: Highlight updated order
-highlightUpdatedOrder(orderId, newStatus) {
-    const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
-    if (orderCard) {
-        // Add highlight animation
-        orderCard.style.transition = 'all 0.5s ease';
-        orderCard.style.backgroundColor = '#f0f8ff';
-        
-        setTimeout(() => {
-            orderCard.style.backgroundColor = '';
-        }, 2000);
-        
-        // Update status badge with animation
-        const statusBadge = orderCard.querySelector('.order-status');
-        if (statusBadge) {
-            statusBadge.textContent = this.getStatusText(newStatus);
-            statusBadge.className = `order-status ${this.getStatusClass(newStatus)} updated`;
-        }
-    }
-}
-
-// Update your init method to include the listener
-async init() {
-    await this.loadOrders();
-    this.renderOrders();
-    this.setupEventListeners();
-    this.setupRealTimeUpdates();
-    this.setupAdminUpdateListener(); // ADD THIS LINE
-}
-    // Add to OrderHistory class in order-history.js
-setupRealTimeUpdates() {
-    // Listen for storage changes
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'de_order_history') {
-            console.log('🔄 Storage update detected, refreshing orders...');
-            this.loadOrders().then(() => this.renderOrders());
-        }
-    });
-
-    // Listen for custom sync events
-    window.addEventListener('manualRefresh', () => {
-        this.loadOrders().then(() => this.renderOrders());
-    });
-
-    // Auto-refresh when page becomes visible
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-            console.log('📱 Page visible, checking for updates...');
-            this.loadOrders().then(() => this.renderOrders());
-        }
-    });
-}
-
-// Call this in init()
-async init() {
-    await this.loadOrders();
-    this.renderOrders();
-    this.setupEventListeners();
-    this.setupRealTimeUpdates(); // Add this line
-}
 
     contactSupport(orderId) {
         const order = this.orders.find(o => o.id === orderId);
@@ -508,23 +586,38 @@ async init() {
 // Initialize order history when page loads
 const orderHistory = new OrderHistory();
 
-// Export function to add orders from other pages
+// Enhanced function to add orders from other pages
 window.addOrderToHistory = function(orderData) {
-    const existingOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-    const newOrder = {
-        id: orderData.id || 'DF' + Date.now().toString(36).toUpperCase(),
-        orderDate: new Date().toISOString(),
-        status: 'pending',
-        ...orderData
-    };
-    existingOrders.unshift(newOrder);
-    localStorage.setItem('de_order_history', JSON.stringify(existingOrders));
-    
-    // Refresh the order history display if on the page
-    if (typeof orderHistory !== 'undefined') {
-        orderHistory.loadOrders();
-        orderHistory.renderOrders();
+    // Use clientOrderSync if available
+    if (window.clientOrderSync) {
+        return clientOrderSync.addNewOrder(orderData);
+    } else {
+        // Fallback to direct storage
+        const existingOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        const newOrder = {
+            id: orderData.id || 'DF' + Date.now().toString(36).toUpperCase(),
+            orderDate: new Date().toISOString(),
+            status: 'pending',
+            statusUpdated: new Date().toISOString(),
+            ...orderData
+        };
+        existingOrders.unshift(newOrder);
+        localStorage.setItem('de_order_history', JSON.stringify(existingOrders));
+        localStorage.setItem('de_order_history_backup', JSON.stringify(existingOrders));
+        
+        // Refresh the order history display if on the page
+        if (typeof orderHistory !== 'undefined') {
+            orderHistory.loadOrders();
+            orderHistory.renderOrders();
+        }
+        
+        return newOrder.id;
     }
-    
-    return newOrder.id;
+};
+
+// Global emergency recovery function
+window.emergencyOrderRecovery = function() {
+    if (typeof orderHistory !== 'undefined') {
+        orderHistory.emergencyRecovery();
+    }
 };
