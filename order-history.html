@@ -1,118 +1,163 @@
-<!doctype html>
-<html lang='en'>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
-    <title>Order History — Deenice Finds</title>
-    <link rel='stylesheet' href='css/styles.css' />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Deenice Finds</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- FAVICON -->
+    <link rel="icon" type="image/jpeg" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg">
     <style>
-        /* Order History Specific Styles */
         .order-history-page {
-            max-width: 1000px;
-            margin: 0 auto;
             padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .page-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
         }
 
-        .page-header h1 {
-            color: var(--primary-text, #0b1420);
-            margin-bottom: 10px;
-        }
-
-        .page-header p {
-            color: var(--muted, #9aa4b2);
-            font-size: 1.1rem;
-        }
-
-        .order-card {
-            background: var(--glass-bg, rgba(255, 255, 255, 0.6));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(142, 219, 209, 0.2);
-            border-radius: var(--radius, 14px);
-            padding: 24px;
+        .sync-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
             margin-bottom: 20px;
-            box-shadow: var(--card-shadow, 0 6px 18px rgba(15, 20, 30, 0.06));
+            flex-wrap: wrap;
+        }
+
+        .sync-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
             transition: all 0.3s ease;
         }
 
-        .order-card:hover {
+        .sync-btn:hover {
+            background: #218838;
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(142, 219, 209, 0.15);
+        }
+
+        .sync-btn.secondary {
+            background: #6c757d;
+        }
+
+        .sync-btn.secondary:hover {
+            background: #545b62;
+        }
+
+        .sync-btn.danger {
+            background: #dc3545;
+        }
+
+        .sync-btn.danger:hover {
+            background: #c82333;
+        }
+
+        .storage-status {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .debug-panel {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #ffeaa7;
+            display: none;
+        }
+
+        .debug-toggle {
+            background: #ffc107;
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        /* Order card styles */
+        .order-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #007bff;
         }
 
         .order-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(142, 219, 209, 0.2);
-        }
-
-        .order-info h3 {
-            margin: 0 0 8px 0;
-            color: var(--primary-text, #0b1420);
-        }
-
-        .order-meta {
-            display: flex;
-            gap: 20px;
+            align-items: center;
+            margin-bottom: 15px;
             flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .order-meta span {
-            font-size: 0.9rem;
-            color: var(--muted, #9aa4b2);
+        .order-id {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
         }
 
         .order-status {
             padding: 6px 12px;
             border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        .status-completed {
-            background: rgba(34, 197, 94, 0.1);
-            color: #16a34a;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-processing { background: #cce7ff; color: #004085; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
 
-        .status-pending {
-            background: rgba(234, 179, 8, 0.1);
-            color: #ca8a04;
-            border: 1px solid rgba(234, 179, 8, 0.3);
-        }
-
-        .status-processing {
-            background: rgba(59, 130, 246, 0.1);
-            color: #2563eb;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-
-        .status-cancelled {
-            background: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
-            border: 1px solid rgba(239, 68, 68, 0.3);
+        .order-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
         }
 
         .order-items {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .order-item {
             display: flex;
-            align-items: center;
             gap: 15px;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 10px;
+            border-bottom: 1px solid #eee;
         }
 
         .order-item:last-child {
@@ -124,275 +169,347 @@
             height: 60px;
             object-fit: cover;
             border-radius: 8px;
-            flex-shrink: 0;
         }
 
         .item-details {
             flex: 1;
         }
 
-        .item-details h4 {
-            margin: 0 0 5px 0;
-            color: var(--primary-text, #0b1420);
-            font-size: 0.95rem;
+        .item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
         }
 
         .item-specs {
-            font-size: 0.8rem;
-            color: var(--muted, #9aa4b2);
+            font-size: 12px;
+            color: #666;
             margin-bottom: 5px;
         }
 
         .item-price {
-            font-weight: 600;
-            color: var(--primary-text, #0b1420);
+            font-weight: bold;
+            color: #28a745;
         }
 
         .order-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px solid rgba(142, 219, 209, 0.2);
+            border-top: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .order-total {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary-text, #0b1420);
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
         }
 
         .order-actions {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .btn {
             padding: 8px 16px;
             border: none;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 500;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-size: 14px;
             text-decoration: none;
             display: inline-block;
             text-align: center;
+            transition: all 0.3s ease;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #8EDBD1, rgba(142, 219, 209, 0.3));
-            color: var(--primary-text, #0b1420);
-            border: 1px solid rgba(142, 219, 209, 0.3);
+            background: #007bff;
+            color: white;
         }
 
         .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(142, 219, 209, 0.3);
+            background: #0056b3;
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.6);
-            color: var(--muted, #9aa4b2);
-            border: 1px solid rgba(142, 219, 209, 0.2);
+            background: #6c757d;
+            color: white;
         }
 
         .btn-secondary:hover {
-            background: rgba(142, 219, 209, 0.1);
-            color: var(--primary-text, #0b1420);
+            background: #545b62;
         }
 
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: var(--muted, #9aa4b2);
+            color: #666;
         }
 
         .empty-state h3 {
             margin-bottom: 10px;
-            color: var(--primary-text, #0b1420);
+            color: #333;
         }
 
-        .empty-state p {
-            margin-bottom: 20px;
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
         }
 
-        .filters {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
         }
 
-        .filter-btn {
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.6);
-            border: 1px solid rgba(142, 219, 209, 0.2);
-            border-radius: 20px;
-            color: var(--muted, #9aa4b2);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
-        }
-
-        .filter-btn.active {
-            background: #8EDBD1;
-            color: var(--primary-text, #0b1420);
-            border-color: #8EDBD1;
-        }
-
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #8EDBD1;
-            text-decoration: none;
-            margin-bottom: 20px;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .back-link:hover {
-            color: #7BC9BF;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
-            .order-history-page {
-                padding: 16px;
-            }
-
             .order-header {
                 flex-direction: column;
-                gap: 10px;
-            }
-
-            .order-meta {
-                gap: 10px;
+                align-items: flex-start;
             }
 
             .order-footer {
                 flex-direction: column;
-                gap: 15px;
                 align-items: flex-start;
             }
 
             .order-actions {
                 width: 100%;
-                justify-content: space-between;
+                justify-content: flex-start;
             }
 
-            .btn {
-                flex: 1;
-                text-align: center;
+            .sync-controls {
+                flex-direction: column;
+                align-items: center;
             }
 
-            .filters {
-                justify-content: center;
+            .sync-btn {
+                width: 100%;
+                max-width: 300px;
             }
         }
     </style>
 </head>
-<body class="order-history-page">
-    <a href="index.html" class="back-link">← Back to Home</a>
-    
-    <div class="page-header">
-        <h1>📦 Your Order History</h1>
-        <p>Track and manage your past orders</p>
+<body>
+    <div class="order-history-page">
+        <div class="page-header">
+            <h1>📦 My Orders</h1>
+            <p>View your order history and track your purchases</p>
+        </div>
+
+        <!-- Sync Controls -->
+        <div class="sync-controls">
+            <button class="sync-btn" onclick="clientOrderSync.manualRefresh()">
+                🔄 Refresh Orders
+            </button>
+            <button class="sync-btn secondary" onclick="clientOrderSync.emergencyRecovery()">
+                🚨 Emergency Recovery
+            </button>
+            <button class="sync-btn secondary" onclick="toggleDebug()">
+                🔧 Debug Info
+            </button>
+        </div>
+
+        <!-- Storage Status -->
+        <div class="storage-status">
+            <div class="status-item">
+                <span>Orders in Memory:</span>
+                <span id="ordersCount" class="status-value">Loading...</span>
+            </div>
+            <div class="status-item">
+                <span>Last Sync:</span>
+                <span id="lastSync" class="status-value">Loading...</span>
+            </div>
+            <div class="status-item">
+                <span>Storage Status:</span>
+                <span id="storageStatus" class="status-value">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Debug Panel -->
+        <div id="debugPanel" class="debug-panel">
+            <h4>Debug Information</h4>
+            <pre id="debugInfo"></pre>
+            <button class="sync-btn danger" onclick="clientOrderSync.clearAllOrders()">
+                🧹 Clear All Orders (Debug)
+            </button>
+        </div>
+
+        <!-- Orders Container -->
+        <div id="ordersContainer">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                Loading your orders...
+            </div>
+        </div>
     </div>
 
-    <div class="filters">
-        <button class="filter-btn active" data-filter="all">All Orders</button>
-        <button class="filter-btn" data-filter="completed">Completed</button>
-        <button class="filter-btn" data-filter="pending">Pending</button>
-        <button class="filter-btn" data-filter="processing">Processing</button>
-    </div>
+    <!-- Client Order Sync -->
+    <script src="js/client-order-sync.js"></script>
 
-    <div id="orders-container">
-        <!-- Orders will be loaded here -->
-    </div>
     <script>
-// Ensure order sync is initialized on order history page
-document.addEventListener('DOMContentLoaded', function() {
-    // Force initialize order sync if not already done
-    if (!window.orderSync) {
-        console.log('🔄 Manually initializing OrderSyncManager...');
-        window.orderSync = new OrderSyncManager();
-    }
-    
-    // Add real-time update listener directly to order history
-    if (typeof orderHistory !== 'undefined') {
-        // Listen for admin updates
-        window.addEventListener('adminOrderUpdate', function(e) {
-            console.log('📢 Direct admin update received in order history:', e.detail);
-            orderHistory.loadOrders().then(() => orderHistory.renderOrders());
-        });
-        
-        // Listen for storage changes
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'de_order_history') {
-                console.log('💾 Storage change detected in order history');
-                orderHistory.loadOrders().then(() => orderHistory.renderOrders());
-            }
-        });
-    }
-    
-    // Test function for debugging
-    window.testOrderUpdate = function(orderId, newStatus) {
-        const event = new CustomEvent('adminOrderUpdate', {
-            detail: {
-                orderId: orderId,
-                newStatus: newStatus,
-                timestamp: new Date().toISOString()
-            }
-        });
-        window.dispatchEvent(event);
-        alert(`Test update sent: ${orderId} -> ${newStatus}`);
-    };
-});
-</script>
-    <script src="js/order-history.js"></script>
-    <script src="js/order-sync.js"></script>
-    <!-- Permanent Order Storage -->
-<script src="js/order-storage.js"></script>
-<script src="js/order-history.js"></script>
-
-<script>
-// Emergency recovery on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if orders are missing and attempt recovery
-    setTimeout(() => {
-        const orders = orderHistory.orders;
-        if (!orders || orders.length === 0) {
-            console.log('🔄 No orders found, attempting auto-recovery...');
-            orderHistory.emergencyRecovery();
+        // Update storage status
+        function updateStorageStatus() {
+            const stats = clientOrderSync.getStorageStats();
+            document.getElementById('ordersCount').textContent = stats.ordersCount + ' orders';
+            document.getElementById('lastSync').textContent = stats.lastSync;
+            document.getElementById('storageStatus').textContent = 
+                stats.ordersCount > 0 ? '✅ Healthy' : '⚠️ No Orders';
         }
-        
-        // Debug info
-        console.log('📊 Order Storage Status:', orderStorage.getStorageStats());
-    }, 2000);
-});
 
-// Global debug function
-window.debugOrderStorage = function() {
-    const stats = orderStorage.getStorageStats();
-    const info = `
-🔍 ORDER STORAGE DEBUG:
+        // Toggle debug panel
+        function toggleDebug() {
+            const panel = document.getElementById('debugPanel');
+            const isVisible = panel.style.display === 'block';
+            panel.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                const stats = clientOrderSync.getStorageStats();
+                const orders = clientOrderSync.getLocalOrders();
+                document.getElementById('debugInfo').textContent = JSON.stringify({
+                    storageStats: stats,
+                    sampleOrders: orders.slice(0, 3), // Show first 3 orders
+                    totalOrders: orders.length
+                }, null, 2);
+            }
+        }
 
-📦 Orders in Memory: ${orderHistory.orders.length}
-💾 Primary Storage: ${stats.ordersInPrimary}
-🔄 Backup Storage: ${stats.ordersInBackup}
-📊 Storage Size: ${Math.round(stats.storageSize / 1024)} KB
-🕒 Last Backup: ${new Date(stats.lastBackup).toLocaleTimeString()}
+        // Listen for order updates
+        window.addEventListener('orderHistoryUpdated', function(e) {
+            updateStorageStatus();
+            renderOrders(e.detail.orders);
+        });
 
-🛠️ Commands:
-• orderHistory.manualRefresh() - Force refresh
-• orderHistory.emergencyRecovery() - Emergency recovery
-• orderStorage.clearAllData() - Clear all data (careful!)
-    `.trim();
-    
-    console.log(info);
-    alert(info);
-};
-</script>
+        // Render orders
+        function renderOrders(orders) {
+            const container = document.getElementById('ordersContainer');
+            
+            if (!orders || orders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No orders yet</h3>
+                        <p>You haven't placed any orders yet. Start shopping to see your order history here!</p>
+                        <a href="index.html" class="btn btn-primary">Start Shopping</a>
+                        <button class="btn btn-secondary" onclick="clientOrderSync.emergencyRecovery()" style="margin-top: 10px;">
+                            🔄 Try Emergency Recovery
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = orders.map(order => `
+                <div class="order-card" data-order-id="${order.id}">
+                    <div class="order-header">
+                        <div class="order-id">Order #${order.id}</div>
+                        <div class="order-status status-${order.status}">${order.status}</div>
+                    </div>
+                    
+                    <div class="order-meta">
+                        <span>📅 ${new Date(order.orderDate).toLocaleDateString()}</span>
+                        <span>📍 ${order.customer?.city || 'N/A'}</span>
+                        <span>📞 ${order.customer?.phone || 'N/A'}</span>
+                        ${order.statusUpdated ? `<span>🔄 ${new Date(order.statusUpdated).toLocaleDateString()}</span>` : ''}
+                    </div>
+                    
+                    <div class="order-items">
+                        ${(order.items || []).map(item => `
+                            <div class="order-item">
+                                <img src="${item.img || 'https://via.placeholder.com/60'}" 
+                                     alt="${item.title}" 
+                                     class="item-image"
+                                     onerror="this.src='https://via.placeholder.com/60'">
+                                <div class="item-details">
+                                    <div class="item-name">${item.title || 'Unknown Item'}</div>
+                                    <div class="item-specs">
+                                        ${item.color ? `Color: ${item.color} • ` : ''}
+                                        ${item.size ? `Size: ${item.size} • ` : ''}
+                                        Qty: ${item.qty || 1}
+                                    </div>
+                                    <div class="item-price">
+                                        KES ${((item.price || 0) * (item.qty || 1)).toLocaleString()}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="order-footer">
+                        <div class="order-total">
+                            Total: KES ${order.totalAmount?.toLocaleString() || '0'}
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn btn-secondary" onclick="viewOrderDetails('${order.id}')">
+                                View Details
+                            </button>
+                            ${order.status === 'completed' ? `
+                                <button class="btn btn-primary" onclick="reorder('${order.id}')">
+                                    Reorder
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-secondary" onclick="contactSupport('${order.id}')">
+                                Contact Support
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // View order details
+        function viewOrderDetails(orderId) {
+            const orders = clientOrderSync.getLocalOrders();
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                alert(`Order #${orderId}\nStatus: ${order.status}\nTotal: KES ${order.totalAmount?.toLocaleString() || '0'}`);
+            }
+        }
+
+        // Reorder
+        function reorder(orderId) {
+            alert(`Adding all items from order ${orderId} to cart...`);
+            // Implement reorder logic
+        }
+
+        // Contact support
+        function contactSupport(orderId) {
+            const message = `Hello, I need help with order #${orderId}`;
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/254712345678?text=${encodedMessage}`, '_blank');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load initial orders
+            const orders = clientOrderSync.loadLocalOrders();
+            renderOrders(orders);
+            updateStorageStatus();
+            
+            // Update status every 10 seconds
+            setInterval(updateStorageStatus, 10000);
+        });
+
+        // Global functions
+        window.debugOrderStorage = function() {
+            const stats = clientOrderSync.getStorageStats();
+            console.log('📊 Order Storage Debug:', stats);
+            alert(`Orders: ${stats.ordersCount}\nLast Sync: ${stats.lastSync}`);
+        };
+    </script>
 </body>
 </html>
