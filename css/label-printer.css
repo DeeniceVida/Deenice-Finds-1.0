@@ -1,23 +1,30 @@
-/* label-printer.css - Thermal Printer Styles - HIGH CONTRAST VERSION */
+/* label-printer.css - 6 INCH PAPER OPTIMIZED - HIGH CONTRAST VERSION */
 @media print {
+    @page {
+        size: 4in 6in;
+        margin: 0.1in;
+    }
+    
     * {
         margin: 0 !important;
         padding: 0 !important;
         box-sizing: border-box !important;
         -webkit-print-color-adjust: exact !important;
         color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
     
     body {
-        font-family: 'Courier New', monospace !important;
-        font-size: 14px !important; /* Larger font size */
+        font-family: 'Courier New', monospace, 'Arial Narrow', Arial, sans-serif !important;
+        font-size: 15px !important; /* Slightly larger for 6-inch paper */
         line-height: 1.1 !important;
-        width: 80mm !important;
+        width: 4in !important;
+        min-height: 6in !important;
         margin: 0 auto !important;
-        padding: 3mm !important;
+        padding: 0.15in !important;
         background: white !important;
         color: black !important;
-        font-weight: bold !important; /* Make everything bolder */
+        font-weight: bold !important;
     }
     
     .no-print {
@@ -25,75 +32,97 @@
     }
     
     .label-container {
-        border: 2px solid #000 !important; /* Thicker border */
-        padding: 4mm !important;
+        border: 3px solid #000 !important; /* Thicker border */
+        padding: 0.2in !important;
         page-break-inside: avoid !important;
         background: white !important;
+        min-height: 5.7in !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
     }
     
     .company-header {
         text-align: center !important;
-        margin-bottom: 4mm !important;
-        border-bottom: 2px dashed #000 !important; /* Thicker border */
-        padding-bottom: 3mm !important;
+        margin-bottom: 0.15in !important;
+        border-bottom: 2px dashed #000 !important;
+        padding-bottom: 0.1in !important;
     }
     
     .company-name {
-        font-size: 18px !important; /* Larger font */
-        font-weight: 900 !important; /* Extra bold */
-        margin-bottom: 2mm !important;
+        font-size: 22px !important; /* Larger for 6-inch paper */
+        font-weight: 900 !important;
+        margin-bottom: 0.05in !important;
         text-transform: uppercase !important;
+        letter-spacing: 1px !important;
     }
     
     .company-tagline {
-        font-size: 12px !important;
+        font-size: 14px !important;
         font-weight: bold !important;
+        letter-spacing: 0.5px !important;
     }
     
     .order-info, .customer-info, .delivery-info {
-        margin-bottom: 4mm !important;
+        margin-bottom: 0.15in !important;
     }
     
     .section-title {
-        font-weight: 900 !important; /* Extra bold */
-        border-bottom: 2px solid #000 !important; /* Thicker border */
-        margin-bottom: 2mm !important;
-        font-size: 13px !important;
+        font-weight: 900 !important;
+        border-bottom: 2px solid #000 !important;
+        margin-bottom: 0.08in !important;
+        font-size: 15px !important;
         text-transform: uppercase !important;
-        padding-bottom: 1mm !important;
+        padding-bottom: 0.05in !important;
+        letter-spacing: 0.5px !important;
     }
     
     .info-row {
         display: flex !important;
-        margin-bottom: 2mm !important;
+        justify-content: space-between !important;
+        margin-bottom: 0.08in !important;
+        align-items: flex-start !important;
     }
     
     .info-label {
-        font-weight: 900 !important; /* Extra bold */
-        min-width: 28mm !important;
+        font-weight: 900 !important;
+        width: 1.2in !important;
         text-transform: uppercase !important;
+        font-size: 12px !important;
     }
     
     .info-value {
         flex: 1 !important;
         font-weight: bold !important;
-        border-bottom: 1px dotted #000 !important; /* Underline values */
-        padding-bottom: 1mm !important;
+        border-bottom: 1px dotted #000 !important;
+        padding-bottom: 0.03in !important;
+        font-size: 13px !important;
+        min-height: 0.2in !important;
+        word-break: break-word !important;
     }
     
     .qr-code {
         text-align: center !important;
-        margin: 4mm 0 !important;
-        padding: 3mm !important;
-        border: 2px dashed #000 !important; /* Thicker border */
-        background: #f8f8f8 !important; /* Light background for contrast */
+        margin: 0.15in 0 !important;
+        padding: 0.1in !important;
+        border: 2px dashed #000 !important;
+        background: #f8f8f8 !important;
+    }
+    
+    .qr-image {
+        width: 1.5in !important; /* Optimized for 6-inch paper */
+        height: 1.5in !important;
+        border: 2px solid #000 !important;
+        display: block !important;
+        margin: 0 auto 0.05in auto !important;
+        background: white !important;
     }
     
     .qr-placeholder {
-        width: 40mm !important; /* Slightly larger */
-        height: 40mm !important;
-        border: 2px solid #000 !important; /* Thicker border */
-        margin: 0 auto !important;
+        width: 1.5in !important;
+        height: 1.5in !important;
+        border: 2px solid #000 !important;
+        margin: 0 auto 0.05in auto !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -101,129 +130,157 @@
         text-align: center !important;
         background: white !important;
         font-weight: bold !important;
-        padding: 2mm !important;
+        padding: 0.1in !important;
     }
     
     .thank-you {
         text-align: center !important;
-        margin-top: 4mm !important;
-        padding-top: 3mm !important;
-        border-top: 2px dashed #000 !important; /* Thicker border */
+        margin-top: 0.15in !important;
+        padding-top: 0.1in !important;
+        border-top: 2px dashed #000 !important;
         font-weight: bold !important;
-        font-size: 13px !important;
+        font-size: 14px !important;
     }
     
     .delivery-destination {
-        border: 2px dashed #000 !important; /* Thicker border */
-        padding: 3mm !important;
-        margin: 3mm 0 !important;
-        min-height: 18mm !important;
-        background: #f8f8f8 !important; /* Light background */
+        border: 2px dashed #000 !important;
+        padding: 0.1in !important;
+        margin: 0.1in 0 !important;
+        min-height: 0.8in !important;
+        background: #f8f8f8 !important;
     }
     
     .destination-label {
-        font-weight: 900 !important; /* Extra bold */
-        margin-bottom: 2mm !important;
+        font-weight: 900 !important;
+        margin-bottom: 0.05in !important;
         text-transform: uppercase !important;
+        font-size: 12px !important;
     }
     
     .pickup-code {
-        background: #e0e0e0 !important; /* Darker background */
-        padding: 3mm !important;
+        background: #d0d0d0 !important; /* Darker for better contrast */
+        padding: 0.15in !important;
         text-align: center !important;
-        border: 2px solid #000 !important; /* Thicker border */
-        margin: 3mm 0 !important;
-        font-weight: 900 !important; /* Extra bold */
-        font-size: 16px !important; /* Larger font */
+        border: 3px solid #000 !important; /* Thicker border */
+        margin: 0.1in 0 !important;
+        font-weight: 900 !important;
+        font-size: 18px !important; /* Larger for 6-inch paper */
         text-transform: uppercase !important;
-    }
-    
-    .barcode {
-        text-align: center !important;
-        margin: 3mm 0 !important;
+        letter-spacing: 1px !important;
     }
     
     .print-instructions {
         font-size: 10px !important;
         text-align: center !important;
-        margin-top: 3mm !important;
-        color: #000 !important; /* Ensure black color */
+        margin-top: 0.1in !important;
         font-weight: bold !important;
         border-top: 1px solid #000 !important;
-        padding-top: 2mm !important;
+        padding-top: 0.05in !important;
+    }
+    
+    /* Ensure everything fits perfectly on 6-inch paper */
+    .label-container > *:last-child {
+        margin-bottom: 0 !important;
     }
 }
 
-/* Screen styles for preview */
+/* Screen styles for preview - 6 INCH OPTIMIZED */
 @media screen {
     .label-preview {
-        border: 2px solid #000;
-        padding: 20px;
+        border: 3px solid #000;
+        padding: 0.2in;
         margin: 20px auto;
-        max-width: 400px;
+        width: 4in;
+        min-height: 6in;
         background: white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         font-family: 'Courier New', monospace;
         font-weight: bold;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .preview-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
     }
     
     .print-controls {
         text-align: center;
         margin: 20px 0;
-        padding: 20px;
-        background: #f5f5f5;
-        border-radius: 8px;
+        padding: 25px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 500px;
     }
     
     .print-btn {
         background: #28a745;
         color: white;
         border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
+        padding: 15px 30px;
+        border-radius: 8px;
         cursor: pointer;
         font-size: 16px;
         margin: 0 10px;
         font-weight: bold;
+        transition: all 0.3s ease;
     }
     
     .print-btn:hover {
         background: #218838;
+        transform: translateY(-2px);
     }
     
     .back-btn {
         background: #6c757d;
         color: white;
         border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
+        padding: 15px 30px;
+        border-radius: 8px;
         cursor: pointer;
         font-size: 16px;
         margin: 0 10px;
         font-weight: bold;
+        transition: all 0.3s ease;
     }
     
     .back-btn:hover {
         background: #545b62;
+        transform: translateY(-2px);
     }
     
     /* High contrast preview styles */
     .label-container {
-        border: 2px solid #000;
-        padding: 15px;
+        border: 3px solid #000;
+        padding: 0.2in;
         background: white;
+        width: 4in;
+        min-height: 6in;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
     
     .company-name {
-        font-size: 18px;
+        font-size: 22px;
         font-weight: 900;
         text-transform: uppercase;
+        letter-spacing: 1px;
     }
     
     .section-title {
         font-weight: 900;
         border-bottom: 2px solid #000;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     .info-label {
@@ -232,10 +289,108 @@
     }
     
     .pickup-code {
-        background: #e0e0e0;
-        border: 2px solid #000;
+        background: #d0d0d0;
+        border: 3px solid #000;
         font-weight: 900;
-        font-size: 16px;
+        font-size: 18px;
         text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .paper-size-info {
+        background: #e7f3ff;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        border-left: 4px solid #007bff;
+        text-align: center;
+        font-weight: bold;
+    }
+    
+    .print-tip {
+        margin-top: 15px;
+        color: #666;
+        font-size: 14px;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #28a745;
+    }
+}
+
+/* Mobile responsive preview */
+@media screen and (max-width: 768px) {
+    .label-preview {
+        transform: scale(0.9);
+        transform-origin: top center;
+    }
+    
+    .preview-container {
+        padding: 10px;
+    }
+    
+    .print-controls {
+        padding: 20px 15px;
+    }
+    
+    .print-btn, .back-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+        margin: 5px;
+        display: block;
+        width: 100%;
+    }
+}
+
+/* Animation for better UX */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.label-preview {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Utility classes */
+.text-center {
+    text-align: center !important;
+}
+
+.text-bold {
+    font-weight: bold !important;
+}
+
+.text-bolder {
+    font-weight: 900 !important;
+}
+
+.border-thick {
+    border-width: 3px !important;
+}
+
+/* Ensure high contrast for accessibility */
+@media (prefers-contrast: high) {
+    .label-container {
+        border-color: #000 !important;
+    }
+    
+    .section-title {
+        border-color: #000 !important;
+    }
+    
+    .info-value {
+        border-color: #000 !important;
+    }
+    
+    .pickup-code {
+        background: #000 !important;
+        color: white !important;
     }
 }
