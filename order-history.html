@@ -352,5 +352,47 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
     <script src="js/order-history.js"></script>
     <script src="js/order-sync.js"></script>
+    <!-- Permanent Order Storage -->
+<script src="js/order-storage.js"></script>
+<script src="js/order-history.js"></script>
+
+<script>
+// Emergency recovery on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if orders are missing and attempt recovery
+    setTimeout(() => {
+        const orders = orderHistory.orders;
+        if (!orders || orders.length === 0) {
+            console.log('🔄 No orders found, attempting auto-recovery...');
+            orderHistory.emergencyRecovery();
+        }
+        
+        // Debug info
+        console.log('📊 Order Storage Status:', orderStorage.getStorageStats());
+    }, 2000);
+});
+
+// Global debug function
+window.debugOrderStorage = function() {
+    const stats = orderStorage.getStorageStats();
+    const info = `
+🔍 ORDER STORAGE DEBUG:
+
+📦 Orders in Memory: ${orderHistory.orders.length}
+💾 Primary Storage: ${stats.ordersInPrimary}
+🔄 Backup Storage: ${stats.ordersInBackup}
+📊 Storage Size: ${Math.round(stats.storageSize / 1024)} KB
+🕒 Last Backup: ${new Date(stats.lastBackup).toLocaleTimeString()}
+
+🛠️ Commands:
+• orderHistory.manualRefresh() - Force refresh
+• orderHistory.emergencyRecovery() - Emergency recovery
+• orderStorage.clearAllData() - Clear all data (careful!)
+    `.trim();
+    
+    console.log(info);
+    alert(info);
+};
+</script>
 </body>
 </html>
