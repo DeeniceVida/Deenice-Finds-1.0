@@ -389,18 +389,19 @@ a, button {
 
 .offers-controls .dots button {
   background: #fff;
-  width: 10px; /* Slightly larger */
-  height: 10px;
+  width: 8px; /* Reduced from 10px */
+  height: 8px; /* Reduced from 10px */
   border-radius: 50%;
   border: none;
-  opacity: 0.6; /* Better default opacity */
+  opacity: 0.6;
   cursor: pointer;
-  transition: all 0.3s ease; /* Enhanced transition */
+  transition: all 0.3s ease;
+  flex-shrink: 0; /* Prevent dots from growing/shrinking */
 }
 
 .offers-controls .dots button.active {
   opacity: 1;
-  transform: scale(1.2); /* Scale effect for active dot */
+  transform: scale(1.2); /* This will make active dot 9.6px (8px * 1.2) */
 }
 
 .offers-controls .dots button:hover {
