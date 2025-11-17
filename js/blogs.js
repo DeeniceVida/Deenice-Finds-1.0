@@ -13,7 +13,7 @@ const blogs = [
     },
     { 
   title: "10 Signs You Should NOT Buy That TV (Before You Regret It!)", 
-  slug: "tv-buying-red-flags-signs-to-avoid", 
+  slug: "tv-buying-red-flags", 
   excerpt: "Before buying a new TV, look out for these 10 red flags that most shoppers miss. Avoid these mistakes and choose the right screen for your home." 
 }
 ];
