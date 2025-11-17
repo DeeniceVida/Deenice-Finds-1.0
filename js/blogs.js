@@ -10,7 +10,12 @@ const blogs = [
         title: "Powerseed PS-A156: Best 10000 mAh Magnetic Wireless Power Bank for Travel & Outdoors 🚀", 
         slug: "powerseed-ps-a156-review", 
         excerpt: "Tired of cable clutter and dead devices ruining your adventures? Meet the Powerseed PS-A156..." 
-    }
+    },
+    { 
+  title: "10 Signs You Should NOT Buy That TV (Before You Regret It!)", 
+  slug: "tv-buying-red-flags-signs-to-avoid", 
+  excerpt: "Before buying a new TV, look out for these 10 red flags that most shoppers miss. Avoid these mistakes and choose the right screen for your home." 
+}
 ];
 
 const container = document.getElementById('blogs');
