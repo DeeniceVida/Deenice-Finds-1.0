@@ -64,6 +64,53 @@ class ClientOrderSync {
         }
     }
 
+    // NEW: Setup logout protection
+    setupLogoutProtection() {
+        console.log('🛡️ Setting up logout protection...');
+        
+        // Monitor for authentication changes
+        const checkAuthState = () => {
+            const adminToken = localStorage.getItem('admin_token');
+            const wasLoggedIn = sessionStorage.getItem('was_logged_in') === 'true';
+            const isLoggedIn = !!adminToken;
+            
+            if (wasLoggedIn && !isLoggedIn) {
+                console.log('🔐 Admin logout detected - preserving orders');
+                // Ensure orders are backed up
+                this.createBackup();
+            }
+            
+            // Update session state
+            sessionStorage.setItem('was_logged_in', isLoggedIn.toString());
+        };
+        
+        // Check auth state every second
+        setInterval(checkAuthState, 1000);
+        checkAuthState(); // Initial check
+        
+        console.log('✅ Logout protection active');
+    }
+
+    // Call this in your init method:
+    async init() {
+        console.log('🔄 ClientOrderSync initializing...');
+        
+        // Setup storage first
+        this.setupPermanentStorage();
+        this.setupLogoutProtection(); // ADD THIS LINE
+        
+        // Load existing orders immediately
+        this.loadLocalOrders();
+        
+        // Setup auto-sync
+        this.startAutoSync();
+        
+        // Setup event listeners
+        this.setupEventListeners();
+        
+        console.log('✅ ClientOrderSync initialized');
+    }
+
     // Save orders to local storage
     saveLocalOrders(orders) {
         try {
