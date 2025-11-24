@@ -142,6 +142,57 @@ class OrderStorageManager {
             return null;
         }
     }
+    // NEW: Extra protection against accidental deletion
+    setupDataProtection() {
+        console.log('🛡️ Setting up data protection...');
+        
+        // Intercept storage clear events
+        const originalClear = localStorage.clear;
+        localStorage.clear = function() {
+            console.warn('🚨 localStorage.clear() attempted - blocking to protect orders');
+            
+            // Backup orders before any clear attempt
+            const orders = localStorage.getItem('de_order_history');
+            const backup = localStorage.getItem('de_order_history_backup');
+            
+            if (orders || backup) {
+                console.log('💾 Orders protected from clear operation');
+            }
+            
+            // Don't actually clear - just remove non-order items
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && !key.includes('de_order') && !key.includes('admin_token')) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            console.log(`🧹 Removed ${keysToRemove.length} non-essential items`);
+        };
+
+        // Protect against removeItem for order keys
+        const originalRemoveItem = localStorage.removeItem;
+        localStorage.removeItem = function(key) {
+            if (key && key.includes('de_order')) {
+                console.warn(`🚨 Attempt to remove protected order key: ${key}`);
+                return; // Block the removal
+            }
+            originalRemoveItem.call(this, key);
+        };
+
+        console.log('✅ Data protection setup complete');
+    }
+
+    // Call this in your init method:
+    init() {
+        console.log('💾 OrderStorageManager initializing...');
+        this.setupDataProtection(); // ADD THIS LINE
+        this.setupCrossTabSync();
+        this.setupBackupSystem();
+        this.migrateLegacyData();
+    }
 
     // Setup cross-tab synchronization
     setupCrossTabSync() {
