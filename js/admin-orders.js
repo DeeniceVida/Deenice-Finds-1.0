@@ -1,3 +1,4 @@
+// admin-orders.js - UPDATED WITH ORDER PERSISTENCE FIXES
 class AdminOrderManager {
     constructor() {
         this.orders = [];
@@ -134,12 +135,14 @@ class AdminOrderManager {
     // ENHANCED: Load orders with recovery fallback
     loadOrdersFromLocalStorage() {
         try {
-            // First try main storage
+            console.log('📥 Loading orders from storage...');
+            
+            // Method 1: Primary storage
             let localOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
             
-            // If empty, try backup
+            // Method 2: Backup storage (if primary is empty)
             if (localOrders.length === 0) {
-                console.log('📭 No orders in main storage, checking backup...');
+                console.log('📭 No orders in primary storage, checking backup...');
                 localOrders = JSON.parse(localStorage.getItem('de_order_history_backup') || '[]');
                 
                 if (localOrders.length > 0) {
@@ -149,7 +152,12 @@ class AdminOrderManager {
                     this.showNotification('Orders recovered from backup!', 'success');
                 }
             }
-            
+
+            // Method 3: Check for legacy storage formats
+            if (localOrders.length === 0) {
+                localOrders = this.checkLegacyStorage();
+            }
+
             if (localOrders.length > 0) {
                 this.orders = localOrders;
                 console.log('✅ Loaded orders from storage:', this.orders.length);
@@ -161,6 +169,35 @@ class AdminOrderManager {
             console.error('❌ Error loading from storage:', error);
             this.orders = [];
         }
+    }
+
+    // NEW: Check legacy storage formats
+    checkLegacyStorage() {
+        const legacyKeys = [
+            'order_history',
+            'deenice_orders', 
+            'user_orders',
+            'de_orders'
+        ];
+
+        for (const key of legacyKeys) {
+            try {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    const orders = JSON.parse(data);
+                    if (Array.isArray(orders) && orders.length > 0) {
+                        console.log(`🔄 Migrating ${orders.length} orders from ${key}`);
+                        localStorage.setItem('de_order_history', JSON.stringify(orders));
+                        localStorage.setItem('de_order_history_backup', JSON.stringify(orders));
+                        localStorage.removeItem(key); // Clean up old storage
+                        return orders;
+                    }
+                }
+            } catch (error) {
+                console.log(`No migration from ${key}`);
+            }
+        }
+        return [];
     }
 
     // Background sync with backend
@@ -201,110 +238,143 @@ class AdminOrderManager {
     }
 
     // ENHANCED: Sync status changes to client with multiple methods
-async syncStatusToClient(orderId, newStatus) {
-    try {
-        console.log(`🔄 Syncing status to client: ${orderId} -> ${newStatus}`);
-        
-        // Method 1: Update localStorage directly (immediate)
-        this.updateClientLocalStorage(orderId, newStatus);
-        
-        // Method 2: Trigger sync event for order-sync.js
-        this.triggerClientSyncEvent(orderId, newStatus);
-        
-        // Method 3: Update sync markers for real-time detection
-        this.updateSyncMarkers(orderId, newStatus);
-        
-        // Method 4: Store in admin updates queue
-        this.storeAdminUpdate(orderId, newStatus);
-        
-        // Method 5: Direct broadcast channel (modern browsers)
-        this.broadcastToClients(orderId, newStatus);
-        
-        console.log('✅ Status change synced to client via multiple methods');
-        
-    } catch (error) {
-        console.error('❌ Failed to sync status to client:', error);
+    async syncStatusToClient(orderId, newStatus) {
+        try {
+            console.log(`🔄 Syncing status to client: ${orderId} -> ${newStatus}`);
+            
+            // Method 1: Update localStorage directly (immediate)
+            this.updateClientLocalStorage(orderId, newStatus);
+            
+            // Method 2: Trigger sync event for order-sync.js
+            this.triggerClientSyncEvent(orderId, newStatus);
+            
+            // Method 3: Update sync markers for real-time detection
+            this.updateSyncMarkers(orderId, newStatus);
+            
+            // Method 4: Store in admin updates queue
+            this.storeAdminUpdate(orderId, newStatus);
+            
+            // Method 5: Direct broadcast channel (modern browsers)
+            this.broadcastToClients(orderId, newStatus);
+            
+            console.log('✅ Status change synced to client via multiple methods');
+            
+        } catch (error) {
+            console.error('❌ Failed to sync status to client:', error);
+        }
     }
-}
 
-// NEW: Store admin update in shared storage
-storeAdminUpdate(orderId, newStatus) {
-    try {
-        const updates = JSON.parse(localStorage.getItem('de_admin_updates') || '[]');
-        updates.push({
-            orderId: orderId,
-            newStatus: newStatus,
-            timestamp: new Date().toISOString(),
-            source: 'admin'
-        });
-        
-        // Keep only last 20 updates
-        const recentUpdates = updates.slice(-20);
-        localStorage.setItem('de_admin_updates', JSON.stringify(recentUpdates));
-        
-        // Trigger storage event
-        const storageEvent = new Event('storage');
-        storageEvent.key = 'de_admin_updates';
-        window.dispatchEvent(storageEvent);
-        
-        console.log('💾 Stored admin update in shared storage');
-    } catch (error) {
-        console.error('Error storing admin update:', error);
-    }
-}
-
-// NEW: Broadcast to clients using BroadcastChannel API
-broadcastToClients(orderId, newStatus) {
-    try {
-        if (typeof BroadcastChannel !== 'undefined') {
-            const channel = new BroadcastChannel('deenice_orders');
-            channel.postMessage({
-                type: 'status_update',
+    // NEW: Store admin update in shared storage
+    storeAdminUpdate(orderId, newStatus) {
+        try {
+            const updates = JSON.parse(localStorage.getItem('de_admin_updates') || '[]');
+            updates.push({
                 orderId: orderId,
                 newStatus: newStatus,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                source: 'admin'
             });
-            console.log('📡 Broadcasted update via BroadcastChannel');
-        }
-    } catch (error) {
-        console.log('⚠️ BroadcastChannel not supported');
-    }
-}
-
-// ENHANCED: Update client's localStorage directly
-updateClientLocalStorage(orderId, newStatus) {
-    try {
-        const clientOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-        const orderIndex = clientOrders.findIndex(order => order.id === orderId);
-        
-        if (orderIndex > -1) {
-            const oldStatus = clientOrders[orderIndex].status;
-            clientOrders[orderIndex].status = newStatus;
-            clientOrders[orderIndex].statusUpdated = new Date().toISOString();
-            if (newStatus === 'completed') {
-                clientOrders[orderIndex].completedDate = new Date().toISOString();
-            }
             
-            localStorage.setItem('de_order_history', JSON.stringify(clientOrders));
+            // Keep only last 20 updates
+            const recentUpdates = updates.slice(-20);
+            localStorage.setItem('de_admin_updates', JSON.stringify(recentUpdates));
             
-            // Trigger storage event for real-time detection
+            // Trigger storage event
             const storageEvent = new Event('storage');
-            storageEvent.key = 'de_order_history';
+            storageEvent.key = 'de_admin_updates';
             window.dispatchEvent(storageEvent);
             
-            console.log(`✅ Updated client localStorage: ${orderId} from ${oldStatus} to ${newStatus}`);
-            return true;
-        } else {
-            console.log('⚠️ Order not found in client localStorage, may need full sync');
+            console.log('💾 Stored admin update in shared storage');
+        } catch (error) {
+            console.error('Error storing admin update:', error);
+        }
+    }
+
+    // NEW: Broadcast to clients using BroadcastChannel API
+    broadcastToClients(orderId, newStatus) {
+        try {
+            if (typeof BroadcastChannel !== 'undefined') {
+                const channel = new BroadcastChannel('deenice_orders');
+                channel.postMessage({
+                    type: 'status_update',
+                    orderId: orderId,
+                    newStatus: newStatus,
+                    timestamp: new Date().toISOString()
+                });
+                console.log('📡 Broadcasted update via BroadcastChannel');
+            }
+        } catch (error) {
+            console.log('⚠️ BroadcastChannel not supported');
+        }
+    }
+
+    // ENHANCED: Update client's localStorage directly
+    updateClientLocalStorage(orderId, newStatus) {
+        try {
+            const clientOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            const orderIndex = clientOrders.findIndex(order => order.id === orderId);
+            
+            if (orderIndex > -1) {
+                const oldStatus = clientOrders[orderIndex].status;
+                clientOrders[orderIndex].status = newStatus;
+                clientOrders[orderIndex].statusUpdated = new Date().toISOString();
+                if (newStatus === 'completed') {
+                    clientOrders[orderIndex].completedDate = new Date().toISOString();
+                }
+                
+                localStorage.setItem('de_order_history', JSON.stringify(clientOrders));
+                
+                // Trigger storage event for real-time detection
+                const storageEvent = new Event('storage');
+                storageEvent.key = 'de_order_history';
+                window.dispatchEvent(storageEvent);
+                
+                console.log(`✅ Updated client localStorage: ${orderId} from ${oldStatus} to ${newStatus}`);
+                return true;
+            } else {
+                console.log('⚠️ Order not found in client localStorage, may need full sync');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error updating client localStorage:', error);
             return false;
         }
-    } catch (error) {
-        console.error('Error updating client localStorage:', error);
-        return false;
     }
-}
 
-    // NEW: Enhanced status update with client sync
+    // NEW: Trigger client sync event
+    triggerClientSyncEvent(orderId, newStatus) {
+        try {
+            const event = new CustomEvent('adminOrderUpdate', {
+                detail: {
+                    orderId: orderId,
+                    newStatus: newStatus,
+                    timestamp: new Date().toISOString()
+                }
+            });
+            window.dispatchEvent(event);
+            console.log('📢 Admin update event dispatched');
+        } catch (error) {
+            console.error('Error triggering sync event:', error);
+        }
+    }
+
+    // NEW: Update sync markers
+    updateSyncMarkers(orderId, newStatus) {
+        try {
+            const markers = JSON.parse(localStorage.getItem('de_order_sync_markers') || '{}');
+            markers[orderId] = {
+                status: newStatus,
+                updated: new Date().toISOString(),
+                source: 'admin'
+            };
+            localStorage.setItem('de_order_sync_markers', JSON.stringify(markers));
+            console.log('📍 Sync marker updated');
+        } catch (error) {
+            console.error('Error updating sync markers:', error);
+        }
+    }
+
+    // ENHANCED: Status update with client sync
     async updateStatus(orderId, newStatus) {
         try {
             console.log(`🔄 Updating order ${orderId} to ${newStatus}`);
@@ -328,7 +398,7 @@ updateClientLocalStorage(orderId, newStatus) {
             this.renderStats();
             this.renderOrders();
             
-            // 4. Sync to client immediately (NEW)
+            // 4. Sync to client immediately
             await this.syncStatusToClient(orderId, newStatus);
             
             // 5. Try to update backend
@@ -438,6 +508,28 @@ updateClientLocalStorage(orderId, newStatus) {
         } catch (error) {
             console.error('Error updating localStorage:', error);
         }
+    }
+
+    // FIXED: Logout function - PRESERVE ORDER DATA
+    logout() {
+        console.log('🚪 Admin logout - preserving order data...');
+        
+        // Backup current orders before logout (extra safety)
+        const currentOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+        if (currentOrders.length > 0) {
+            localStorage.setItem('de_order_history_backup', JSON.stringify(currentOrders));
+            console.log('💾 Orders backed up before logout:', currentOrders.length);
+        }
+        
+        // ONLY clear authentication data, PRESERVE orders
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_logged_in');
+        localStorage.removeItem('admin_user');
+        
+        // DON'T remove de_order_history or de_order_history_backup
+        console.log('✅ Logout completed - order data preserved');
+        
+        window.location.href = 'admin-login.html';
     }
 
     // Optimized API request with shorter timeout
@@ -1237,23 +1329,6 @@ ORDER #${order.id} - DETAILS
         } else {
             this.showNotification(`Order #${orderId} not found!`, 'error');
         }
-    }
-
-    logout() {
-        // Backup current orders before logout
-        const currentOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-        if (currentOrders.length > 0) {
-            localStorage.setItem('de_order_history_backup', JSON.stringify(currentOrders));
-            console.log('💾 Orders backed up before logout');
-        }
-        
-        // Clear session but preserve backup
-        localStorage.removeItem('admin_token');
-        localStorage.removeItem('admin_logged_in');
-        localStorage.removeItem('admin_user');
-        // DON'T remove de_order_history or de_order_history_backup here
-        
-        window.location.href = 'admin-login.html';
     }
 
     // NEW: Debug function to check storage status
