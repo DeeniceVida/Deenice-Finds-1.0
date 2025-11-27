@@ -364,46 +364,69 @@ class OrderSyncManager {
         }
     }
 
-    // ENHANCED merge with server priority
-    enhancedMergeOrders(localOrders, serverOrders) {
-        const orderMap = new Map();
-        
-        // Add all local orders first
-        localOrders.forEach(order => {
-            orderMap.set(order.id, { ...order, source: 'local' });
-        });
-        
-        // Update with server orders (server wins conflicts)
-        serverOrders.forEach(serverOrder => {
-            const existingOrder = orderMap.get(serverOrder.id);
-            
-            if (existingOrder) {
-                // Server data takes precedence, especially for status
-                const mergedOrder = {
-                    ...existingOrder,
-                    ...serverOrder,
-                    source: 'server'
-                };
-                
-                orderMap.set(serverOrder.id, mergedOrder);
-                console.log('🔄 Updated order from server:', serverOrder.id, serverOrder.status);
-            } else {
-                // New order from server
-                orderMap.set(serverOrder.id, {
-                    ...serverOrder,
-                    source: 'server'
-                });
-                console.log('➕ Added new order from server:', serverOrder.id);
-            }
-        });
+    // ENHANCED merge with progress tracking + server priority
+enhancedMergeOrders(localOrders, serverOrders) {
+    const orderMap = new Map();
 
-        const mergedOrders = Array.from(orderMap.values());
-        
-        // Sort by date (newest first)
-        return mergedOrders.sort((a, b) => 
-            new Date(b.orderDate || b.date) - new Date(a.orderDate || a.date)
-        );
-    }
+    // 1️⃣ Add all local orders first
+    localOrders.forEach(order => {
+        orderMap.set(order.id, { 
+            ...order, 
+            source: 'local',
+            progressHistory: order.progressHistory || []  // ensure exists
+        });
+    });
+
+    // 2️⃣ Merge with server orders (server wins conflicts)
+    serverOrders.forEach(serverOrder => {
+        const existingOrder = orderMap.get(serverOrder.id);
+
+        if (existingOrder) {
+            // 🔥 Merge PROGRESS HISTORY carefully
+            const mergedProgressHistory = [
+                ...(existingOrder.progressHistory || []),
+                ...(serverOrder.progressHistory || [])
+            ]
+            // Remove duplicates (same timestamp + status)
+            .filter((item, index, self) => 
+                index === self.findIndex(t =>
+                    t.timestamp === item.timestamp &&
+                    t.status === item.status
+                )
+            )
+            // Sort chronologically
+            .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            // 🔥 Create merged order (server overrides other fields)
+            const mergedOrder = {
+                ...existingOrder,
+                ...serverOrder,
+                progressHistory: mergedProgressHistory,
+                source: 'server'
+            };
+
+            orderMap.set(serverOrder.id, mergedOrder);
+            console.log('🔄 Updated order from server:', serverOrder.id, serverOrder.status);
+
+        } else {
+            // New order from server
+            orderMap.set(serverOrder.id, {
+                ...serverOrder,
+                progressHistory: serverOrder.progressHistory || [],
+                source: 'server'
+            });
+            console.log('➕ Added new order from server:', serverOrder.id);
+        }
+    });
+
+    // 3️⃣ Convert map → array
+    const mergedOrders = Array.from(orderMap.values());
+
+    // 4️⃣ Sort orders (newest first)
+    return mergedOrders.sort((a, b) => 
+        new Date(b.orderDate || b.date) - new Date(a.orderDate || a.date)
+    );
+}
 
     // ENHANCED UI update method
     updateOrderHistoryUI(orders) {
