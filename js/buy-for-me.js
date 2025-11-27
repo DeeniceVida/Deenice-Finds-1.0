@@ -22,7 +22,7 @@ const DELIVERY_ZONES = [
     { name: "Lugari", fee: 600, type: 'suggested' },
     { name: "Malaba", fee: 600, type: 'suggested' },
     { name: "Maralal", fee: 1100, type: 'suggested' },
-    { name: "Moi’s Bridge", fee: 530, type: 'suggested' },
+    { name: "Moi's Bridge", fee: 530, type: 'suggested' },
     { name: "Molo", fee: 480, type: 'suggested' },
     { name: "Mumias", fee: 600, type: 'suggested' },
     { name: "Naivasha", fee: 350, type: 'suggested' },
@@ -93,7 +93,7 @@ const DELIVERY_ZONES = [
     { name: "Meru", fee: 480, type: 'suggested' },
     { name: "Moyale", fee: 3050, type: 'suggested' },
     { name: "Mukuweini", fee: 410, type: 'suggested' },
-    { name: "Murang’a", fee: 420, type: 'suggested' },
+    { name: "Murang'a", fee: 420, type: 'suggested' },
     { name: "Mwea", fee: 410, type: 'suggested' },
     { name: "Mwingi", fee: 550, type: 'suggested' },
     { name: "Nanyuki", fee: 520, type: 'suggested' },
@@ -282,9 +282,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // 3. Calculate Totals
         const totalUSD = price + shipping + service + appleFee;
 
-        // Note: The conversion to KES for the total is done outside this function
-        // to clearly separate USD and KES calculations.
-
         return { shipping, service, appleFee, totalUSD };
     }
 
@@ -309,9 +306,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const grandTotalKES = totalKES + deliveryKES; 
 
         // --- Updated appleFeeDisplay (Using a CSS class) ---
-const appleFeeDisplay = appleFee > 0 ? 
-    `<p class="special-fee-notice"><strong>Apple Pick Up Fee:</strong> $${appleFee.toFixed(2)}</p>` : 
-    '';
+        const appleFeeDisplay = appleFee > 0 ? 
+            `<p class="special-fee-notice"><strong>Apple Pick Up Fee:</strong> $${appleFee.toFixed(2)}</p>` : 
+            '';
 
         resultBox.innerHTML = `
             <div class="quote-box" style="border:1px solid #ccc; padding:15px; border-radius:8px;">
@@ -342,113 +339,154 @@ const appleFeeDisplay = appleFee > 0 ?
     linkInput.addEventListener("input", updateResults); // Re-run calculation on link change
     townInput.addEventListener("input", updateResults); 
 
-    // WhatsApp order (Updated + Product Title Extraction + Progress Tracking)
-sendBtn.addEventListener("click", () => {
-    const price = parseFloat(priceInput.value);
-    const link = linkInput.value.trim();
-    const town = townInput.value.trim(); 
-    const deliveryKES = getDeliveryFee(town); 
+    // FIXED: WhatsApp order function - properly defined and attached
+    function sendOrderToWhatsApp() {
+        console.log('🟢 WhatsApp button clicked'); // Debug log
+        
+        const price = parseFloat(priceInput.value);
+        const link = linkInput.value.trim();
+        const town = townInput.value.trim(); 
+        const deliveryKES = getDeliveryFee(town); 
 
-    // Link validation
-    if (!link) {
-        alert("⚠️ The Product Link is required to place a Buy For Me order. Please paste it in the first field.");
-        return;
-    }
+        console.log('📦 Order details:', { price, link, town, deliveryKES }); // Debug log
 
-    if (isNaN(price) || price <= 0) {
-        alert("Please enter a valid price.");
-        return;
-    }
-
-    if (!town || deliveryKES === 0) { 
-        alert("🚨 Please enter a delivery town and ensure the delivery fee is calculated before sending the order.");
-        return;
-    }
-
-    const { appleFee, totalUSD } = calculateTotal(price, link);
-    const totalKES = totalUSD * USD_TO_KES;
-    const grandTotalKES = totalKES + deliveryKES; 
-    const appleFeeText = appleFee > 0 ? ` (+ Apple Fee $${appleFee.toFixed(2)})` : '';
-
-    //
-    // ⭐ PRODUCT TITLE EXTRACTION ⭐
-    //
-    let productTitle = "Buy For Me Product";
-    try {
-        const domain = new URL(link).hostname;
-        productTitle = `Product from ${domain}`;
-    } catch (e) {
-        productTitle = "Buy For Me Product";
-    }
-
-    //
-    // ⭐ CREATE ORDER WITH PROGRESS TRACKING ⭐
-    //
-    const now = new Date().toISOString();
-
-    const orderData = {
-        id: 'BFM' + Date.now().toString(36).toUpperCase(),
-        orderDate: now,
-        status: 'pending',
-        statusUpdated: now,
-        type: 'buy-for-me',
-
-        progressHistory: [{
-            status: 'pending',
-            timestamp: now,
-            step: progressTracker?.getStepByStatus
-                ? progressTracker.getStepByStatus('pending')
-                : 'order_received'
-        }],
-
-        customer: {
-            name: 'Buy For Me Customer',
-            city: town,
-            phone: 'Provided via WhatsApp'
-        },
-
-        items: [{
-            title: productTitle,    // ← ADDED
-            price: price,
-            qty: 1,
-            link: link,
-            type: 'buy-for-me'
-        }],
-
-        totalAmount: grandTotalKES,
-
-        delivery: {
-            method: 'delivery',
-            city: town,
-            fee: deliveryKES
+        // Link validation
+        if (!link) {
+            alert("⚠️ The Product Link is required to place a Buy For Me order. Please paste it in the first field.");
+            return;
         }
-    };
 
-    // Add to order history
-    if (window.addOrderToHistory) {
-        window.addOrderToHistory(orderData);
-        console.log("📦 Buy For Me Order Added:", orderData);
+        if (isNaN(price) || price <= 0) {
+            alert("Please enter a valid price.");
+            return;
+        }
+
+        if (!town || deliveryKES === 0) { 
+            alert("🚨 Please enter a delivery town and ensure the delivery fee is calculated before sending the order.");
+            return;
+        }
+
+        const { appleFee, totalUSD } = calculateTotal(price, link);
+        const totalKES = totalUSD * USD_TO_KES;
+        const grandTotalKES = totalKES + deliveryKES; 
+        
+        const appleFeeText = appleFee > 0 ? ` (+ Apple Fee $${appleFee.toFixed(2)})` : '';
+
+        // Create order data for local storage
+        const orderData = {
+            id: 'BFM' + Date.now().toString(36).toUpperCase(),
+            orderDate: new Date().toISOString(),
+            status: 'pending',
+            statusUpdated: new Date().toISOString(),
+            type: 'buy-for-me',
+            source: 'buy-for-me',
+            progressHistory: [{
+                status: 'pending',
+                timestamp: new Date().toISOString(),
+                step: 'ordered'
+            }],
+            customer: {
+                name: 'Buy For Me Customer',
+                city: town,
+                phone: 'Provided via WhatsApp'
+            },
+            items: [{
+                title: 'Buy For Me Product from ' + (new URL(link).hostname),
+                price: price,
+                qty: 1,
+                link: link,
+                type: 'buy-for-me'
+            }],
+            totalAmount: grandTotalKES,
+            delivery: {
+                method: 'delivery',
+                city: town,
+                fee: deliveryKES
+            }
+        };
+
+        // Add to order history
+        if (window.addOrderToHistory) {
+            window.addOrderToHistory(orderData);
+            console.log('✅ Order saved to history:', orderData.id); // Debug log
+        }
+
+        // Create WhatsApp message
+        const message = `🛍 Buy For Me Request (Calculated)
+
+🔗 Product Link: ${link}
+💵 Item Price: $${price.toFixed(2)}
+🚚 Delivery Town: ${town}
+
+📦 Import/Service Breakdown:
+   • Item Price: $${price.toFixed(2)}
+   • Shipping & Service: $${(totalUSD - price - appleFee).toFixed(2)}
+   ${appleFee > 0 ? `• Apple Pickup Fee: $${appleFee.toFixed(2)}` : ''}
+   • Total Import Cost: $${totalUSD.toFixed(2)}${appleFeeText}
+
+💰 Cost Summary:
+   • Import/Buy Total: ${totalKES.toLocaleString()} KES
+   • Delivery Fee: ${deliveryKES.toLocaleString()} KES
+   • **GRAND TOTAL: ${grandTotalKES.toLocaleString()} KES**
+
+Please confirm these details and provide your:
+• Full Name
+• Phone Number
+• Exact Delivery Address
+
+We'll contact you shortly to complete the order!`;
+
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappURL = `https://wa.me/254106590617?text=${encodedMessage}`;
+        
+        console.log('📤 Opening WhatsApp:', whatsappURL); // Debug log
+        
+        // Open WhatsApp in new tab
+        window.open(whatsappURL, '_blank');
+        
+        // Show confirmation
+        setTimeout(() => {
+            alert('✅ Order sent to WhatsApp! Please complete your order details in the WhatsApp chat.');
+        }, 1000);
     }
 
-    //
-    // ⭐ SEND WHATSAPP MESSAGE ⭐
-    //
-    const message = encodeURIComponent(
-        `🛍 Buy For Me Request (Calculated)\n\n` +
-        `🆔 Order ID: ${orderData.id}\n` +
-        `🔗 Product Link: ${link}\n` +
-        `🛒 Product: ${productTitle}\n` +
-        `💵 Item Price: $${price.toFixed(2)}\n` +
-        `🚚 Delivery Town: ${town}\n` +
-        `📦 Import/Service Total: $${totalUSD.toFixed(2)}${appleFeeText} = ${totalKES.toLocaleString()} KES\n` +
-        `💰 Delivery Fee: ${deliveryKES.toLocaleString()} KES\n\n` +
-        `🔥 **GRAND TOTAL: ${grandTotalKES.toLocaleString()} KES**\n\nPlease confirm details.`
-    );
-    
-    window.open(`https://wa.me/254106590617?text=${message}`, "_blank");
-});
-
+    // FIXED: Proper event listener attachment
+    if (sendBtn) {
+        sendBtn.addEventListener('click', sendOrderToWhatsApp);
+        console.log('✅ WhatsApp button event listener attached'); // Debug log
+    } else {
+        console.error('❌ WhatsApp button not found'); // Debug log
+    }
     
     // Initialize results display when page loads
     updateResults();
 });
+
+// Add this helper function to extract product title from URL
+function extractProductTitleFromURL(url) {
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname;
+        
+        // Extract from Amazon
+        if (hostname.includes('amazon.')) {
+            const titleMatch = url.match(/\/dp\/([A-Z0-9]{10})/);
+            if (titleMatch) {
+                return `Amazon Product (ASIN: ${titleMatch[1]})`;
+            }
+        }
+        
+        // Extract from other sites
+        const pathParts = urlObj.pathname.split('/').filter(part => part.length > 0);
+        if (pathParts.length > 0) {
+            const lastPart = pathParts[pathParts.length - 1];
+            return lastPart.split('-').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ') + ` from ${hostname.replace('www.', '')}`;
+        }
+        
+        return `Product from ${hostname.replace('www.', '')}`;
+    } catch (e) {
+        return 'Buy For Me Product';
+    }
+}
