@@ -1,19 +1,20 @@
-/* css/progress-styles.css - Progress Bar Styles */
+/* css/progress-styles.css - Progress Bar Styles for Buy For Me Orders */
 .progress-tracker {
     margin: 20px 0;
-    padding: 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    border-left: none;
 }
 
 .progress-bar {
-    height: 8px;
-    background: #e9ecef;
-    border-radius: 4px;
-    margin-bottom: 30px;
+    height: 3px;
+    background: #e5e5e5;
+    border-radius: 0;
+    margin-bottom: 25px;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .progress-bar.cancelled {
@@ -22,8 +23,8 @@
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #8EDBD1, #6f42c1);
-    border-radius: 4px;
+    background: #000;
+    border-radius: 0;
     transition: width 0.5s ease;
     position: relative;
 }
@@ -32,127 +33,102 @@
     background: #dc3545;
 }
 
-.progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 20px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% { opacity: 0.3; }
-    50% { opacity: 0.7; }
-    100% { opacity: 0.3; }
-}
-
 .progress-steps {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0;
+    position: relative;
 }
 
 .progress-step {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 10px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    flex: 1;
+    padding: 0 10px;
 }
 
-.progress-step:hover {
-    background: #f8f9fa;
+.progress-step::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #e5e5e5;
+    border: 2px solid #fff;
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
 }
 
-.progress-step.completed {
-    opacity: 1;
+.progress-step.completed::before {
+    background: #000;
+    border-color: #000;
 }
 
-.progress-step.current {
-    background: #f0f8ff;
-    border-left: 3px solid #8EDBD1;
+.progress-step.current::before {
+    background: #000;
+    border-color: #000;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
 }
 
-.progress-step:not(.completed):not(.current) {
-    opacity: 0.6;
-}
-
-.progress-step.cancelled {
-    opacity: 0.4;
-    background: #f8d7da;
+.progress-step.cancelled::before {
+    background: #dc3545;
+    border-color: #dc3545;
 }
 
 .step-indicator {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 14px;
-    flex-shrink: 0;
-    transition: all 0.3s ease;
-}
-
-.progress-step.completed .step-indicator {
-    background: #28a745;
-    color: white;
-}
-
-.progress-step.current .step-indicator {
-    background: #8EDBD1;
-    color: white;
-    animation: pulse 2s infinite;
-}
-
-.progress-step:not(.completed):not(.current) .step-indicator {
-    background: #e9ecef;
-    color: #6c757d;
-}
-
-.progress-step.cancelled .step-indicator {
-    background: #dc3545;
-    color: white;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
+    display: none;
 }
 
 .step-info {
     flex: 1;
+    margin-top: -15px;
 }
 
 .step-name {
     font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 2px;
+    color: #000;
+    margin-bottom: 4px;
     font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .step-description {
     font-size: 12px;
-    color: #6c757d;
+    color: #666;
     line-height: 1.3;
+    font-weight: 400;
 }
 
 .progress-step.completed .step-name {
-    color: #28a745;
+    color: #000;
 }
 
 .progress-step.current .step-name {
-    color: #8EDBD1;
+    color: #000;
+    font-weight: 700;
 }
 
-.progress-step.cancelled .step-name {
-    color: #dc3545;
+.progress-step:not(.completed):not(.current) .step-name {
+    color: #999;
+}
+
+.progress-step.completed .step-description {
+    color: #000;
+}
+
+.progress-step.current .step-description {
+    color: #000;
+}
+
+.progress-step:not(.completed):not(.current) .step-description {
+    color: #999;
 }
 
 .progress-cancelled-notice {
@@ -168,13 +144,16 @@
 
 /* Compact version for admin orders table */
 .progress-tracker.compact {
-    padding: 10px;
-    margin: 10px 0;
+    padding: 8px;
+    margin: 5px 0;
+    border-left: none;
+    background: #f8f9fa;
+    border-radius: 6px;
 }
 
 .progress-tracker.compact .progress-bar {
     margin-bottom: 15px;
-    height: 6px;
+    height: 2px;
 }
 
 .progress-tracker.compact .progress-steps {
@@ -183,32 +162,94 @@
 
 .progress-tracker.compact .progress-percentage {
     text-align: center;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    color: #8EDBD1;
-    margin-top: 5px;
+    color: #000;
+    margin-top: 3px;
+}
+
+/* Style for non-Buy For Me orders */
+.not-bfm-order {
+    text-align: center;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    color: #6c757d;
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* Buy For Me order indicator */
+.bfm-order-badge {
+    display: inline-block;
+    background: #000;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    margin-left: 8px;
+    text-transform: uppercase;
+}
+
+/* Order ID styling */
+.order-id {
+    font-size: 18px;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 5px;
+}
+
+/* Product title styling */
+.product-title {
+    font-size: 16px;
+    color: #000;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+/* Order meta styling */
+.order-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+.order-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
     .progress-tracker {
-        padding: 15px;
         margin: 15px 0;
     }
     
-    .progress-step {
-        padding: 8px;
-        gap: 10px;
+    .progress-steps {
+        flex-wrap: wrap;
+        gap: 15px;
     }
     
-    .step-indicator {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
+    .progress-step {
+        flex: 0 0 calc(50% - 10px);
+        padding: 0;
+    }
+    
+    .progress-step::before {
+        top: -25px;
+    }
+    
+    .step-info {
+        margin-top: -10px;
     }
     
     .step-name {
-        font-size: 13px;
+        font-size: 12px;
     }
     
     .step-description {
@@ -218,20 +259,37 @@
 
 @media (max-width: 480px) {
     .progress-tracker {
-        padding: 10px;
+        margin: 10px 0;
     }
     
     .progress-steps {
-        gap: 10px;
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
     }
     
     .progress-step {
-        flex-direction: column;
-        text-align: center;
-        gap: 8px;
+        flex: none;
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        text-align: left;
+        padding: 0;
+    }
+    
+    .progress-step::before {
+        position: static;
+        transform: none;
+        margin-right: 10px;
+        flex-shrink: 0;
     }
     
     .step-info {
-        text-align: center;
+        margin-top: 0;
+        flex: 1;
+    }
+    
+    .progress-bar {
+        display: none;
     }
 }
