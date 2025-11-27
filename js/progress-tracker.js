@@ -1,26 +1,26 @@
-// js/progress-tracker.js - Progress Tracking System for Buy For Me Orders
+// js/progress-tracker.js - NEW CARD-BASED PROGRESS TRACKING SYSTEM
 class ProgressTracker {
     constructor() {
         this.progressSteps = [
             { 
                 id: 'ordered', 
                 name: 'Ordered', 
-                description: '11/26/2025' 
+                description: 'Order received and confirmed' 
             },
             { 
                 id: 'preparing', 
                 name: 'Preparing', 
-                description: '11/26/2025' 
+                description: 'Processing your order' 
             },
             { 
                 id: 'shipped', 
                 name: 'Shipped', 
-                description: '11/26/2025' 
+                description: 'Item is on its way' 
             },
             { 
                 id: 'delivered', 
                 name: 'Delivered', 
-                description: '12/1/2025 Estimate' 
+                description: 'Order completed' 
             }
         ];
     }
@@ -62,7 +62,7 @@ class ProgressTracker {
         const dateMap = {
             'ordered': orderDate,
             'preparing': orderDate,
-            'shipped': orderDate,
+            'shipped': new Date(orderDate.getTime() + (2 * 24 * 60 * 60 * 1000)), // +2 days
             'delivered': new Date(orderDate.getTime() + (5 * 24 * 60 * 60 * 1000)) // +5 days
         };
         
@@ -74,7 +74,28 @@ class ProgressTracker {
         });
     }
 
-    // Generate progress bar HTML ONLY for Buy For Me orders
+    // Generate product image URL
+    getProductImage(order) {
+        if (order.items && order.items[0]) {
+            return order.items[0].img || 
+                   order.items[0].image || 
+                   order.items[0].thumbnail || 
+                   'https://via.placeholder.com/120x120/CCCCCC/666666?text=Product+Image';
+        }
+        return 'https://via.placeholder.com/120x120/CCCCCC/666666?text=Product+Image';
+    }
+
+    // Generate product title
+    getProductTitle(order) {
+        if (order.items && order.items[0]) {
+            return order.items[0].title || 
+                   order.items[0].name || 
+                   'Buy For Me Product';
+        }
+        return 'Buy For Me Product';
+    }
+
+    // Generate NEW CARD-BASED progress bar HTML
     generateProgressBar(order) {
         if (!this.isBuyForMeOrder(order)) {
             return ''; // Return empty string for non-Buy For Me orders
@@ -82,44 +103,67 @@ class ProgressTracker {
 
         const currentStepIndex = this.getCurrentStepIndex(order.status);
         const isCancelled = order.status === 'cancelled';
-        
-        // Get product title from order
-        const productTitle = order.items && order.items[0] ? 
-            order.items[0].title : 'Buy For Me Product';
+        const productImage = this.getProductImage(order);
+        const productTitle = this.getProductTitle(order);
         
         return `
-            <div class="progress-tracker" data-order-id="${order.id}">
-                <!-- Order ID and Product Title -->
-                <div class="order-id">Order #${order.id}</div>
-                <div class="product-title">${productTitle}</div>
-                
-                <!-- Progress Bar -->
-                <div class="progress-bar ${isCancelled ? 'cancelled' : ''}">
-                    <div class="progress-fill" style="width: ${(currentStepIndex / (this.progressSteps.length - 1)) * 100}%"></div>
-                </div>
-                
-                <!-- Progress Steps -->
-                <div class="progress-steps">
-                    ${this.progressSteps.map((step, index) => {
-                        const isCompleted = index <= currentStepIndex;
-                        const isCurrent = index === currentStepIndex;
-                        const stepClass = isCompleted ? 'completed' : isCurrent ? 'current' : '';
-                        const stepDate = this.formatStepDate(order, step.id);
-                        const stepDescription = step.id === 'delivered' ? 
-                            `${stepDate} Estimate` : stepDate;
+            <div class="order-status-card ${isCancelled ? 'cancelled' : ''}" data-order-id="${order.id}">
+                <div class="order-card-content">
+                    <!-- LEFT COLUMN - Product Image -->
+                    <div class="order-card-image">
+                        <img src="${productImage}" 
+                             alt="${productTitle}" 
+                             class="product-image"
+                             onerror="this.src='https://via.placeholder.com/120x120/CCCCCC/666666?text=Product+Image'">
+                    </div>
+                    
+                    <!-- RIGHT COLUMN - Order Details -->
+                    <div class="order-card-details">
+                        <!-- Product Information -->
+                        <div class="product-info">
+                            <div class="order-number">Order #${order.id}</div>
+                            <h2 class="product-name">${productTitle}</h2>
+                        </div>
                         
-                        return `
-                            <div class="progress-step ${stepClass} ${isCancelled ? 'cancelled' : ''}" data-step="${step.id}">
-                                <div class="step-info">
-                                    <div class="step-name">${step.name}</div>
-                                    <div class="step-description">${stepDescription}</div>
+                        <!-- Progress Timeline -->
+                        <div class="progress-timeline">
+                            <div class="timeline-track">
+                                <div class="timeline-progress" 
+                                     style="width: ${(currentStepIndex / (this.progressSteps.length - 1)) * 100}%">
                                 </div>
                             </div>
-                        `;
-                    }).join('')}
+                            
+                            <div class="timeline-steps">
+                                ${this.progressSteps.map((step, index) => {
+                                    const isCompleted = index <= currentStepIndex;
+                                    const isCurrent = index === currentStepIndex;
+                                    const stepClass = isCompleted ? 'completed' : isCurrent ? 'active' : '';
+                                    const stepDate = this.formatStepDate(order, step.id);
+                                    
+                                    return `
+                                        <div class="timeline-step ${stepClass}" data-step="${step.id}">
+                                            <div class="step-indicator ${stepClass}"></div>
+                                            <div class="step-info">
+                                                <div class="step-label">${step.name}</div>
+                                                <div class="step-date">${stepDate}</div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                
                 ${isCancelled ? `
-                    <div class="progress-cancelled-notice">
+                    <div style="
+                        background: #f8d7da;
+                        color: #721c24;
+                        padding: 12px 24px;
+                        text-align: center;
+                        border-top: 1px solid #f5c6cb;
+                        font-weight: 600;
+                    ">
                         ❌ Order was cancelled
                     </div>
                 ` : ''}
@@ -129,7 +173,7 @@ class ProgressTracker {
 
     // Update progress bar for a specific order
     updateOrderProgress(orderId, status) {
-        const progressContainer = document.querySelector(`.progress-tracker[data-order-id="${orderId}"]`);
+        const progressContainer = document.querySelector(`.order-status-card[data-order-id="${orderId}"]`);
         if (progressContainer) {
             const orders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
             const order = orders.find(o => o.id === orderId);
@@ -159,7 +203,7 @@ class ProgressTracker {
     // Generate compact progress for admin table
     generateCompactProgress(order) {
         if (!this.isBuyForMeOrder(order)) {
-            return '<div class="not-bfm-order">Regular Order</div>'; // Show different text for regular orders
+            return '<div class="not-bfm-order">Regular Order</div>';
         }
 
         const progressData = this.getProgressDataForAdmin(order);
