@@ -42,39 +42,57 @@ class OrderStorageManager {
         }
     }
 
-    // ENHANCED: Save orders with multiple backups
-    saveOrders(orders) {
-        try {
-            if (!orders || !Array.isArray(orders)) {
-                console.error('Invalid orders data:', orders);
-                return false;
-            }
-
-            console.log(`💾 Saving ${orders.length} orders...`);
-
-            // Method 1: Primary storage
-            localStorage.setItem(this.storageKey, JSON.stringify(orders));
-            
-            // Method 2: Backup storage
-            localStorage.setItem(this.backupKey, JSON.stringify(orders));
-            
-            // Method 3: Session storage (temporary)
-            sessionStorage.setItem(this.storageKey, JSON.stringify(orders));
-            
-            // Method 4: IndexedDB (permanent)
-            this.saveToIndexedDB(orders);
-            
-            // Trigger storage event for cross-tab sync
-            this.triggerStorageEvent(this.storageKey, orders);
-            
-            console.log(`✅ Orders saved successfully (${orders.length} orders)`);
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Error saving orders:', error);
+    // ENHANCED: Save orders with progress tracking + multiple backups
+saveOrders(orders) {
+    try {
+        if (!orders || !Array.isArray(orders)) {
+            console.error('Invalid orders data:', orders);
             return false;
         }
+
+        console.log(`💾 Saving ${orders.length} orders...`);
+
+        // 🔥 Enhance each order with progress fields
+        const enhancedOrders = orders.map(order => {
+            const status = order.status || 'pending';
+            const statusUpdated = order.statusUpdated || new Date().toISOString();
+
+            return {
+                ...order,
+                status,
+                statusUpdated,
+                progressHistory: order.progressHistory || [{
+                    status,
+                    timestamp: statusUpdated,
+                    step: progressTracker.getStepByStatus(status)
+                }]
+            };
+        });
+
+        // Method 1: Primary storage
+        localStorage.setItem(this.storageKey, JSON.stringify(enhancedOrders));
+
+        // Method 2: Backup storage
+        localStorage.setItem(this.backupKey, JSON.stringify(enhancedOrders));
+
+        // Method 3: Session storage (temporary)
+        sessionStorage.setItem(this.storageKey, JSON.stringify(enhancedOrders));
+
+        // Method 4: IndexedDB (permanent)
+        this.saveToIndexedDB(enhancedOrders);
+
+        // Trigger storage event for cross-tab sync
+        this.triggerStorageEvent(this.storageKey, enhancedOrders);
+
+        console.log(`✅ Orders saved with progress tracking (${enhancedOrders.length} orders)`);
+        return true;
+
+    } catch (error) {
+        console.error('❌ Error saving orders:', error);
+        return false;
     }
+}
+
 
     // NEW: Save to IndexedDB for permanent storage
     async saveToIndexedDB(orders) {
