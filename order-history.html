@@ -465,7 +465,7 @@
             renderOrders(e.detail.orders);
         });
 
-        // In the renderOrders function, update the order card to include progress bar
+       // In the renderOrders function, update to match the exact design
 function renderOrders(orders) {
     const container = document.getElementById('ordersContainer');
     
@@ -480,25 +480,38 @@ function renderOrders(orders) {
         return;
     }
 
-    container.innerHTML = orders.map(order => `
+    container.innerHTML = orders.map(order => {
+        const isBuyForMe = order.type === 'buy-for-me' || 
+                          (order.items && order.items.some(item => item.link)) ||
+                          (order.id && order.id.startsWith('BFM'));
+        
+        // Get product title
+        const productTitle = order.items && order.items[0] ? 
+            order.items[0].title : 'Unknown Product';
+
+        return `
         <div class="order-card" data-order-id="${order.id}">
             <div class="order-header">
-                <div class="order-id">Order #${order.id}</div>
+                <div class="order-id">
+                    Order #${order.id}
+                    ${isBuyForMe ? '<span class="bfm-order-badge">Buy For Me</span>' : ''}
+                </div>
                 <div class="order-status status-${order.status}">${getStatusText(order.status)}</div>
             </div>
             
-            <!-- PROGRESS BAR SECTION - ADDED -->
-            <div class="order-progress-section">
-                ${progressTracker.generateProgressBar(order.status, order.id)}
-            </div>
+            <!-- PROGRESS BAR SECTION - ONLY FOR BUY FOR ME ORDERS -->
+            ${isBuyForMe ? progressTracker.generateProgressBar(order) : `
+                <!-- Regular order display -->
+                <div class="product-title">${productTitle}</div>
+                <div class="order-meta">
+                    <span>📅 Ordered ${new Date(order.orderDate || order.date).toLocaleDateString()}</span>
+                    <span>📍 ${order.customer?.city || 'N/A'}</span>
+                    <span>📞 ${order.customer?.phone || 'N/A'}</span>
+                    ${order.statusUpdated ? `<span>🔄 ${new Date(order.statusUpdated).toLocaleDateString()}</span>` : ''}
+                </div>
+            `}
             
-            <div class="order-meta">
-                <span>📅 ${new Date(order.orderDate || order.date).toLocaleDateString()}</span>
-                <span>📍 ${order.customer?.city || 'N/A'}</span>
-                <span>📞 ${order.customer?.phone || 'N/A'}</span>
-                ${order.statusUpdated ? `<span>🔄 ${new Date(order.statusUpdated).toLocaleDateString()}</span>` : ''}
-            </div>
-            
+            ${!isBuyForMe ? `
             <div class="order-items">
                 ${(order.items || []).map(item => `
                     <div class="order-item">
@@ -520,6 +533,7 @@ function renderOrders(orders) {
                     </div>
                 `).join('')}
             </div>
+            ` : ''}
             
             <div class="order-footer">
                 <div class="order-total">
@@ -542,7 +556,8 @@ function renderOrders(orders) {
             
             ${getStatusMessage(order)}
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
         // Helper functions
