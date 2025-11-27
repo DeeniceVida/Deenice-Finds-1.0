@@ -961,6 +961,164 @@ function closeProgressModal() {
     <!-- Add after other script tags -->
 <script src="js/progress-tracker.js"></script>
     <script src="js/label-printer.js"></script>
+    <script>
+// Emergency fix to load Buy For Me orders from client storage
+function loadBFMOrdersFromClientStorage() {
+    console.log('🔄 Loading BFM orders from client storage...');
+    
+    try {
+        const clientStorageKey = 'de_order_history';
+        const adminStorageKey = 'de_admin_orders_secure_v3';
+        
+        // Load client orders
+        const clientOrders = JSON.parse(localStorage.getItem(clientStorageKey) || '[]');
+        console.log('📱 Found client orders:', clientOrders.length);
+        
+        // Filter only Buy For Me orders
+        const bfmOrders = clientOrders.filter(order => 
+            order.type === 'buy-for-me' || 
+            (order.items && order.items.some(item => item.link)) ||
+            (order.id && order.id.startsWith('BFM'))
+        );
+        
+        console.log('🛍️ Found BFM orders:', bfmOrders.length);
+        
+        if (bfmOrders.length > 0) {
+            // Load current admin orders
+            let adminOrders = JSON.parse(localStorage.getItem(adminStorageKey) || '[]');
+            
+            // Merge without duplicates
+            bfmOrders.forEach(bfmOrder => {
+                const exists = adminOrders.find(adminOrder => adminOrder.id === bfmOrder.id);
+                if (!exists) {
+                    adminOrders.unshift(bfmOrder);
+                }
+            });
+            
+            // Save back to admin storage
+            localStorage.setItem(adminStorageKey, JSON.stringify(adminOrders));
+            localStorage.setItem('de_admin_orders_backup_secure_v3', JSON.stringify(adminOrders));
+            
+            console.log('✅ Merged BFM orders into admin storage');
+            
+            // Refresh the admin page
+            if (window.adminManager) {
+                adminManager.loadOrdersImmediately().then(() => {
+                    adminManager.renderStats();
+                    adminManager.renderOrders();
+                    adminManager.showNotification(`Loaded ${bfmOrders.length} Buy For Me orders`, 'success');
+                });
+            }
+        } else {
+            console.log('❌ No BFM orders found in client storage');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error loading BFM orders:', error);
+    }
+}
+
+// Run this when admin page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for admin manager to initialize
+    setTimeout(() => {
+        loadBFMOrdersFromClientStorage();
+    }, 2000);
+    
+    // Also add a manual button for testing
+    const syncControls = document.querySelector('.sync-controls');
+    if (syncControls) {
+        const bfmButton = document.createElement('button');
+        bfmButton.className = 'sync-btn';
+        bfmButton.innerHTML = '🛍️ Sync BFM Orders';
+        bfmButton.onclick = loadBFMOrdersFromClientStorage;
+        syncControls.appendChild(bfmButton);
+    }
+});
+
+// Listen for new BFM orders
+window.addEventListener('storage', function(e) {
+    if (e.key === 'de_order_history' && window.adminManager) {
+        console.log('🔄 Storage change detected, checking for new BFM orders...');
+        setTimeout(loadBFMOrdersFromClientStorage, 1000);
+    }
+});
+</script>
+    <script>
+// Test function to create a sample BFM order
+function createTestBFMOrder() {
+    const testOrder = {
+        id: 'BFMTEST' + Date.now().toString(36).toUpperCase(),
+        orderDate: new Date().toISOString(),
+        status: 'pending',
+        statusUpdated: new Date().toISOString(),
+        type: 'buy-for-me',
+        source: 'buy-for-me',
+        progressHistory: [{
+            status: 'pending',
+            timestamp: new Date().toISOString(),
+            step: 'ordered'
+        }],
+        customer: {
+            name: 'Test BFM Customer',
+            city: 'Nairobi',
+            phone: '+254700000000'
+        },
+        items: [{
+            title: 'iPhone 13 Pro Max 128GB - Graphite - Unlocked',
+            price: 999,
+            qty: 1,
+            link: 'https://example.com/iphone',
+            type: 'buy-for-me'
+        }],
+        totalAmount: 150000,
+        delivery: {
+            method: 'delivery',
+            city: 'Nairobi',
+            fee: 360
+        },
+        name: 'Test BFM Customer',
+        city: 'Nairobi', 
+        phone: '+254700000000',
+        total: 150000,
+        currency: 'KES'
+    };
+    
+    // Save to both storages
+    const adminStorageKey = 'de_admin_orders_secure_v3';
+    let adminOrders = JSON.parse(localStorage.getItem(adminStorageKey) || '[]');
+    adminOrders.unshift(testOrder);
+    localStorage.setItem(adminStorageKey, JSON.stringify(adminOrders));
+    
+    const clientStorageKey = 'de_order_history';
+    let clientOrders = JSON.parse(localStorage.getItem(clientStorageKey) || '[]');
+    clientOrders.unshift(testOrder);
+    localStorage.setItem(clientStorageKey, JSON.stringify(clientOrders));
+    
+    console.log('✅ Test BFM order created:', testOrder.id);
+    
+    if (window.adminManager) {
+        adminManager.loadOrdersImmediately().then(() => {
+            adminManager.renderStats();
+            adminManager.renderOrders();
+            adminManager.showNotification('Test BFM order created!', 'success');
+        });
+    }
+}
+
+// Add test button to admin page
+document.addEventListener('DOMContentLoaded', function() {
+    const syncControls = document.querySelector('.sync-controls');
+    if (syncControls) {
+        const testButton = document.createElement('button');
+        testButton.className = 'sync-btn';
+        testButton.innerHTML = '🧪 Test BFM Order';
+        testButton.onclick = createTestBFMOrder;
+        testButton.style.background = '#ff6b6b';
+        syncControls.appendChild(testButton);
+    }
+});
+</script>
     <!-- Order Items Modal -->
 <div id="itemsModal" class="modal">
     <div class="modal-content">
