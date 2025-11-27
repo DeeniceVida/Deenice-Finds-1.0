@@ -1,31 +1,52 @@
-// js/progress-tracker.js - Progress Tracking System
+// js/progress-tracker.js - Progress Tracking System for Buy For Me Orders
 class ProgressTracker {
     constructor() {
         this.progressSteps = [
-            { id: 'order_received', name: 'Order Received', description: 'We have received your order and are reviewing it' },
-            { id: 'payment_processing', name: 'Payment Processing', description: 'Processing your payment securely' },
-            { id: 'sourcing_product', name: 'Sourcing Product', description: 'Locating and purchasing your product from the US' },
-            { id: 'quality_check', name: 'Quality Check', description: 'Inspecting product quality before shipping' },
-            { id: 'shipping_preparation', name: 'Shipping Preparation', description: 'Preparing your item for international shipping' },
-            { id: 'shipped', name: 'Shipped', description: 'Your item is on its way to Kenya' },
-            { id: 'delivered', name: 'Delivered', description: 'Your order has been delivered' }
+            { 
+                id: 'ordered', 
+                name: 'Ordered', 
+                description: '11/26/2025' 
+            },
+            { 
+                id: 'preparing', 
+                name: 'Preparing', 
+                description: '11/26/2025' 
+            },
+            { 
+                id: 'shipped', 
+                name: 'Shipped', 
+                description: '11/26/2025' 
+            },
+            { 
+                id: 'delivered', 
+                name: 'Delivered', 
+                description: '12/1/2025 Estimate' 
+            }
         ];
+    }
+
+    // Check if order is Buy For Me type
+    isBuyForMeOrder(order) {
+        return order.type === 'buy-for-me' || 
+               (order.items && order.items.some(item => item.link)) ||
+               (order.source && order.source === 'buy-for-me') ||
+               (order.id && order.id.startsWith('BFM'));
     }
 
     // Get progress step by status
     getStepByStatus(status) {
         const stepMap = {
-            'pending': 'order_received',
-            'processing': 'payment_processing',
-            'sourcing': 'sourcing_product',
-            'quality_check': 'quality_check',
-            'shipping_preparation': 'shipping_preparation',
+            'pending': 'ordered',
+            'processing': 'preparing',
+            'sourcing': 'preparing',
+            'quality_check': 'preparing',
+            'shipping_preparation': 'preparing',
             'shipped': 'shipped',
             'completed': 'delivered',
-            'cancelled': 'order_received'
+            'cancelled': 'ordered'
         };
         
-        return stepMap[status] || 'order_received';
+        return stepMap[status] || 'ordered';
     }
 
     // Get current step index
@@ -34,30 +55,64 @@ class ProgressTracker {
         return this.progressSteps.findIndex(step => step.id === currentStep);
     }
 
-    // Generate progress bar HTML
-    generateProgressBar(status, orderId = '') {
-        const currentStepIndex = this.getCurrentStepIndex(status);
-        const isCancelled = status === 'cancelled';
+    // Format date for step description
+    formatStepDate(order, stepId) {
+        const orderDate = new Date(order.orderDate || order.date);
+        
+        const dateMap = {
+            'ordered': orderDate,
+            'preparing': orderDate,
+            'shipped': orderDate,
+            'delivered': new Date(orderDate.getTime() + (5 * 24 * 60 * 60 * 1000)) // +5 days
+        };
+        
+        const date = dateMap[stepId] || orderDate;
+        return date.toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    // Generate progress bar HTML ONLY for Buy For Me orders
+    generateProgressBar(order) {
+        if (!this.isBuyForMeOrder(order)) {
+            return ''; // Return empty string for non-Buy For Me orders
+        }
+
+        const currentStepIndex = this.getCurrentStepIndex(order.status);
+        const isCancelled = order.status === 'cancelled';
+        
+        // Get product title from order
+        const productTitle = order.items && order.items[0] ? 
+            order.items[0].title : 'Buy For Me Product';
         
         return `
-            <div class="progress-tracker" data-order-id="${orderId}">
+            <div class="progress-tracker" data-order-id="${order.id}">
+                <!-- Order ID and Product Title -->
+                <div class="order-id">Order #${order.id}</div>
+                <div class="product-title">${productTitle}</div>
+                
+                <!-- Progress Bar -->
                 <div class="progress-bar ${isCancelled ? 'cancelled' : ''}">
                     <div class="progress-fill" style="width: ${(currentStepIndex / (this.progressSteps.length - 1)) * 100}%"></div>
                 </div>
+                
+                <!-- Progress Steps -->
                 <div class="progress-steps">
                     ${this.progressSteps.map((step, index) => {
                         const isCompleted = index <= currentStepIndex;
                         const isCurrent = index === currentStepIndex;
                         const stepClass = isCompleted ? 'completed' : isCurrent ? 'current' : '';
+                        const stepDate = this.formatStepDate(order, step.id);
+                        const stepDescription = step.id === 'delivered' ? 
+                            `${stepDate} Estimate` : stepDate;
                         
                         return `
                             <div class="progress-step ${stepClass} ${isCancelled ? 'cancelled' : ''}" data-step="${step.id}">
-                                <div class="step-indicator">
-                                    ${isCompleted ? '✓' : index + 1}
-                                </div>
                                 <div class="step-info">
                                     <div class="step-name">${step.name}</div>
-                                    <div class="step-description">${step.description}</div>
+                                    <div class="step-description">${stepDescription}</div>
                                 </div>
                             </div>
                         `;
@@ -76,13 +131,21 @@ class ProgressTracker {
     updateOrderProgress(orderId, status) {
         const progressContainer = document.querySelector(`.progress-tracker[data-order-id="${orderId}"]`);
         if (progressContainer) {
-            progressContainer.outerHTML = this.generateProgressBar(status, orderId);
+            const orders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
+            const order = orders.find(o => o.id === orderId);
+            if (order && this.isBuyForMeOrder(order)) {
+                progressContainer.outerHTML = this.generateProgressBar({...order, status});
+            }
         }
     }
 
     // Get progress data for admin
-    getProgressDataForAdmin(status) {
-        const currentStepIndex = this.getCurrentStepIndex(status);
+    getProgressDataForAdmin(order) {
+        if (!this.isBuyForMeOrder(order)) {
+            return null; // Return null for non-Buy For Me orders
+        }
+
+        const currentStepIndex = this.getCurrentStepIndex(order.status);
         return {
             currentStep: this.progressSteps[currentStepIndex],
             completedSteps: this.progressSteps.slice(0, currentStepIndex + 1),
@@ -91,6 +154,30 @@ class ProgressTracker {
             currentStepIndex: currentStepIndex,
             totalSteps: this.progressSteps.length
         };
+    }
+
+    // Generate compact progress for admin table
+    generateCompactProgress(order) {
+        if (!this.isBuyForMeOrder(order)) {
+            return '<div class="not-bfm-order">Regular Order</div>'; // Show different text for regular orders
+        }
+
+        const progressData = this.getProgressDataForAdmin(order);
+        if (!progressData) return '';
+
+        return `
+            <div class="progress-tracker compact">
+                <div class="progress-bar ${order.status === 'cancelled' ? 'cancelled' : ''}">
+                    <div class="progress-fill" style="width: ${progressData.progressPercentage}%"></div>
+                </div>
+                <div class="progress-percentage">
+                    ${Math.round(progressData.progressPercentage)}% Complete
+                </div>
+                <small style="display:block; margin-top:5px; color:#666;">
+                    ${progressData.currentStep.name}
+                </small>
+            </div>
+        `;
     }
 }
 
