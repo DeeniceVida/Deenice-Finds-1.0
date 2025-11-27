@@ -1,4 +1,4 @@
-// admin-orders.js - COMPLETE BULLETPROOF VERSION
+// admin-orders.js - COMPLETE BULLETPROOF VERSION WITH PROGRESS BAR
 class AdminOrderManager {
     constructor() {
         this.orders = [];
@@ -35,6 +35,7 @@ class AdminOrderManager {
         this.setupEventListeners();
         this.createItemsModal();
         this.createOrderDetailsModal();
+        this.createProgressModal();
         
         // STEP 4: Background sync (don't block UI)
         this.syncWithBackend().catch(console.error);
@@ -511,7 +512,7 @@ class AdminOrderManager {
         if (ordersTable) {
             ordersTable.innerHTML = `
                 <tr>
-                    <td colspan="7" style="text-align: center; padding: 40px;">
+                    <td colspan="8" style="text-align: center; padding: 40px;">
                         <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                             <div class="loading-spinner"></div>
                             <span>Loading orders...</span>
@@ -580,105 +581,120 @@ class AdminOrderManager {
     }
 
     createOrderRow(order) {
-    const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString();
-    const customerName = order.customer?.name || order.name || 'N/A';
-    const customerCity = order.customer?.city || order.city || 'N/A';
-    const customerPhone = order.customer?.phone || order.phone || 'No phone';
-    const totalAmount = order.totalAmount || order.total || 0;
-    const currency = order.currency || 'KES';
-    const status = order.status || 'pending';
-    const items = order.items || [];
+        const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString();
+        const customerName = order.customer?.name || order.name || 'N/A';
+        const customerCity = order.customer?.city || order.city || 'N/A';
+        const customerPhone = order.customer?.phone || order.phone || 'No phone';
+        const totalAmount = order.totalAmount || order.total || 0;
+        const currency = order.currency || 'KES';
+        const status = order.status || 'pending';
+        const items = order.items || [];
 
-    // NEW: Progress tracker data  
-    const progressData = progressTracker.getProgressDataForAdmin(status);
+        // Check if this is a Buy For Me order
+        const isBuyForMe = order.type === 'buy-for-me' || 
+                          (order.items && order.items.some(item => item.link)) ||
+                          (order.id && order.id.startsWith('BFM'));
 
-    return `
-        <tr data-order-id="${order.id}">
-            <td><strong>#${order.id}</strong></td>
-
-            <td>
-                <div class="customer-info">
-                    <div class="customer-name">${customerName}</div>
-                    <div class="customer-city">${customerCity}</div>
-                    <div class="customer-phone">📞 ${customerPhone}</div>
-                </div>
-            </td>
-
-            <td>${orderDate}</td>
-
-            <td>
-                <div class="order-items-preview">
-                    ${items.slice(0, 3).map(item => this.createOrderItemPreview(item)).join('')}
-                    ${items.length > 3 ? `<div class="item-name-small">+${items.length - 3} more items</div>` : ''}
-                    ${items.length === 0 ? `<div class="item-name-small">No items</div>` : ''}
-                </div>
-            </td>
-
-            <td><strong>${currency} ${totalAmount.toLocaleString()}</strong></td>
-
-            <!-- NEW PROGRESS COLUMN -->
-            <td>
-                <div class="progress-tracker compact">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${progressData.progressPercentage}%"></div>
+        // Get progress data - only for Buy For Me orders
+        let progressDisplay = '';
+        if (isBuyForMe && window.progressTracker) {
+            const progressData = progressTracker.getProgressDataForAdmin(order);
+            if (progressData) {
+                progressDisplay = `
+                    <div class="progress-tracker compact">
+                        <div class="progress-bar ${order.status === 'cancelled' ? 'cancelled' : ''}">
+                            <div class="progress-fill" style="width: ${progressData.progressPercentage}%"></div>
+                        </div>
+                        <div class="progress-percentage">
+                            ${Math.round(progressData.progressPercentage)}% Complete
+                        </div>
+                        <small style="display:block; margin-top:5px; color:#666;">
+                            ${progressData.currentStep.name}
+                        </small>
                     </div>
-                    <div class="progress-percentage">
-                        ${Math.round(progressData.progressPercentage)}% Complete
+                    <button class="edit-btn" 
+                        onclick="adminManager.openProgressModal('${order.id}', '${status}')"
+                        style="margin-top:6px; background: #8EDBD1; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; width: 100%;">
+                        Update Progress
+                    </button>
+                `;
+            }
+        } else {
+            progressDisplay = '<div class="not-bfm-order">Regular Order</div>';
+        }
+
+        return `
+            <tr data-order-id="${order.id}">
+                <td>
+                    <strong>#${order.id}</strong>
+                    ${isBuyForMe ? '<span class="bfm-indicator">BFM</span>' : ''}
+                </td>
+
+                <td>
+                    <div class="customer-info">
+                        <div class="customer-name">${customerName}</div>
+                        <div class="customer-city">${customerCity}</div>
+                        <div class="customer-phone">📞 ${customerPhone}</div>
                     </div>
-                </div>
-                <small style="display:block; margin-top:5px; color:#666;">
-                    ${progressData.currentStep.name}
-                </small>
+                </td>
 
-                <button class="edit-btn" 
-                    onclick="openProgressModal('${order.id}', '${status}')"
-                    style="margin-top:6px;">
-                    Update Progress
-                </button>
-            </td>
-            <!-- END PROGRESS COLUMN -->
+                <td>${orderDate}</td>
 
-            <td>
-                <select class="status-select ${this.getStatusClass(status)}"
-                        onchange="adminManager.updateStatus('${order.id}', this.value)"
-                        style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer; background: white; min-width: 120px;">
-                    <option value="pending" ${status === 'pending' ? 'selected' : ''}>📝 Pending</option>
-                    <option value="processing" ${status === 'processing' ? 'selected' : ''}>🔄 Processing</option>
-                    <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Completed</option>
-                    <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
-                </select>
-            </td>
+                <td>
+                    <div class="order-items-preview">
+                        ${items.slice(0, 3).map(item => this.createOrderItemPreview(item)).join('')}
+                        ${items.length > 3 ? `<div class="item-name-small">+${items.length - 3} more items</div>` : ''}
+                        ${items.length === 0 ? `<div class="item-name-small">No items</div>` : ''}
+                    </div>
+                </td>
 
-            <td>
-                <div class="actions">
-                    <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">Details</button>
-                    <button class="view-btn items-btn" onclick="adminManager.viewOrderItems('${order.id}')">Items</button>
-                    <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">Contact</button>
+                <td><strong>${currency} ${totalAmount.toLocaleString()}</strong></td>
 
-                    <!-- PRINT BUTTONS -->
-                    <button class="print-btn"
-                        onclick="adminManager.printShippingLabel('${order.id}')"
-                        style="background: #17a2b8; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin: 2px; display: block; width: 100%;">
-                        🖨️ Print Label
-                    </button>
+                <!-- PROGRESS COLUMN -->
+                <td style="min-width: 150px;">
+                    ${progressDisplay}
+                </td>
 
-                    <button class="preview-btn"
-                        onclick="adminManager.previewShippingLabel('${order.id}')"
-                        style="background: #6f42c1; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin: 2px; display: block; width: 100%;">
-                        👀 Preview Label
-                    </button>
+                <td>
+                    <select class="status-select ${this.getStatusClass(status)}"
+                            onchange="adminManager.updateStatus('${order.id}', this.value)"
+                            style="padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; font-size: 12px; cursor: pointer; background: white; min-width: 120px;">
+                        <option value="pending" ${status === 'pending' ? 'selected' : ''}>📝 Pending</option>
+                        <option value="processing" ${status === 'processing' ? 'selected' : ''}>🔄 Processing</option>
+                        <option value="completed" ${status === 'completed' ? 'selected' : ''}>✅ Completed</option>
+                        <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
+                    </select>
+                </td>
 
-                    <button class="btn-danger"
-                        onclick="adminManager.deleteOrder('${order.id}')"
-                        style="margin-top: 5px;">
-                        Delete
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `;
-}
+                <td>
+                    <div class="actions">
+                        <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">Details</button>
+                        <button class="view-btn items-btn" onclick="adminManager.viewOrderItems('${order.id}')">Items</button>
+                        <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">Contact</button>
 
+                        <!-- PRINT BUTTONS -->
+                        <button class="print-btn"
+                            onclick="adminManager.printShippingLabel('${order.id}')"
+                            style="background: #17a2b8; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin: 2px; display: block; width: 100%;">
+                            🖨️ Print Label
+                        </button>
+
+                        <button class="preview-btn"
+                            onclick="adminManager.previewShippingLabel('${order.id}')"
+                            style="background: #6f42c1; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin: 2px; display: block; width: 100%;">
+                            👀 Preview Label
+                        </button>
+
+                        <button class="btn-danger"
+                            onclick="adminManager.deleteOrder('${order.id}')"
+                            style="margin-top: 5px;">
+                            Delete
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
 
     createOrderItemPreview(item) {
         if (!item) return '';
@@ -720,7 +736,7 @@ class AdminOrderManager {
     getEmptyState() {
         return `
             <tr>
-                <td colspan="7" class="empty-state">
+                <td colspan="8" class="empty-state">
                     <h3>No orders found</h3>
                     <p>There are no orders in the system yet.</p>
                     <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
@@ -742,7 +758,7 @@ class AdminOrderManager {
     getNoResultsState() {
         return `
             <tr>
-                <td colspan="7" class="empty-state">
+                <td colspan="8" class="empty-state">
                     <h3>No orders match this filter</h3>
                     <p>Try selecting a different filter to see more orders.</p>
                     <button class="btn btn-primary" onclick="adminManager.setFilter('all')">
@@ -754,11 +770,53 @@ class AdminOrderManager {
     }
 
     setupEventListeners() {
+        // Filter buttons
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.setFilter(e.target.dataset.filter);
             });
         });
+
+        // Refresh button
+        const refreshBtn = document.querySelector('.btn-primary');
+        if (refreshBtn && refreshBtn.textContent.includes('Refresh')) {
+            refreshBtn.addEventListener('click', () => {
+                this.loadOrdersImmediately().then(() => {
+                    this.renderStats();
+                    this.renderOrders();
+                });
+            });
+        }
+
+        // Debug button
+        const debugBtn = document.querySelector('.btn-secondary');
+        if (debugBtn && debugBtn.textContent.includes('Debug')) {
+            debugBtn.addEventListener('click', () => {
+                this.debugOrders();
+            });
+        }
+
+        // Bulk print buttons
+        const enableBulkBtn = document.querySelector('.enable-bulk-btn');
+        if (enableBulkBtn) {
+            enableBulkBtn.addEventListener('click', () => {
+                this.enableBulkPrintMode();
+            });
+        }
+
+        const bulkPrintBtn = document.querySelector('.bulk-print-btn');
+        if (bulkPrintBtn) {
+            bulkPrintBtn.addEventListener('click', () => {
+                this.printSelectedOrders();
+            });
+        }
+
+        const bulkCancelBtn = document.querySelector('.bulk-cancel-btn');
+        if (bulkCancelBtn) {
+            bulkCancelBtn.addEventListener('click', () => {
+                this.cancelBulkPrint();
+            });
+        }
     }
 
     setFilter(filter) {
@@ -767,6 +825,138 @@ class AdminOrderManager {
             btn.classList.toggle('active', btn.dataset.filter === filter);
         });
         this.renderOrders();
+    }
+
+    // PROGRESS MODAL FUNCTIONS
+    createProgressModal() {
+        if (document.getElementById('progressModal')) return;
+
+        const modalHTML = `
+            <div id="progressModal" class="modal" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            ">
+                <div class="modal-content" style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 12px;
+                    max-width: 500px;
+                    width: 90%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    position: relative;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0;" id="progressModalTitle">Update Order Progress</h3>
+                        <button onclick="adminManager.closeProgressModal()" style="
+                            background: none;
+                            border: none;
+                            font-size: 1.5em;
+                            cursor: pointer;
+                            color: #666;
+                            padding: 5px;
+                        ">×</button>
+                    </div>
+                    <div id="progressModalContent">
+                        <!-- Progress options will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    openProgressModal(orderId, currentStatus) {
+        const order = this.orders.find(o => o.id === orderId);
+        const isBuyForMe = order && (order.type === 'buy-for-me' || 
+                                    (order.items && order.items.some(item => item.link)) ||
+                                    (order.id && order.id.startsWith('BFM')));
+        
+        if (!isBuyForMe) {
+            this.showNotification('This is not a Buy For Me order', 'error');
+            return;
+        }
+
+        const modal = document.getElementById('progressModal');
+        const content = document.getElementById('progressModalContent');
+        
+        const steps = [
+            { id: 'ordered', name: 'Ordered', status: 'pending' },
+            { id: 'preparing', name: 'Preparing', status: 'processing' },
+            { id: 'shipped', name: 'Shipped', status: 'shipped' },
+            { id: 'delivered', name: 'Delivered', status: 'completed' }
+        ];
+        
+        const currentStepIndex = window.progressTracker ? 
+            window.progressTracker.getCurrentStepIndex(currentStatus) : 0;
+        
+        content.innerHTML = `
+            <p>Update progress for <strong>Buy For Me Order #${orderId}</strong>:</p>
+            <div class="progress-options">
+                ${steps.map((step, index) => {
+                    const isSelected = index === currentStepIndex;
+                    
+                    return `
+                        <div class="progress-step-option ${isSelected ? 'selected' : ''}" 
+                             onclick="adminManager.selectProgressStep('${orderId}', '${step.status}')">
+                            <div class="step-name">${step.name}</div>
+                            <div class="step-description">Update order to ${step.name} stage</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn btn-danger" onclick="adminManager.cancelOrder('${orderId}')" style="margin-top: 10px;">
+                    ❌ Cancel Order
+                </button>
+            </div>
+        `;
+        
+        modal.style.display = 'flex';
+    }
+
+    selectProgressStep(orderId, newStatus) {
+        this.updateStatus(orderId, newStatus);
+        this.closeProgressModal();
+    }
+
+    cancelOrder(orderId) {
+        if (confirm('Are you sure you want to cancel this Buy For Me order?')) {
+            this.updateStatus(orderId, 'cancelled');
+            this.closeProgressModal();
+        }
+    }
+
+    closeProgressModal() {
+        const modal = document.getElementById('progressModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // BULK PRINT FUNCTIONS
+    enableBulkPrintMode() {
+        console.log('📋 Enabling bulk print mode');
+        this.showNotification('Bulk print mode enabled - feature coming soon!', 'info');
+    }
+
+    printSelectedOrders() {
+        console.log('🖨️ Printing selected orders');
+        this.showNotification('Printing selected orders - feature coming soon!', 'info');
+    }
+
+    cancelBulkPrint() {
+        console.log('❌ Cancelling bulk print');
+        this.showNotification('Bulk print cancelled', 'info');
     }
 
     // ORDER DETAILS MODAL
@@ -1136,6 +1326,17 @@ Memory: ${this.orders.length} orders
         alert(debugInfo);
     }
 
+    debugOrders() {
+        console.log('🐛 Debug Info:', {
+            totalOrders: this.orders.length,
+            orders: this.orders,
+            localStorage: JSON.parse(localStorage.getItem('de_order_history') || '[]').length,
+            currentFilter: this.currentFilter
+        });
+        
+        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nCheck console for details.`);
+    }
+
     // NOTIFICATION SYSTEM
     showNotification(message, type = 'info') {
         const existingNotification = document.querySelector('.admin-notification');
@@ -1201,4 +1402,22 @@ window.debugStorage = () => adminManager.debugStorage();
 window.syncWithBackend = () => adminManager.syncWithBackend();
 window.closeItemsModal = () => adminManager.closeItemsModal();
 window.closeOrderDetailsModal = () => adminManager.closeOrderDetailsModal();
-window.forceSyncToClient = () => adminManager.forceSyncToClient();
+window.closeProgressModal = () => adminManager.closeProgressModal();
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const progressModal = document.getElementById('progressModal');
+    if (event.target === progressModal) {
+        adminManager.closeProgressModal();
+    }
+    
+    const itemsModal = document.getElementById('itemsModal');
+    if (event.target === itemsModal) {
+        adminManager.closeItemsModal();
+    }
+    
+    const orderDetailsModal = document.getElementById('orderDetailsModal');
+    if (event.target === orderDetailsModal) {
+        adminManager.closeOrderDetailsModal();
+    }
+};
