@@ -447,108 +447,139 @@
     linkInput.addEventListener("input", onInputsChanged);
     townInput.addEventListener("input", onInputsChanged);
 
-    // Send to WhatsApp
-    function sendOrderToWhatsApp() {
-      console.log('🟢 WhatsApp button clicked');
-
-      const price = parseFloat(priceInput.value);
-      const link = linkInput.value.trim();
-      const town = townInput.value.trim();
-      const deliveryKES = getDeliveryFee(town);
-
-      console.log('📦 Order details:', { price, link, town, deliveryKES });
-
-      // Validation
-      if (!link) {
-        alert("⚠️ The Product Link is required to place a Buy For Me order. Please paste it in the first field.");
-        return;
-      }
-
-      if (isNaN(price) || price <= 0) {
-        alert("⚠️ Please enter a valid price.");
-        return;
-      }
-
-      if (!town || deliveryKES === 0) {
-        alert("🚨 Please enter a delivery town and ensure the delivery fee is calculated before sending the order.");
-        return;
-      }
-
-      const { appleFee, totalUSD } = calculateTotal(price, link);
-      const totalKES = Math.round(totalUSD * USD_TO_KES);
-      const grandTotalKES = totalKES + deliveryKES;
-      const appleFeeText = appleFee > 0 ? ` (+ Apple Fee $${appleFee.toFixed(2)})` : '';
-
-      // Order object for local storage
-      const orderData = {
-        id: 'BFM' + Date.now().toString(36).toUpperCase(),
-        orderDate: new Date().toISOString(),
-        status: 'pending',
-        progressHistory: [{ status: 'pending', timestamp: new Date().toISOString(), step: 'ordered' }],
-        customer: { name: 'Buy For Me Customer', city: town, phone: 'Provided via WhatsApp' },
-        items: [{
-          title: extractProductTitleFromURL(link),
-          price: price,
-          qty: 1,
-          link: link,
-          type: 'buy-for-me'
-        }],
-        totalAmount: grandTotalKES,
-        delivery: { method: 'delivery', city: town, fee: deliveryKES }
-      };
-
-      // Save order to both admin and client storage
-      saveOrderToAdminStorage(orderData);
-      addOrderToHistory(orderData);
-
-      // Create WhatsApp message (human friendly)
-      const message = [
-        "🛍 Buy For Me Request (Calculated)",
-        "",
-        `🔗 Product Link: ${link}`,
-        `💵 Item Price: $${price.toFixed(2)}`,
-        `🚚 Delivery Town: ${town}`,
-        "",
-        "📦 Import/Service Breakdown:",
-        ` • Item Price: $${price.toFixed(2)}`,
-        ` • Shipping & Service: $${(totalUSD - price - appleFee).toFixed(2)}`,
-        ...(appleFee > 0 ? [` • Apple Pickup Fee: $${appleFee.toFixed(2)}`] : []),
-        ` • Total Import Cost: $${totalUSD.toFixed(2)}${appleFeeText}`,
-        "",
-        "💰 Cost Summary:",
-        ` • Import/Buy Total: ${totalKES.toLocaleString()} KES`,
-        ` • Delivery Fee: ${deliveryKES.toLocaleString()} KES`,
-        ` • GRAND TOTAL: ${grandTotalKES.toLocaleString()} KES`,
-        "",
-        "Please confirm these details and provide your:",
-        " • Full Name",
-        " • Phone Number",
-        " • Exact Delivery Address",
-        "",
-        "We'll contact you shortly to complete the order!"
-      ].join("\n");
-
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-
-      console.log('📤 Opening WhatsApp:', whatsappURL);
-
-      // Try open in new tab; fallback to location change
-      const newWindow = window.open(whatsappURL, '_blank');
-      if (!newWindow) {
-        // Popup blocked — navigate current tab
-        window.location.href = whatsappURL;
-      }
-
-      // Confirmation UI
-      setTimeout(() => {
-        alert('✅ Order sent to WhatsApp! Please complete your order details in the WhatsApp chat.');
-      }, 600);
-    }
-
-    // Attach listener
+    // Send to WhatsApp - UPDATED SECTION
     if (sendBtn) {
-      sendBtn.addEventListener('click', sendOrderToWhatsApp);
+      sendBtn.addEventListener("click", () => {
+        console.log('🟢 WhatsApp button clicked');
+
+        const price = parseFloat(priceInput.value);
+        const link = linkInput.value.trim();
+        const town = townInput.value.trim();
+        const deliveryKES = getDeliveryFee(town);
+
+        console.log('📦 Order details:', { price, link, town, deliveryKES });
+
+        // Validation
+        if (!link) {
+          alert("⚠️ The Product Link is required to place a Buy For Me order. Please paste it in the first field.");
+          return;
+        }
+
+        if (isNaN(price) || price <= 0) {
+          alert("⚠️ Please enter a valid price.");
+          return;
+        }
+
+        if (!town || deliveryKES === 0) {
+          alert("🚨 Please enter a delivery town and ensure the delivery fee is calculated before sending the order.");
+          return;
+        }
+
+        const { appleFee, totalUSD } = calculateTotal(price, link);
+        const totalKES = Math.round(totalUSD * USD_TO_KES);
+        const grandTotalKES = totalKES + deliveryKES;
+        const appleFeeText = appleFee > 0 ? ` (+ Apple Fee $${appleFee.toFixed(2)})` : '';
+
+        // Create order data with proper identification
+        const orderData = {
+          id: 'BFM' + Date.now().toString(36).toUpperCase(),
+          orderDate: new Date().toISOString(),
+          status: 'pending',
+          statusUpdated: new Date().toISOString(),
+          type: 'buy-for-me',
+          source: 'buy-for-me',
+          progressHistory: [{
+            status: 'pending',
+            timestamp: new Date().toISOString(),
+            step: 'ordered'
+          }],
+          customer: {
+            name: 'Buy For Me Customer',
+            city: town,
+            phone: 'Provided via WhatsApp'
+          },
+          items: [{
+            title: extractProductTitleFromURL(link),
+            price: price,
+            qty: 1,
+            link: link,
+            type: 'buy-for-me'
+          }],
+          totalAmount: grandTotalKES,
+          delivery: {
+            method: 'delivery',
+            city: town,
+            fee: deliveryKES
+          },
+          // Add these fields for better admin display
+          name: 'Buy For Me Customer',
+          city: town,
+          phone: 'Provided via WhatsApp',
+          total: grandTotalKES,
+          currency: 'KES'
+        };
+
+        // Save to BOTH admin and client storage
+        const savedToAdmin = saveOrderToAdminStorage(orderData);
+        const savedToClient = saveOrderToClientStorage(orderData);
+        
+        if (savedToAdmin && savedToClient) {
+          console.log('✅ Order saved to both admin and client storage');
+          
+          // Trigger storage event to refresh admin page if open
+          window.dispatchEvent(new Event('storage'));
+          
+          // Show success message
+          setTimeout(() => {
+            alert('✅ Order created successfully! You can now view it in the admin panel.');
+          }, 500);
+        }
+
+        // Create WhatsApp message (human friendly)
+        const message = [
+          "🛍 Buy For Me Request (Calculated)",
+          "",
+          `🔗 Product Link: ${link}`,
+          `💵 Item Price: $${price.toFixed(2)}`,
+          `🚚 Delivery Town: ${town}`,
+          "",
+          "📦 Import/Service Breakdown:",
+          ` • Item Price: $${price.toFixed(2)}`,
+          ` • Shipping & Service: $${(totalUSD - price - appleFee).toFixed(2)}`,
+          ...(appleFee > 0 ? [` • Apple Pickup Fee: $${appleFee.toFixed(2)}`] : []),
+          ` • Total Import Cost: $${totalUSD.toFixed(2)}${appleFeeText}`,
+          "",
+          "💰 Cost Summary:",
+          ` • Import/Buy Total: ${totalKES.toLocaleString()} KES`,
+          ` • Delivery Fee: ${deliveryKES.toLocaleString()} KES`,
+          ` • GRAND TOTAL: ${grandTotalKES.toLocaleString()} KES`,
+          "",
+          "Please confirm these details and provide your:",
+          " • Full Name",
+          " • Phone Number",
+          " • Exact Delivery Address",
+          "",
+          "We'll contact you shortly to complete the order!"
+        ].join("\n");
+
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+
+        console.log('📤 Opening WhatsApp:', whatsappURL);
+
+        // Try open in new tab; fallback to location change
+        const newWindow = window.open(whatsappURL, '_blank');
+        if (!newWindow) {
+          // Popup blocked — navigate current tab
+          window.location.href = whatsappURL;
+        }
+
+        // Confirmation UI
+        setTimeout(() => {
+          alert('✅ Order sent to WhatsApp! Please complete your order details in the WhatsApp chat.');
+        }, 600);
+      });
+      
       console.log('✅ WhatsApp button event listener attached');
     } else {
       console.error('❌ WhatsApp button not found (#bfm-send).');
