@@ -342,47 +342,100 @@ const appleFeeDisplay = appleFee > 0 ?
     linkInput.addEventListener("input", updateResults); // Re-run calculation on link change
     townInput.addEventListener("input", updateResults); 
 
-    // WhatsApp order (Updated to reflect new logic and link required)
-    sendBtn.addEventListener("click", () => {
-        const price = parseFloat(priceInput.value);
-        const link = linkInput.value.trim();
-        const town = townInput.value.trim(); 
-        const deliveryKES = getDeliveryFee(town); 
+    // WhatsApp order (Updated + Progress Tracking Included)
+sendBtn.addEventListener("click", () => {
+    const price = parseFloat(priceInput.value);
+    const link = linkInput.value.trim();
+    const town = townInput.value.trim(); 
+    const deliveryKES = getDeliveryFee(town); 
 
-        // Link validation
-        if (!link) {
-            alert("⚠️ The Product Link is required to place a Buy For Me order. Please paste it in the first field.");
-            return;
-        }
+    // Link validation
+    if (!link) {
+        alert("⚠️ The Product Link is required to place a Buy For Me order. Please paste it in the first field.");
+        return;
+    }
 
-        if (isNaN(price) || price <= 0) {
-            alert("Please enter a valid price.");
-            return;
-        }
+    if (isNaN(price) || price <= 0) {
+        alert("Please enter a valid price.");
+        return;
+    }
 
-        if (!town || deliveryKES === 0) { 
-            alert("🚨 Please enter a delivery town and ensure the delivery fee is calculated before sending the order.");
-            return;
-        }
+    if (!town || deliveryKES === 0) { 
+        alert("🚨 Please enter a delivery town and ensure the delivery fee is calculated before sending the order.");
+        return;
+    }
 
-        const { appleFee, totalUSD } = calculateTotal(price, link); // Get totalUSD with appleFee
-        const totalKES = totalUSD * USD_TO_KES; // Calculate KES total
-        const grandTotalKES = totalKES + deliveryKES; 
-        
-        const appleFeeText = appleFee > 0 ? ` (+ Apple Fee $${appleFee.toFixed(2)})` : '';
+    const { appleFee, totalUSD } = calculateTotal(price, link);
+    const totalKES = totalUSD * USD_TO_KES;
+    const grandTotalKES = totalKES + deliveryKES; 
+    
+    const appleFeeText = appleFee > 0 ? ` (+ Apple Fee $${appleFee.toFixed(2)})` : '';
 
-        const message = encodeURIComponent(
-            `🛍 Buy For Me Request (Calculated)\n\n` +
-            `🔗 Product Link: ${link}\n` +
-            `💵 Item Price: $${price.toFixed(2)}\n` +
-            `🚚 Delivery Town: ${town}\n` +
-            `📦 Import/Service Total: $${totalUSD.toFixed(2)}${appleFeeText} = ${totalKES.toLocaleString()} KES\n` +
-            `💰 Delivery Fee: ${deliveryKES.toLocaleString()} KES\n\n` +
-            `🔥 **GRAND TOTAL: ${grandTotalKES.toLocaleString()} KES**\n\nPlease confirm details.`
-        );
-        
-        window.open(`https://wa.me/254106590617?text=${message}`, "_blank");
-    });
+    //
+    // ⭐ CREATE ORDER WITH PROGRESS TRACKING ⭐
+    //
+    const now = new Date().toISOString();
+
+    const orderData = {
+        id: 'DF' + Date.now().toString(36).toUpperCase(),
+        orderDate: now,
+        status: 'pending',
+        statusUpdated: now,
+
+        // REQUIRED PROGRESS TRACKING
+        progressHistory: [{
+            status: 'pending',
+            timestamp: now,
+            step: progressTracker.getStepByStatus
+                ? progressTracker.getStepByStatus('pending')
+                : 'order_received'
+        }],
+
+        customer: {
+            name: 'Buy For Me Customer',
+            city: town,
+            phone: 'Provided via WhatsApp'
+        },
+
+        items: [{
+            title: 'Buy For Me Product',
+            price: price,
+            qty: 1,
+            link: link
+        }],
+
+        totalAmount: grandTotalKES,
+
+        delivery: {
+            method: 'delivery',
+            city: town,
+            fee: deliveryKES
+        },
+
+        type: 'buy-for-me'
+    };
+
+    // Add to order history (if your function exists)
+    if (window.addOrderToHistory) {
+        window.addOrderToHistory(orderData);
+        console.log("📦 Buy For Me Order Added:", orderData);
+    }
+
+    //
+    // ⭐ SEND WHATSAPP MESSAGE ⭐
+    //
+    const message = encodeURIComponent(
+        `🛍 Buy For Me Request (Calculated)\n\n` +
+        `🔗 Product Link: ${link}\n` +
+        `💵 Item Price: $${price.toFixed(2)}\n` +
+        `🚚 Delivery Town: ${town}\n` +
+        `📦 Import/Service Total: $${totalUSD.toFixed(2)}${appleFeeText} = ${totalKES.toLocaleString()} KES\n` +
+        `💰 Delivery Fee: ${deliveryKES.toLocaleString()} KES\n\n` +
+        `🔥 **GRAND TOTAL: ${grandTotalKES.toLocaleString()} KES**\n\nPlease confirm details.`
+    );
+    
+    window.open(`https://wa.me/254106590617?text=${message}`, "_blank");
+});
     
     // Initialize results display when page loads
     updateResults();
