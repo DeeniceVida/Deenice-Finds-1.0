@@ -1,4 +1,4 @@
-// Buy-For-Me — Full Fixed & Improved Script
+// Buy-For-Me — Full Fixed & Improved Script with Storage Integration
 (() => {
   // --- 1. ACCURATE WELLS FARGO DELIVERY DATA (OUTSIDE NAIROBI) ---
   const DELIVERY_ZONES = [
@@ -185,6 +185,69 @@
 
   // Currency conversion
   const USD_TO_KES = 135;
+
+  // --- STORAGE FUNCTIONS ---
+  function saveOrderToAdminStorage(orderData) {
+    try {
+      // Save to admin storage
+      const adminStorageKey = 'de_admin_orders_secure_v3';
+      const adminBackupKey = 'de_admin_orders_backup_secure_v3';
+      
+      let adminOrders = JSON.parse(localStorage.getItem(adminStorageKey) || '[]');
+      
+      // Check if order already exists
+      const existingOrderIndex = adminOrders.findIndex(order => order.id === orderData.id);
+      
+      if (existingOrderIndex > -1) {
+        // Update existing order
+        adminOrders[existingOrderIndex] = orderData;
+      } else {
+        // Add new order
+        adminOrders.unshift(orderData);
+      }
+      
+      // Save to admin storage
+      localStorage.setItem(adminStorageKey, JSON.stringify(adminOrders));
+      localStorage.setItem(adminBackupKey, JSON.stringify(adminOrders));
+      
+      console.log('✅ Order saved to admin storage:', orderData.id);
+      
+      // Also save to client storage for order history
+      saveOrderToClientStorage(orderData);
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Error saving to admin storage:', error);
+      return false;
+    }
+  }
+
+  function saveOrderToClientStorage(orderData) {
+    try {
+      const clientStorageKey = 'de_order_history';
+      const clientBackupKey = 'de_order_history_backup';
+      
+      let clientOrders = JSON.parse(localStorage.getItem(clientStorageKey) || '[]');
+      
+      // Check if order already exists
+      const existingOrderIndex = clientOrders.findIndex(order => order.id === orderData.id);
+      
+      if (existingOrderIndex > -1) {
+        clientOrders[existingOrderIndex] = orderData;
+      } else {
+        clientOrders.unshift(orderData);
+      }
+      
+      localStorage.setItem(clientStorageKey, JSON.stringify(clientOrders));
+      localStorage.setItem(clientBackupKey, JSON.stringify(clientOrders));
+      
+      console.log('✅ Order saved to client storage:', orderData.id);
+      return true;
+    } catch (error) {
+      console.error('❌ Error saving to client storage:', error);
+      return false;
+    }
+  }
 
   // Helper: sanitize town names for comparison
   function normalizeTownName(name = "") {
@@ -434,7 +497,8 @@
         delivery: { method: 'delivery', city: town, fee: deliveryKES }
       };
 
-      // Save order locally
+      // Save order to both admin and client storage
+      saveOrderToAdminStorage(orderData);
       addOrderToHistory(orderData);
 
       // Create WhatsApp message (human friendly)
