@@ -465,80 +465,85 @@
             renderOrders(e.detail.orders);
         });
 
-        // Render orders
-        function renderOrders(orders) {
-            const container = document.getElementById('ordersContainer');
-            
-            if (!orders || orders.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No orders yet</h3>
-                        <p>You haven't placed any orders yet. Start shopping to see your order history here!</p>
-                        <a href="index.html" class="btn btn-primary">Start Shopping</a>
-                    </div>
-                `;
-                return;
-            }
+        // In the renderOrders function, update the order card to include progress bar
+function renderOrders(orders) {
+    const container = document.getElementById('ordersContainer');
+    
+    if (!orders || orders.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <h3>No orders yet</h3>
+                <p>You haven't placed any orders yet. Start shopping to see your order history here!</p>
+                <a href="index.html" class="btn btn-primary">Start Shopping</a>
+            </div>
+        `;
+        return;
+    }
 
-            container.innerHTML = orders.map(order => `
-                <div class="order-card" data-order-id="${order.id}">
-                    <div class="order-header">
-                        <div class="order-id">Order #${order.id}</div>
-                        <div class="order-status status-${order.status}">${getStatusText(order.status)}</div>
-                    </div>
-                    
-                    <div class="order-meta">
-                        <span>📅 ${new Date(order.orderDate || order.date).toLocaleDateString()}</span>
-                        <span>📍 ${order.customer?.city || 'N/A'}</span>
-                        <span>📞 ${order.customer?.phone || 'N/A'}</span>
-                        ${order.statusUpdated ? `<span>🔄 ${new Date(order.statusUpdated).toLocaleDateString()}</span>` : ''}
-                    </div>
-                    
-                    <div class="order-items">
-                        ${(order.items || []).map(item => `
-                            <div class="order-item">
-                                <img src="${item.img || 'https://via.placeholder.com/70'}" 
-                                     alt="${item.title}" 
-                                     class="item-image"
-                                     onerror="this.src='https://via.placeholder.com/70'">
-                                <div class="item-details">
-                                    <div class="item-name">${item.title || 'Unknown Item'}</div>
-                                    <div class="item-specs">
-                                        ${item.color ? `Color: ${item.color} • ` : ''}
-                                        ${item.size ? `Size: ${item.size} • ` : ''}
-                                        Qty: ${item.qty || 1}
-                                    </div>
-                                    <div class="item-price">
-                                        KES ${((item.price || 0) * (item.qty || 1)).toLocaleString()}
-                                    </div>
-                                </div>
+    container.innerHTML = orders.map(order => `
+        <div class="order-card" data-order-id="${order.id}">
+            <div class="order-header">
+                <div class="order-id">Order #${order.id}</div>
+                <div class="order-status status-${order.status}">${getStatusText(order.status)}</div>
+            </div>
+            
+            <!-- PROGRESS BAR SECTION - ADDED -->
+            <div class="order-progress-section">
+                ${progressTracker.generateProgressBar(order.status, order.id)}
+            </div>
+            
+            <div class="order-meta">
+                <span>📅 ${new Date(order.orderDate || order.date).toLocaleDateString()}</span>
+                <span>📍 ${order.customer?.city || 'N/A'}</span>
+                <span>📞 ${order.customer?.phone || 'N/A'}</span>
+                ${order.statusUpdated ? `<span>🔄 ${new Date(order.statusUpdated).toLocaleDateString()}</span>` : ''}
+            </div>
+            
+            <div class="order-items">
+                ${(order.items || []).map(item => `
+                    <div class="order-item">
+                        <img src="${item.img || 'https://via.placeholder.com/70'}" 
+                             alt="${item.title}" 
+                             class="item-image"
+                             onerror="this.src='https://via.placeholder.com/70'">
+                        <div class="item-details">
+                            <div class="item-name">${item.title || 'Unknown Item'}</div>
+                            <div class="item-specs">
+                                ${item.color ? `Color: ${item.color} • ` : ''}
+                                ${item.size ? `Size: ${item.size} • ` : ''}
+                                Qty: ${item.qty || 1}
                             </div>
-                        `).join('')}
-                    </div>
-                    
-                    <div class="order-footer">
-                        <div class="order-total">
-                            Total: KES ${order.totalAmount?.toLocaleString() || '0'}
-                        </div>
-                        <div class="order-actions">
-                            <button class="btn btn-secondary" onclick="viewOrderDetails('${order.id}')">
-                                View Details
-                            </button>
-                            ${order.status === 'completed' ? `
-                                <button class="btn btn-primary" onclick="reorder('${order.id}')">
-                                    Reorder
-                                </button>
-                            ` : ''}
-                            <button class="btn btn-secondary" onclick="contactSupport('${order.id}')">
-                                Contact Support
-                            </button>
+                            <div class="item-price">
+                                KES ${((item.price || 0) * (item.qty || 1)).toLocaleString()}
+                            </div>
                         </div>
                     </div>
-                    
-                    ${getStatusMessage(order)}
+                `).join('')}
+            </div>
+            
+            <div class="order-footer">
+                <div class="order-total">
+                    Total: KES ${order.totalAmount?.toLocaleString() || '0'}
                 </div>
-            `).join('');
-        }
+                <div class="order-actions">
+                    <button class="btn btn-secondary" onclick="viewOrderDetails('${order.id}')">
+                        View Details
+                    </button>
+                    ${order.status === 'completed' ? `
+                        <button class="btn btn-primary" onclick="reorder('${order.id}')">
+                            Reorder
+                        </button>
+                    ` : ''}
+                    <button class="btn btn-secondary" onclick="contactSupport('${order.id}')">
+                        Contact Support
+                    </button>
+                </div>
+            </div>
+            
+            ${getStatusMessage(order)}
+        </div>
+    `).join('');
+}
 
         // Helper functions
         function getStatusText(status) {
