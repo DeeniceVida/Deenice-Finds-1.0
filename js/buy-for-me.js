@@ -342,7 +342,7 @@ const appleFeeDisplay = appleFee > 0 ?
     linkInput.addEventListener("input", updateResults); // Re-run calculation on link change
     townInput.addEventListener("input", updateResults); 
 
-    // WhatsApp order (Updated + Progress Tracking Included)
+    // WhatsApp order (Updated + Product Title Extraction + Progress Tracking)
 sendBtn.addEventListener("click", () => {
     const price = parseFloat(priceInput.value);
     const link = linkInput.value.trim();
@@ -368,8 +368,18 @@ sendBtn.addEventListener("click", () => {
     const { appleFee, totalUSD } = calculateTotal(price, link);
     const totalKES = totalUSD * USD_TO_KES;
     const grandTotalKES = totalKES + deliveryKES; 
-    
     const appleFeeText = appleFee > 0 ? ` (+ Apple Fee $${appleFee.toFixed(2)})` : '';
+
+    //
+    // ⭐ PRODUCT TITLE EXTRACTION ⭐
+    //
+    let productTitle = "Buy For Me Product";
+    try {
+        const domain = new URL(link).hostname;
+        productTitle = `Product from ${domain}`;
+    } catch (e) {
+        productTitle = "Buy For Me Product";
+    }
 
     //
     // ⭐ CREATE ORDER WITH PROGRESS TRACKING ⭐
@@ -377,16 +387,16 @@ sendBtn.addEventListener("click", () => {
     const now = new Date().toISOString();
 
     const orderData = {
-        id: 'DF' + Date.now().toString(36).toUpperCase(),
+        id: 'BFM' + Date.now().toString(36).toUpperCase(),
         orderDate: now,
         status: 'pending',
         statusUpdated: now,
+        type: 'buy-for-me',
 
-        // REQUIRED PROGRESS TRACKING
         progressHistory: [{
             status: 'pending',
             timestamp: now,
-            step: progressTracker.getStepByStatus
+            step: progressTracker?.getStepByStatus
                 ? progressTracker.getStepByStatus('pending')
                 : 'order_received'
         }],
@@ -398,10 +408,11 @@ sendBtn.addEventListener("click", () => {
         },
 
         items: [{
-            title: 'Buy For Me Product',
+            title: productTitle,    // ← ADDED
             price: price,
             qty: 1,
-            link: link
+            link: link,
+            type: 'buy-for-me'
         }],
 
         totalAmount: grandTotalKES,
@@ -410,12 +421,10 @@ sendBtn.addEventListener("click", () => {
             method: 'delivery',
             city: town,
             fee: deliveryKES
-        },
-
-        type: 'buy-for-me'
+        }
     };
 
-    // Add to order history (if your function exists)
+    // Add to order history
     if (window.addOrderToHistory) {
         window.addOrderToHistory(orderData);
         console.log("📦 Buy For Me Order Added:", orderData);
@@ -426,7 +435,9 @@ sendBtn.addEventListener("click", () => {
     //
     const message = encodeURIComponent(
         `🛍 Buy For Me Request (Calculated)\n\n` +
+        `🆔 Order ID: ${orderData.id}\n` +
         `🔗 Product Link: ${link}\n` +
+        `🛒 Product: ${productTitle}\n` +
         `💵 Item Price: $${price.toFixed(2)}\n` +
         `🚚 Delivery Town: ${town}\n` +
         `📦 Import/Service Total: $${totalUSD.toFixed(2)}${appleFeeText} = ${totalKES.toLocaleString()} KES\n` +
@@ -436,6 +447,7 @@ sendBtn.addEventListener("click", () => {
     
     window.open(`https://wa.me/254106590617?text=${message}`, "_blank");
 });
+
     
     // Initialize results display when page loads
     updateResults();
