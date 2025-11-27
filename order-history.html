@@ -499,7 +499,7 @@ function renderOrders(orders) {
                 <div class="order-status status-${order.status}">${getStatusText(order.status)}</div>
             </div>
             
-            <!-- PROGRESS BAR SECTION - ONLY FOR BUY FOR ME ORDERS -->
+            <!-- NEW CARD-BASED PROGRESS BAR - ONLY FOR BUY FOR ME ORDERS -->
             ${isBuyForMe ? progressTracker.generateProgressBar(order) : `
                 <!-- Regular order display -->
                 <div class="product-title">${productTitle}</div>
