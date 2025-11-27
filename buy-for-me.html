@@ -194,32 +194,5 @@
     </section>
     <script src='js/config.js'></script>
     <script src='js/buy-for-me.js'></script>
-
-    <script>
-// Debug script to check if elements are properly loaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🟢 DOM Content Loaded');
-    
-    const sendBtn = document.getElementById('bfm-send');
-    const priceInput = document.getElementById('bfm-price');
-    const linkInput = document.getElementById('bfm-link');
-    const townInput = document.getElementById('bfm-town');
-    
-    console.log('🔍 Element Check:', {
-        sendBtn: sendBtn ? 'Found' : 'Not Found',
-        priceInput: priceInput ? 'Found' : 'Not Found', 
-        linkInput: linkInput ? 'Found' : 'Not Found',
-        townInput: townInput ? 'Found' : 'Not Found'
-    });
-    
-    // Test button click
-    if (sendBtn) {
-        sendBtn.addEventListener('click', function() {
-            console.log('🟡 Button clicked manually');
-            alert('Button is working! Check console for details.');
-        });
-    }
-});
-</script>
 </body>
 </html>
