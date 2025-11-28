@@ -184,80 +184,45 @@
   // Currency conversion
   const USD_TO_KES = 135;
 
-  // --- SIMPLE STORAGE FUNCTIONS ---
-  function saveOrderToAdminStorage(orderData) {
+  // --- SIMPLE STORAGE FUNCTION ---
+  function saveOrderToStorage(orderData) {
       try {
+          // Save to admin storage
           const adminStorageKey = 'de_admin_orders_secure_v3';
           let adminOrders = JSON.parse(localStorage.getItem(adminStorageKey) || '[]');
           
-          const existingOrderIndex = adminOrders.findIndex(order => order.id === orderData.id);
-          
-          if (existingOrderIndex > -1) {
-              adminOrders[existingOrderIndex] = orderData;
-          } else {
+          // Check if order exists
+          const exists = adminOrders.find(order => order.id === orderData.id);
+          if (!exists) {
               adminOrders.unshift(orderData);
+              localStorage.setItem(adminStorageKey, JSON.stringify(adminOrders));
           }
           
-          localStorage.setItem(adminStorageKey, JSON.stringify(adminOrders));
-          console.log('✅ Order saved to admin storage');
-          return true;
-      } catch (error) {
-          console.error('❌ Error saving to admin storage:', error);
-          return false;
-      }
-  }
-
-  function saveOrderToClientStorage(orderData) {
-      try {
+          // Save to client storage
           const clientStorageKey = 'de_order_history';
           let clientOrders = JSON.parse(localStorage.getItem(clientStorageKey) || '[]');
           
-          const existingOrderIndex = clientOrders.findIndex(order => order.id === orderData.id);
-          
-          if (existingOrderIndex > -1) {
-              clientOrders[existingOrderIndex] = orderData;
-          } else {
+          const clientExists = clientOrders.find(order => order.id === orderData.id);
+          if (!clientExists) {
               clientOrders.unshift(orderData);
+              localStorage.setItem(clientStorageKey, JSON.stringify(clientOrders));
           }
           
-          localStorage.setItem(clientStorageKey, JSON.stringify(clientOrders));
-          console.log('✅ Order saved to client storage');
+          console.log('✅ Order saved to storage');
           return true;
       } catch (error) {
-          console.error('❌ Error saving to client storage:', error);
+          console.error('❌ Storage error:', error);
           return false;
       }
   }
 
-  // --- PRODUCT IMAGE EXTRACTION ---
-  function getProductImageSimple(link) {
-      try {
-          if (link.includes('amazon.')) {
-              const asinMatch = link.match(/\/dp\/([A-Z0-9]{10})/);
-              if (asinMatch) {
-                  return `https://images-na.ssl-images-amazon.com/images/P/${asinMatch[1]}.01._SCLZZZZZZZ_.jpg`;
-              }
-          }
-          
-          if (link.includes('apple.com')) return 'https://via.placeholder.com/100/007AFF/FFFFFF?text=🍎';
-          if (link.includes('amazon.')) return 'https://via.placeholder.com/100/FF9900/FFFFFF?text=📦';
-          if (link.includes('ebay.')) return 'https://via.placeholder.com/100/0064D2/FFFFFF?text=⭐';
-          
-          return 'https://via.placeholder.com/100/666666/FFFFFF?text=🛒';
-      } catch (e) {
-          return 'https://via.placeholder.com/100/666666/FFFFFF?text=🛒';
-      }
-  }
-
-  // Helper: sanitize town names for comparison
+  // --- HELPER FUNCTIONS (Keep your existing ones) ---
   function normalizeTownName(name = "") {
       return name.toLowerCase().replace(/\s+/g, " ").trim().replace(/\s*\(.*?\)\s*/g, "");
   }
 
-  // --- Delivery fee lookup ---
   function getDeliveryFee(town = "") {
       const cleanedTown = normalizeTownName(town);
-
       if (!cleanedTown) return 0;
 
       const matchedNairobi = NAIROBI_DISTANCES.find(z => cleanedTown.includes(z.name.toLowerCase()));
@@ -275,38 +240,23 @@
       return 0;
   }
 
-  // --- UI feedback for town / fee ---
   function updateCityFeedback(town) {
       const feedbackDiv = document.getElementById('bfm-city-feedback');
       if (!feedbackDiv) return;
 
       const townFee = getDeliveryFee(town);
-      const matchedNairobiZone = NAIROBI_DISTANCES.find(z => normalizeTownName(town).includes(z.name.toLowerCase()));
-      const isNairobiDistanceZone = !!matchedNairobiZone;
-
       feedbackDiv.style.padding = '8px';
       feedbackDiv.style.borderRadius = '4px';
 
       if (townFee > 0) {
-          let feeType = "Exact Branch Fee";
-          let feedbackColor = '#d4edda';
-
-          if (isNairobiDistanceZone) {
-              feeType = `Nairobi Doorstep (Approx. ${matchedNairobiZone.distance}km @ KES ${DELIVERY_RATE_PER_KM}/km)`;
-              feedbackColor = '#fff3cd';
-          } else if (townFee === MINIMUM_NAIROBI_FEE) {
-              feeType = `Nairobi Environs Flat Fee (Min)`;
-          }
-
-          feedbackDiv.style.backgroundColor = feedbackColor;
-          feedbackDiv.innerHTML = `<strong>Delivery Fee for ${town}:</strong> ${townFee.toLocaleString()} KES (${feeType})`;
+          feedbackDiv.style.backgroundColor = '#d4edda';
+          feedbackDiv.innerHTML = `<strong>Delivery Fee for ${town}:</strong> ${townFee.toLocaleString()} KES`;
       } else {
           feedbackDiv.style.backgroundColor = '#f0f8ff';
-          feedbackDiv.innerHTML = `<strong>Delivery Fee:</strong> TBD. Type your town for suggestion or select a Wells Fargo branch. Minimum Nairobi doorstep fee: <strong>${MINIMUM_NAIROBI_FEE.toLocaleString()} KES</strong>`;
+          feedbackDiv.innerHTML = `<strong>Delivery Fee:</strong> TBD. Type your town for suggestion.`;
       }
   }
 
-  // --- Calculate totals (shipping, service, apple fee) ---
   function calculateTotal(price, link) {
       let shipping, service, appleFee;
 
@@ -325,7 +275,6 @@
       return { shipping, service, appleFee, totalUSD };
   }
 
-  // --- Extract a readable product title from a URL ---
   function extractProductTitleFromURL(url) {
       try {
           const urlObj = new URL(url);
@@ -351,7 +300,6 @@
       }
   }
 
-  // --- Render results to UI ---
   function renderResults(resultBox, price, link, town) {
       if (!resultBox) return;
       const deliveryKES = getDeliveryFee(town);
@@ -384,7 +332,7 @@
       `;
   }
 
-  // --- Main DOMContentLoaded init ---
+  // --- MAIN INIT ---
   document.addEventListener("DOMContentLoaded", () => {
       const priceInput = document.getElementById("bfm-price");
       const linkInput = document.getElementById("bfm-link");
@@ -394,7 +342,7 @@
       const dataList = document.getElementById('bfm-city-suggestions-list');
 
       if (!priceInput || !linkInput || !townInput || !resultBox) {
-          console.error('Required BFM elements missing. Ensure #bfm-price, #bfm-link, #bfm-town, and #bfm-results exist.');
+          console.error('Required BFM elements missing');
           return;
       }
 
@@ -418,7 +366,6 @@
           const price = parseFloat(priceInput.value);
           const link = linkInput.value.trim();
           const town = townInput.value.trim();
-
           updateCityFeedback(town);
           renderResults(resultBox, price, link, town);
       }
@@ -427,9 +374,10 @@
       linkInput.addEventListener("input", onInputsChanged);
       townInput.addEventListener("input", onInputsChanged);
 
-      // Send to WhatsApp - SIMPLE VERSION
+      // Send to WhatsApp
       if (sendBtn) {
-          sendBtn.addEventListener("click", () => {
+          sendBtn.addEventListener("click", (e) => {
+              e.preventDefault();
               console.log('🟢 WhatsApp button clicked');
 
               const price = parseFloat(priceInput.value);
@@ -437,21 +385,17 @@
               const town = townInput.value.trim();
               const deliveryKES = getDeliveryFee(town);
 
-              console.log('📦 Order details:', { price, link, town, deliveryKES });
-
               // Validation
               if (!link) {
-                  alert("⚠️ The Product Link is required to place a Buy For Me order. Please paste it in the first field.");
+                  alert("⚠️ Product Link is required");
                   return;
               }
-
               if (isNaN(price) || price <= 0) {
-                  alert("⚠️ Please enter a valid price.");
+                  alert("⚠️ Please enter a valid price");
                   return;
               }
-
               if (!town || deliveryKES === 0) {
-                  alert("🚨 Please enter a delivery town and ensure the delivery fee is calculated before sending the order.");
+                  alert("🚨 Please enter a valid delivery town");
                   return;
               }
 
@@ -459,7 +403,7 @@
               const totalKES = Math.round(totalUSD * USD_TO_KES);
               const grandTotalKES = totalKES + deliveryKES;
 
-              // Create order data
+              // Create order data - NO IMAGE FIELD
               const orderData = {
                   id: 'BFM' + Date.now().toString(36).toUpperCase(),
                   orderDate: new Date().toISOString(),
@@ -476,8 +420,8 @@
                       price: price,
                       qty: 1,
                       link: link,
-                      type: 'buy-for-me',
-                      image: getProductImageSimple(link)
+                      type: 'buy-for-me'
+                      // NO image field - you'll upload from admin
                   }],
                   totalAmount: grandTotalKES,
                   delivery: {
@@ -485,61 +429,47 @@
                       city: town,
                       fee: deliveryKES
                   }
+                  // NO image field at root - you'll upload from admin
               };
 
-              // QUIETLY save to storage (no messages to user)
-              saveOrderToAdminStorage(orderData);
-              saveOrderToClientStorage(orderData);
-
-              const appleFeeText = appleFee > 0 ? ` (+ Apple Fee $${appleFee.toFixed(2)})` : '';
+              // Save order quietly
+              saveOrderToStorage(orderData);
 
               // Create WhatsApp message
               const message = [
-                  "🛍 Buy For Me Request (Calculated)",
+                  "🛍 Buy For Me Request",
                   "",
-                  `🔗 Product Link: ${link}`,
-                  `💵 Item Price: $${price.toFixed(2)}`,
-                  `🚚 Delivery Town: ${town}`,
+                  `🔗 Product: ${extractProductTitleFromURL(link)}`,
+                  `🔗 Link: ${link}`,
+                  `💵 Price: $${price.toFixed(2)}`,
+                  `🏠 Delivery: ${town}`,
                   "",
-                  "📦 Import/Service Breakdown:",
-                  ` • Item Price: $${price.toFixed(2)}`,
+                  "💰 Cost Breakdown:",
+                  ` • Item: $${price.toFixed(2)}`,
                   ` • Shipping & Service: $${(totalUSD - price - appleFee).toFixed(2)}`,
-                  ...(appleFee > 0 ? [` • Apple Pickup Fee: $${appleFee.toFixed(2)}`] : []),
-                  ` • Total Import Cost: $${totalUSD.toFixed(2)}${appleFeeText}`,
-                  "",
-                  "💰 Cost Summary:",
-                  ` • Import/Buy Total: ${totalKES.toLocaleString()} KES`,
-                  ` • Delivery Fee: ${deliveryKES.toLocaleString()} KES`,
+                  ...(appleFee > 0 ? [` • Apple Fee: $${appleFee.toFixed(2)}`] : []),
+                  ` • Total USD: $${totalUSD.toFixed(2)}`,
+                  ` • Total KES: ${totalKES.toLocaleString()} KES`,
+                  ` • Delivery: ${deliveryKES.toLocaleString()} KES`,
                   ` • GRAND TOTAL: ${grandTotalKES.toLocaleString()} KES`,
                   "",
-                  "Please confirm these details and provide your:",
+                  "Please provide:",
                   " • Full Name",
                   " • Phone Number", 
-                  " • Exact Delivery Address",
+                  " • Exact Address",
                   "",
-                  "We'll contact you shortly to complete the order!"
+                  "We'll contact you to complete the order!"
               ].join("\n");
 
               const encodedMessage = encodeURIComponent(message);
               const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
 
-              console.log('📤 Opening WhatsApp:', whatsappURL);
-
               // Open WhatsApp
-              const newWindow = window.open(whatsappURL, '_blank');
-              if (!newWindow) {
-                  window.location.href = whatsappURL;
-              }
-
-              // ONLY show WhatsApp confirmation
-              setTimeout(() => {
-                  alert('✅ Order sent to WhatsApp! Please complete your order details in the WhatsApp chat.');
-              }, 600);
+              window.open(whatsappURL, '_blank');
+              
+              // Simple confirmation
+              alert('✅ Opening WhatsApp... Please send the message to complete your order.');
           });
-          
-          console.log('✅ WhatsApp button event listener attached');
-      } else {
-          console.error('❌ WhatsApp button not found (#bfm-send).');
       }
 
       // Initial render
