@@ -1,30 +1,34 @@
 // =============================================
-// ADMIN ORDERS FIXES - ADD TO TOP OF admin-orders.js
+// ADMIN ORDERS FIXES - ADD TO admin-orders.js
 // =============================================
 
-// Fix for loading, refresh, and logout buttons
+// Fix button functionality
 function initializeAdminFixes() {
-    console.log('🔧 Initializing admin panel fixes...');
+    console.log('🛠️ Initializing admin fixes...');
     
     // Fix refresh button
     const refreshBtn = document.getElementById('refresh-orders');
     if (refreshBtn) {
         refreshBtn.onclick = function(e) {
             e.preventDefault();
-            console.log('🔄 Manual refresh triggered');
-            showLoading('Refreshing orders...');
+            console.log('🔄 Refresh button clicked');
             
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '🔄 Refreshing...';
+            this.disabled = true;
+            
+            // Reload orders
             setTimeout(() => {
                 if (typeof loadOrders === 'function') {
-                    loadOrders(true);
+                    loadOrders();
                 } else {
-                    location.reload();
+                    window.location.reload();
                 }
-                hideLoading();
-                showNotification('Orders refreshed successfully', 'success');
+                this.innerHTML = originalText;
+                this.disabled = false;
             }, 1000);
         };
-        console.log('✅ Refresh button fixed');
     }
     
     // Fix logout button
@@ -32,7 +36,7 @@ function initializeAdminFixes() {
     if (logoutBtn) {
         logoutBtn.onclick = function(e) {
             e.preventDefault();
-            console.log('🚪 Logout initiated');
+            console.log('🚪 Logout button clicked');
             
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('admin_authenticated');
@@ -41,150 +45,53 @@ function initializeAdminFixes() {
                 window.location.href = 'login.html';
             }
         };
-        console.log('✅ Logout button fixed');
     }
     
-    // Fix infinite loading
-    const loadingElements = document.querySelectorAll('.loading, .loading-spinner, [class*="loading"]');
-    loadingElements.forEach(loader => {
-        setTimeout(() => {
-            if (loader.style.display !== 'none') {
-                loader.style.display = 'none';
-                console.log('🕒 Loading timeout applied');
-            }
-        }, 5000);
-    });
+    // Fix debug button
+    const debugBtn = document.getElementById('debug-btn');
+    if (debugBtn) {
+        debugBtn.onclick = function(e) {
+            e.preventDefault();
+            console.log('🐛 Debug button clicked');
+            debugOrders();
+        };
+    }
     
-    // Start cross-device sync
-    startCrossDeviceSync();
+    // Fix loading issues
+    fixLoadingIssues();
 }
 
-// Cross-device order synchronization
-function startCrossDeviceSync() {
-    syncOrdersAcrossDevices();
-    setInterval(syncOrdersAcrossDevices, 10000);
-}
-
-function syncOrdersAcrossDevices() {
-    try {
-        const adminOrders = JSON.parse(localStorage.getItem('de_admin_orders_secure_v3') || '[]');
-        const clientOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-        
-        let needsUpdate = false;
-        const mergedOrders = [...adminOrders];
-        
-        clientOrders.forEach(clientOrder => {
-            const exists = mergedOrders.some(adminOrder => adminOrder.id === clientOrder.id);
-            if (!exists && clientOrder.source === 'buy-for-me') {
-                mergedOrders.unshift(clientOrder);
-                needsUpdate = true;
-                console.log('🔄 Added cross-device order:', clientOrder.id);
+// Fix loading issues
+function fixLoadingIssues() {
+    // Hide loading elements after timeout
+    setTimeout(() => {
+        const loadingElements = document.querySelectorAll('.loading, .spinner');
+        loadingElements.forEach(element => {
+            if (element.style.display !== 'none') {
+                element.style.display = 'none';
             }
         });
-        
-        if (needsUpdate) {
-            localStorage.setItem('de_admin_orders_secure_v3', JSON.stringify(mergedOrders));
-            localStorage.setItem('de_order_history', JSON.stringify(mergedOrders));
-            
-            if (typeof loadOrders === 'function') {
-                loadOrders();
-            }
-            
-            console.log('🔄 Cross-device sync completed');
-        }
-        
-    } catch (error) {
-        console.log('❌ Sync error:', error);
-    }
+    }, 3000);
 }
 
-// Enhanced order loading
-function loadOrdersWithRetry(forceRefresh = false) {
-    showLoading('Loading orders...');
+// Debug function
+function debugOrders() {
+    const adminOrders = JSON.parse(localStorage.getItem('de_admin_orders_secure_v3') || '[]');
+    const clientOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
     
-    setTimeout(() => {
-        try {
-            if (typeof loadOrders === 'function') {
-                loadOrders(forceRefresh);
-            }
-        } catch (error) {
-            console.error('❌ Error loading orders:', error);
-            showNotification('Error loading orders', 'error');
-        } finally {
-            hideLoading();
-        }
-    }, 1000);
-}
-
-// Helper functions
-function showLoading(message = 'Loading...') {
-    let loader = document.getElementById('global-loader');
-    if (!loader) {
-        loader = document.createElement('div');
-        loader.id = 'global-loader';
-        loader.innerHTML = `<div class="loading-spinner">${message}</div>`;
-        document.body.appendChild(loader);
-    }
-    loader.style.display = 'block';
-}
-
-function hideLoading() {
-    const loader = document.getElementById('global-loader');
-    if (loader) loader.style.display = 'none';
+    console.log('🐛 DEBUG INFO:');
+    console.log(`Admin orders: ${adminOrders.length}`);
+    console.log(`Client orders: ${clientOrders.length}`);
+    console.log(`Buy For Me orders: ${adminOrders.filter(order => order.type === 'buy-for-me').length}`);
     
-    document.querySelectorAll('.loading, .loading-spinner').forEach(el => {
-        el.style.display = 'none';
-    });
-}
-
-function showNotification(message, type = 'info') {
-    console.log(`📢 ${type.toUpperCase()}: ${message}`);
-    alert(message);
+    alert(`Debug Info:\nAdmin Orders: ${adminOrders.length}\nClient Orders: ${clientOrders.length}\nBFM Orders: ${adminOrders.filter(order => order.type === 'buy-for-me').length}`);
 }
 
 // Initialize when DOM loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🏁 Admin orders DOM loaded');
+    console.log('🏁 Admin panel loaded');
     initializeAdminFixes();
-    
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'de_admin_orders_secure_v3' || e.key === 'de_order_history') {
-            console.log('🔄 Storage changed, refreshing orders...');
-            loadOrdersWithRetry(true);
-        }
-    });
-    
-    window.addEventListener('orderUpdated', function(e) {
-        console.log('🔄 Order update event received:', e.detail);
-        loadOrdersWithRetry(true);
-    });
 });
-
-// Add loading styles
-const fixStyles = `
-#global-loader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255,255,255,0.9);
-    display: none;
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-}
-.loading-spinner {
-    padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-`;
-
-const styleSheet = document.createElement("style");
-styleSheet.innerText = fixStyles;
-document.head.appendChild(styleSheet);// admin-orders.js - COMPLETE BULLETPROOF VERSION WITH PROGRESS BAR
 class AdminOrderManager {
     constructor() {
         this.orders = [];
