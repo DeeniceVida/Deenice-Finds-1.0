@@ -1,4 +1,4 @@
-// Buy-For-Me — Fixed Script - Orders Only to WhatsApp
+// Buy-For-Me — Fixed Script with Town Suggestions & Price Calculations
 (() => {
   // --- 1. ACCURATE WELLS FARGO DELIVERY DATA (OUTSIDE NAIROBI) ---
   const DELIVERY_ZONES = [
@@ -215,7 +215,8 @@
           return false;
       }
   }
-  // --- HELPER FUNCTIONS (Keep your existing ones) ---
+
+  // --- HELPER FUNCTIONS ---
   function normalizeTownName(name = "") {
       return name.toLowerCase().replace(/\s+/g, " ").trim().replace(/\s*\(.*?\)\s*/g, "");
   }
@@ -302,6 +303,8 @@
   function renderResults(resultBox, price, link, town) {
       if (!resultBox) return;
       const deliveryKES = getDeliveryFee(town);
+      
+      // Check if price is valid
       if (isNaN(price) || price <= 0) {
           resultBox.innerHTML = `<p style="color:#888;">Enter a valid price to see the total.</p>`;
           return;
@@ -331,8 +334,71 @@
       `;
   }
 
-// --- MAIN INIT ---
+  // --- TOWN SUGGESTIONS FUNCTION ---
+  function setupTownSuggestions() {
+      const townInput = document.getElementById('bfm-town');
+      const dataList = document.getElementById('bfm-city-suggestions-list');
+      
+      if (!townInput || !dataList) {
+          console.log('Town suggestions elements not found');
+          return;
+      }
+
+      // Create list of all towns
+      const allTowns = [
+          ...NAIROBI_DISTANCES.map(z => z.name),
+          ...DELIVERY_ZONES.map(z => z.name)
+      ].filter((v, i, a) => a.indexOf(v) === i); // Remove duplicates
+
+      // Clear existing options
+      dataList.innerHTML = '';
+      
+      // Add options to datalist
+      allTowns.forEach(town => {
+          const option = document.createElement('option');
+          option.value = town;
+          dataList.appendChild(option);
+      });
+
+      console.log(`✅ Setup ${allTowns.length} town suggestions`);
+  }
+
+  // --- LIVE PRICE CALCULATION FUNCTION ---
+  function setupLiveCalculations() {
+      const priceInput = document.getElementById('bfm-price');
+      const linkInput = document.getElementById('bfm-link');
+      const townInput = document.getElementById('bfm-town');
+      const resultBox = document.getElementById('bfm-results');
+
+      if (!priceInput || !linkInput || !townInput || !resultBox) {
+          console.error('Required elements for live calculations not found');
+          return;
+      }
+
+      function updateCalculations() {
+          const price = parseFloat(priceInput.value) || 0;
+          const link = linkInput.value.trim();
+          const town = townInput.value.trim();
+
+          // Update delivery fee feedback
+          updateCityFeedback(town);
+          
+          // Update price calculations
+          renderResults(resultBox, price, link, town);
+      }
+
+      // Add event listeners for live updates
+      priceInput.addEventListener('input', updateCalculations);
+      linkInput.addEventListener('input', updateCalculations);
+      townInput.addEventListener('input', updateCalculations);
+
+      console.log('✅ Live calculations setup complete');
+  }
+
+  // --- MAIN INIT ---
   document.addEventListener("DOMContentLoaded", () => {
+      console.log('🏁 Buy For Me page loading...');
+      
       const priceInput = document.getElementById("bfm-price");
       const linkInput = document.getElementById("bfm-link");
       const townInput = document.getElementById("bfm-town");
@@ -340,14 +406,21 @@
       const sendBtn = document.getElementById("bfm-send");
 
       if (!priceInput || !linkInput || !townInput || !resultBox) {
-          console.error('Required BFM elements missing');
+          console.error('❌ Required BFM elements missing');
           return;
       }
 
-      // Send to WhatsApp
+      // 1. Setup town suggestions
+      setupTownSuggestions();
+
+      // 2. Setup live calculations
+      setupLiveCalculations();
+
+      // 3. Setup WhatsApp button
       if (sendBtn) {
           sendBtn.addEventListener("click", (e) => {
               e.preventDefault();
+              console.log('🟢 WhatsApp button clicked');
 
               const price = parseFloat(priceInput.value);
               const link = linkInput.value.trim();
@@ -358,10 +431,12 @@
                   alert("⚠️ Product Link is required");
                   return;
               }
+              
               if (isNaN(price) || price <= 0) {
                   alert("⚠️ Please enter a valid price");
                   return;
               }
+              
               if (!town) {
                   alert("🚨 Please enter a delivery town");
                   return;
@@ -438,6 +513,18 @@
               
               alert('✅ Opening WhatsApp... Please send the message to complete your order.');
           });
+          
+          console.log('✅ WhatsApp button setup complete');
       }
+
+      // 4. Initial render with default values
+      const initialPrice = parseFloat(priceInput.value) || 0;
+      const initialLink = linkInput.value.trim() || '';
+      const initialTown = townInput.value.trim() || '';
+      
+      updateCityFeedback(initialTown);
+      renderResults(resultBox, initialPrice, initialLink, initialTown);
+
+      console.log('✅ Buy For Me page initialized successfully');
   });
 })();
