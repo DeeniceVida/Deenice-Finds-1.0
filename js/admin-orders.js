@@ -129,14 +129,38 @@ class AdminOrderManager {
         this.createItemsModal();
         this.createOrderDetailsModal();
         this.createProgressModal();
+        this.createImageUploadModal(); // NEW: Add image upload modal
         
         // STEP 4: Fix buttons and loading issues
         this.fixAdminButtons();
+        this.fixInfiniteLoading(); // NEW: Fix infinite loading
         
         // STEP 5: Background sync (don't block UI)
         this.syncWithBackend().catch(console.error);
         
         console.log('✅ AdminOrderManager initialized with', this.orders.length, 'orders');
+    }
+
+    // NEW: Fix infinite loading
+    fixInfiniteLoading() {
+        console.log('🔧 Fixing infinite loading...');
+        
+        // Force hide loading elements after 3 seconds
+        setTimeout(() => {
+            const loadingElements = document.querySelectorAll('.loading, .spinner, .loading-spinner');
+            loadingElements.forEach(element => {
+                if (element) {
+                    element.style.display = 'none';
+                    element.classList.remove('loading');
+                }
+            });
+            
+            // Show all hidden content
+            const hiddenContent = document.querySelectorAll('[style*="display: none"]');
+            hiddenContent.forEach(element => {
+                element.style.display = 'block';
+            });
+        }, 3000);
     }
 
     // ADD THIS NEW METHOD TO FIX BUTTONS
@@ -196,34 +220,6 @@ class AdminOrderManager {
             };
             console.log('✅ Debug button fixed');
         }
-        
-        // Fix loading issues
-        this.fixLoadingIssues();
-    }
-
-    // ADD THIS METHOD TO FIX LOADING
-    fixLoadingIssues() {
-        console.log('🔧 Fixing loading issues...');
-        
-        // Hide loading elements after timeout
-        setTimeout(() => {
-            const loadingElements = document.querySelectorAll('.loading, .spinner, .loading-spinner');
-            loadingElements.forEach(element => {
-                if (element && element.style.display !== 'none') {
-                    element.style.display = 'none';
-                    console.log('🕒 Hidden loading element');
-                }
-            });
-            
-            // Show content areas
-            const contentElements = document.querySelectorAll('.orders-list, .order-grid, [class*="content"]');
-            contentElements.forEach(element => {
-                if (element) {
-                    element.style.display = 'block';
-                    element.style.visibility = 'visible';
-                }
-            });
-        }, 3000);
     }
 
     // BULLETPROOF ORDER LOADING
@@ -379,6 +375,13 @@ class AdminOrderManager {
         const originalDelete = this.deleteOrder;
         this.deleteOrder = async (orderId) => {
             await originalDelete.call(this, orderId);
+            this.saveOrders(this.orders);
+        };
+
+        // Save after image uploads
+        const originalUploadImage = this.uploadProductImage;
+        this.uploadProductImage = async (orderId, imageData) => {
+            await originalUploadImage.call(this, orderId, imageData);
             this.saveOrders(this.orders);
         };
     }
@@ -561,7 +564,247 @@ class AdminOrderManager {
         }
     }
 
-    // ORDER ACTIONS
+    // NEW: IMAGE UPLOAD FOR BUY FOR ME ORDERS
+    createImageUploadModal() {
+        if (document.getElementById('imageUploadModal')) return;
+
+        const modalHTML = `
+            <div id="imageUploadModal" class="modal" style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            ">
+                <div class="modal-content" style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 12px;
+                    max-width: 500px;
+                    width: 90%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    position: relative;
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0;" id="imageUploadTitle">Upload Product Image</h3>
+                        <button onclick="adminManager.closeImageUploadModal()" style="
+                            background: none;
+                            border: none;
+                            font-size: 1.5em;
+                            cursor: pointer;
+                            color: #666;
+                            padding: 5px;
+                        ">×</button>
+                    </div>
+                    <div id="imageUploadContent">
+                        <p>Upload product image for <strong id="uploadOrderId"></strong>:</p>
+                        <div style="margin: 20px 0;">
+                            <input type="file" id="productImageInput" accept="image/*" style="
+                                padding: 10px;
+                                border: 2px dashed #ccc;
+                                border-radius: 8px;
+                                width: 100%;
+                                cursor: pointer;
+                            ">
+                        </div>
+                        <div id="imagePreview" style="
+                            margin: 20px 0;
+                            text-align: center;
+                            display: none;
+                        ">
+                            <img id="previewImage" style="
+                                max-width: 200px;
+                                max-height: 200px;
+                                border-radius: 8px;
+                                border: 1px solid #ddd;
+                            ">
+                        </div>
+                        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                            <button onclick="adminManager.closeImageUploadModal()" style="
+                                padding: 10px 20px;
+                                background: #6c757d;
+                                color: white;
+                                border: none;
+                                border-radius: 6px;
+                                cursor: pointer;
+                            ">Cancel</button>
+                            <button onclick="adminManager.uploadImage()" id="uploadImageBtn" style="
+                                padding: 10px 20px;
+                                background: #007bff;
+                                color: white;
+                                border: none;
+                                border-radius: 6px;
+                                cursor: pointer;
+                            ">Upload Image</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Setup image preview
+        const imageInput = document.getElementById('productImageInput');
+        if (imageInput) {
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const preview = document.getElementById('previewImage');
+                        const previewContainer = document.getElementById('imagePreview');
+                        preview.src = e.target.result;
+                        previewContainer.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    }
+
+    openImageUploadModal(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) {
+            this.showNotification('Order not found', 'error');
+            return;
+        }
+
+        // Check if it's a Buy For Me order
+        const isBuyForMe = order.type === 'buy-for-me' || 
+                          (order.items && order.items.some(item => item.link)) ||
+                          (order.id && order.id.startsWith('BFM'));
+
+        if (!isBuyForMe) {
+            this.showNotification('Only Buy For Me orders need product images', 'info');
+            return;
+        }
+
+        this.currentImageUploadOrderId = orderId;
+        
+        const modal = document.getElementById('imageUploadModal');
+        const title = document.getElementById('uploadOrderId');
+        
+        if (modal && title) {
+            title.textContent = `Order #${orderId}`;
+            modal.style.display = 'flex';
+            
+            // Reset preview
+            const previewContainer = document.getElementById('imagePreview');
+            const imageInput = document.getElementById('productImageInput');
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (imageInput) imageInput.value = '';
+        }
+    }
+
+    closeImageUploadModal() {
+        const modal = document.getElementById('imageUploadModal');
+        if (modal) {
+            modal.style.display = 'none';
+            this.currentImageUploadOrderId = null;
+        }
+    }
+
+    async uploadImage() {
+        if (!this.currentImageUploadOrderId) {
+            this.showNotification('No order selected for image upload', 'error');
+            return;
+        }
+
+        const fileInput = document.getElementById('productImageInput');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            this.showNotification('Please select an image file', 'error');
+            return;
+        }
+
+        const file = fileInput.files[0];
+        if (!file.type.startsWith('image/')) {
+            this.showNotification('Please select an image file (JPEG, PNG, etc.)', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const imageData = e.target.result;
+                await this.uploadProductImage(this.currentImageUploadOrderId, imageData);
+                this.closeImageUploadModal();
+            } catch (error) {
+                this.showNotification('Image upload failed: ' + error.message, 'error');
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async uploadProductImage(orderId, imageData) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        // Save image to order
+        if (!order.items) order.items = [];
+        
+        // Update all items with the image
+        order.items.forEach(item => {
+            item.image = imageData;
+        });
+        
+        // Also save at root level for easy access
+        order.image = imageData;
+        order.imageUploaded = new Date().toISOString();
+        order.imageUploadedBy = 'Admin';
+        
+        // Update UI
+        this.renderStats();
+        this.renderOrders();
+        
+        // Save to storage
+        this.saveOrders(this.orders);
+        
+        // Sync to client storage
+        this.syncImageToClient(orderId, imageData);
+        
+        this.showNotification(`Product image uploaded for order #${orderId}`, 'success');
+    }
+
+    async syncImageToClient(orderId, imageData) {
+        try {
+            const clientOrders = this.loadFromStorage(this.clientStorageKey);
+            const orderIndex = clientOrders.findIndex(order => order.id === orderId);
+            
+            if (orderIndex > -1) {
+                // Update items with image
+                if (clientOrders[orderIndex].items) {
+                    clientOrders[orderIndex].items.forEach(item => {
+                        item.image = imageData;
+                    });
+                }
+                
+                // Update root image
+                clientOrders[orderIndex].image = imageData;
+                clientOrders[orderIndex].imageUploaded = new Date().toISOString();
+                
+                this.saveToStorage(this.clientStorageKey, clientOrders);
+                this.saveToStorage('de_order_history_backup', clientOrders);
+                
+                // Trigger storage event for real-time updates
+                window.dispatchEvent(new Event('storage'));
+                
+                console.log(`✅ Client image updated: ${orderId}`);
+            }
+        } catch (error) {
+            console.error('Error updating client image:', error);
+        }
+    }
+
+    // ORDER ACTIONS - UPDATED TO INCLUDE IMAGE UPLOAD BUTTON
     async deleteOrder(orderId) {
         if (!confirm(`Are you sure you want to delete order #${orderId}? This cannot be undone.`)) {
             return;
@@ -663,7 +906,7 @@ class AdminOrderManager {
         }
     }
 
-    // UI RENDERING
+    // UI RENDERING - UPDATED TO SHOW IMAGE UPLOAD BUTTON
     showLoadingState() {
         const statsGrid = document.getElementById('statsGrid');
         const ordersTable = document.getElementById('ordersTableBody');
@@ -854,6 +1097,15 @@ class AdminOrderManager {
                     <div class="actions">
                         <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">Details</button>
                         <button class="view-btn items-btn" onclick="adminManager.viewOrderItems('${order.id}')">Items</button>
+                        
+                        <!-- NEW: IMAGE UPLOAD BUTTON FOR BFM ORDERS -->
+                        ${isBuyForMe ? `
+                            <button class="image-upload-btn" onclick="adminManager.openImageUploadModal('${order.id}')"
+                                style="background: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin: 2px; display: block; width: 100%;">
+                                📸 Add Image
+                            </button>
+                        ` : ''}
+                        
                         <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">Contact</button>
 
                         <!-- PRINT BUTTONS -->
@@ -1587,6 +1839,7 @@ window.syncWithBackend = () => adminManager.syncWithBackend();
 window.closeItemsModal = () => adminManager.closeItemsModal();
 window.closeOrderDetailsModal = () => adminManager.closeOrderDetailsModal();
 window.closeProgressModal = () => adminManager.closeProgressModal();
+window.closeImageUploadModal = () => adminManager.closeImageUploadModal();
 
 // Close modal when clicking outside
 window.onclick = function(event) {
@@ -1603,5 +1856,10 @@ window.onclick = function(event) {
     const orderDetailsModal = document.getElementById('orderDetailsModal');
     if (event.target === orderDetailsModal) {
         adminManager.closeOrderDetailsModal();
+    }
+    
+    const imageUploadModal = document.getElementById('imageUploadModal');
+    if (event.target === imageUploadModal) {
+        adminManager.closeImageUploadModal();
     }
 };
