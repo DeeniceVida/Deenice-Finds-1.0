@@ -130,10 +130,100 @@ class AdminOrderManager {
         this.createOrderDetailsModal();
         this.createProgressModal();
         
-        // STEP 4: Background sync (don't block UI)
+        // STEP 4: Fix buttons and loading issues
+        this.fixAdminButtons();
+        
+        // STEP 5: Background sync (don't block UI)
         this.syncWithBackend().catch(console.error);
         
         console.log('✅ AdminOrderManager initialized with', this.orders.length, 'orders');
+    }
+
+    // ADD THIS NEW METHOD TO FIX BUTTONS
+    fixAdminButtons() {
+        console.log('🔧 Fixing admin buttons...');
+        
+        // Fix refresh button
+        const refreshBtn = document.getElementById('refresh-orders');
+        if (refreshBtn) {
+            refreshBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔄 Refresh button clicked');
+                
+                // Show loading state
+                const originalText = refreshBtn.innerHTML;
+                refreshBtn.innerHTML = '🔄 Refreshing...';
+                refreshBtn.disabled = true;
+                
+                // Reload orders
+                setTimeout(() => {
+                    this.loadOrdersImmediately().then(() => {
+                        this.renderStats();
+                        this.renderOrders();
+                        refreshBtn.innerHTML = originalText;
+                        refreshBtn.disabled = false;
+                        this.showNotification('Orders refreshed successfully', 'success');
+                    });
+                }, 1000);
+            };
+            console.log('✅ Refresh button fixed');
+        }
+        
+        // Fix logout button
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🚪 Logout button clicked');
+                
+                if (confirm('Are you sure you want to logout?')) {
+                    this.logout();
+                }
+            };
+            console.log('✅ Logout button fixed');
+        }
+        
+        // Fix debug button
+        const debugBtn = document.getElementById('debug-btn');
+        if (debugBtn) {
+            debugBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🐛 Debug button clicked');
+                this.debugOrders();
+            };
+            console.log('✅ Debug button fixed');
+        }
+        
+        // Fix loading issues
+        this.fixLoadingIssues();
+    }
+
+    // ADD THIS METHOD TO FIX LOADING
+    fixLoadingIssues() {
+        console.log('🔧 Fixing loading issues...');
+        
+        // Hide loading elements after timeout
+        setTimeout(() => {
+            const loadingElements = document.querySelectorAll('.loading, .spinner, .loading-spinner');
+            loadingElements.forEach(element => {
+                if (element && element.style.display !== 'none') {
+                    element.style.display = 'none';
+                    console.log('🕒 Hidden loading element');
+                }
+            });
+            
+            // Show content areas
+            const contentElements = document.querySelectorAll('.orders-list, .order-grid, [class*="content"]');
+            contentElements.forEach(element => {
+                if (element) {
+                    element.style.display = 'block';
+                    element.style.visibility = 'visible';
+                }
+            });
+        }, 3000);
     }
 
     // BULLETPROOF ORDER LOADING
@@ -528,6 +618,7 @@ class AdminOrderManager {
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_logged_in');
         localStorage.removeItem('admin_user');
+        sessionStorage.clear();
         
         console.log('✅ Logout completed - data secured');
         window.location.href = 'admin-login.html';
