@@ -1,73 +1,267 @@
-// Order History Management - WITH PERMANENT STORAGE & CLIENT SYNC
-class OrderHistory {
+// order-history.js - Fixed Version with Loading Fixes
+class OrderHistoryManager {
     constructor() {
         this.orders = [];
+        this.storageKey = 'de_order_history';
+        this.backupKey = 'de_order_history_backup';
         this.currentFilter = 'all';
         this.init();
     }
 
-    async init() {
-        console.log('📦 OrderHistory initializing with enhanced storage...');
-        await this.loadOrders();
+    init() {
+        console.log('🔄 OrderHistoryManager initializing...');
+        this.loadOrders();
         this.renderOrders();
         this.setupEventListeners();
-        this.setupRealTimeUpdates();
-        this.setupAdminUpdateListener();
-        
-        console.log(`✅ OrderHistory initialized with ${this.orders.length} orders`);
+        this.fixLoadingIssues(); // NEW: Add loading fix
     }
 
-    async loadOrders() {
-        try {
-            console.log('📥 Loading orders...');
-            
-            // Use clientOrderSync if available (preferred)
-            if (window.clientOrderSync) {
-                this.orders = clientOrderSync.getLocalOrders();
-                console.log(`✅ Loaded ${this.orders.length} orders from clientOrderSync`);
-            } else {
-                // Fallback to direct storage with backup recovery
-                let orders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-                
-                // If no orders in main storage, check backup
-                if (orders.length === 0) {
-                    const backup = JSON.parse(localStorage.getItem('de_order_history_backup') || '[]');
-                    if (backup.length > 0) {
-                        orders = backup;
-                        localStorage.setItem('de_order_history', JSON.stringify(orders));
-                        console.log('✅ Restored orders from backup:', orders.length);
-                    }
+    // NEW: Fix loading issues
+    fixLoadingIssues() {
+        console.log('🔧 Fixing client loading issues...');
+        
+        // Force hide loading elements after 3 seconds
+        setTimeout(() => {
+            const loadingElements = document.querySelectorAll('.loading, .spinner, .loading-spinner, .loader');
+            loadingElements.forEach(element => {
+                if (element) {
+                    element.style.display = 'none';
+                    element.classList.remove('loading');
                 }
-                
-                this.orders = orders;
-                console.log(`✅ Loaded ${this.orders.length} orders from localStorage`);
-            }
-
-            // Sort orders by date (newest first)
-            this.orders.sort((a, b) => new Date(b.orderDate || b.date) - new Date(a.orderDate || a.date));
+            });
             
-            // If no orders and online, attempt sync
-            if (this.orders.length === 0 && navigator.onLine) {
-                console.log('🔄 No local orders, attempting server sync...');
-                await this.attemptSync();
+            // Show all content that might be hidden
+            const hiddenContent = document.querySelectorAll('[style*="display: none"], .hidden-content');
+            hiddenContent.forEach(element => {
+                element.style.display = 'block';
+                element.style.visibility = 'visible';
+            });
+            
+            // Show empty state if no orders
+            if (this.orders.length === 0) {
+                this.showEmptyState();
             }
+            
+            console.log('✅ Loading issues fixed');
+        }, 3000); // Max 3 seconds loading
+    }
+
+    loadOrders() {
+        try {
+            // Try primary storage
+            let orders = JSON.parse(localStorage.getItem(this.storageKey) || '[]');
+            
+            // If empty, try backup
+            if (orders.length === 0) {
+                orders = JSON.parse(localStorage.getItem(this.backupKey) || '[]');
+                if (orders.length > 0) {
+                    // Restore to primary
+                    localStorage.setItem(this.storageKey, JSON.stringify(orders));
+                }
+            }
+            
+            // Sort by date (newest first)
+            this.orders = orders.sort((a, b) => {
+                const dateA = new Date(a.orderDate || a.date || 0);
+                const dateB = new Date(b.orderDate || b.date || 0);
+                return dateB - dateA;
+            });
+            
+            console.log(`📦 Loaded ${this.orders.length} orders from history`);
             
         } catch (error) {
-            console.error('Error loading orders:', error);
+            console.error('❌ Error loading order history:', error);
             this.orders = [];
         }
     }
 
-    // Attempt to sync with server
-    async attemptSync() {
-        if (window.orderSync) {
-            try {
-                await window.orderSync.syncOrders();
-                // Reload orders after sync
-                await this.loadOrders();
-            } catch (error) {
-                console.error('Sync failed:', error);
+    saveOrders() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.orders));
+            localStorage.setItem(this.backupKey, JSON.stringify(this.orders));
+        } catch (error) {
+            console.error('Error saving order history:', error);
+        }
+    }
+
+    renderOrders() {
+        const container = document.getElementById('orders-container');
+        if (!container) {
+            console.error('❌ Orders container not found');
+            return;
+        }
+
+        if (this.orders.length === 0) {
+            this.showEmptyState();
+            return;
+        }
+
+        const filteredOrders = this.filterOrders();
+        if (filteredOrders.length === 0) {
+            this.showNoResultsState();
+            return;
+        }
+
+        container.innerHTML = filteredOrders.map(order => this.createOrderCard(order)).join('');
+        
+        // Hide any remaining loading elements
+        this.hideAllLoading();
+    }
+
+    createOrderCard(order) {
+        const orderId = order.id || 'N/A';
+        const orderDate = new Date(order.orderDate || order.date || Date.now()).toLocaleDateString();
+        const status = order.status || 'pending';
+        const totalAmount = order.totalAmount || order.total || 0;
+        const currency = order.currency || 'KES';
+        const items = order.items || [];
+        const isBuyForMe = order.type === 'buy-for-me' || order.source === 'buy-for-me';
+        
+        // Get product image (admin will upload this)
+        const productImage = order.image || 
+                            (items[0] && items[0].image) || 
+                            'https://via.placeholder.com/80x80/CCCCCC/666666?text=No+Image';
+        
+        // Get first item title
+        const firstItem = items[0] || {};
+        const productTitle = firstItem.title || firstItem.name || 'Buy For Me Product';
+        
+        // Progress tracking for Buy For Me orders
+        let progressHtml = '';
+        if (isBuyForMe && window.progressTracker) {
+            const progressData = window.progressTracker.getProgressData(order);
+            if (progressData) {
+                progressHtml = `
+                    <div class="order-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progressData.progressPercentage}%"></div>
+                        </div>
+                        <div class="progress-text">
+                            ${progressData.currentStep.name} - ${Math.round(progressData.progressPercentage)}%
+                        </div>
+                    </div>
+                `;
             }
+        }
+
+        return `
+            <div class="order-card" data-order-id="${orderId}">
+                <div class="order-header">
+                    <div class="order-id">
+                        <strong>Order #${orderId}</strong>
+                        ${isBuyForMe ? '<span class="bfm-badge">BFM</span>' : ''}
+                    </div>
+                    <div class="order-date">${orderDate}</div>
+                </div>
+                
+                <div class="order-body">
+                    <div class="product-info">
+                        <img src="${productImage}" 
+                             alt="${productTitle}" 
+                             class="product-image"
+                             onerror="this.src='https://via.placeholder.com/80x80/CCCCCC/666666?text=No+Image'">
+                        <div class="product-details">
+                            <div class="product-title">${productTitle}</div>
+                            <div class="order-items-count">${items.length} item${items.length !== 1 ? 's' : ''}</div>
+                        </div>
+                    </div>
+                    
+                    ${progressHtml}
+                    
+                    <div class="order-status">
+                        <span class="status-badge status-${status}">${this.formatStatus(status)}</span>
+                    </div>
+                </div>
+                
+                <div class="order-footer">
+                    <div class="order-total">
+                        <strong>Total:</strong> ${currency} ${totalAmount.toLocaleString()}
+                    </div>
+                    <div class="order-actions">
+                        <button class="btn-view-details" onclick="orderHistory.viewOrderDetails('${orderId}')">
+                            View Details
+                        </button>
+                        ${isBuyForMe ? `
+                            <button class="btn-track" onclick="orderHistory.trackOrder('${orderId}')">
+                                Track Order
+                            </button>
+                        ` : ''}
+                        ${status === 'completed' ? `
+                            <button class="btn-review" onclick="orderHistory.leaveReview('${orderId}')">
+                                Leave Review
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    formatStatus(status) {
+        const statusMap = {
+            'pending': '📝 Pending',
+            'processing': '🔄 Processing',
+            'shipped': '🚚 Shipped',
+            'delivered': '📦 Delivered',
+            'completed': '✅ Completed',
+            'cancelled': '❌ Cancelled'
+        };
+        return statusMap[status] || status;
+    }
+
+    filterOrders() {
+        if (this.currentFilter === 'all') return this.orders;
+        return this.orders.filter(order => order.status === this.currentFilter);
+    }
+
+    showEmptyState() {
+        const container = document.getElementById('orders-container');
+        if (!container) return;
+        
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📦</div>
+                <h3>No orders yet</h3>
+                <p>You haven't placed any orders yet.</p>
+                <div class="empty-actions">
+                    <a href="/shop.html" class="btn btn-primary">Start Shopping</a>
+                    <a href="/buy-for-me.html" class="btn btn-secondary">Buy For Me</a>
+                </div>
+            </div>
+        `;
+        
+        // Hide loading
+        this.hideAllLoading();
+    }
+
+    showNoResultsState() {
+        const container = document.getElementById('orders-container');
+        if (!container) return;
+        
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <h3>No orders found</h3>
+                <p>No orders match the current filter.</p>
+                <button class="btn btn-primary" onclick="orderHistory.setFilter('all')">
+                    Show All Orders
+                </button>
+            </div>
+        `;
+    }
+
+    hideAllLoading() {
+        // Hide any loading indicators
+        const loaders = document.querySelectorAll('.loading-indicator, .loading, .spinner');
+        loaders.forEach(loader => {
+            loader.style.display = 'none';
+        });
+        
+        // Show the orders container
+        const container = document.getElementById('orders-container');
+        if (container) {
+            container.style.display = 'block';
+            container.style.visibility = 'visible';
         }
     }
 
@@ -79,161 +273,243 @@ class OrderHistory {
             });
         });
 
-        // Add manual refresh button to empty state
-        this.addRefreshButton();
-    }
-
-    addRefreshButton() {
-        // Create refresh button for empty state
-        const refreshBtn = document.createElement('button');
-        refreshBtn.className = 'btn btn-primary';
-        refreshBtn.innerHTML = '🔄 Refresh Orders';
-        refreshBtn.style.marginTop = '10px';
-        refreshBtn.onclick = () => this.manualRefresh();
-
-        // Add to empty state if it exists
-        const emptyState = document.querySelector('.empty-state');
-        if (emptyState && !emptyState.querySelector('.manual-refresh')) {
-            refreshBtn.classList.add('manual-refresh');
-            emptyState.appendChild(refreshBtn);
+        // Refresh button
+        const refreshBtn = document.getElementById('refresh-orders');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.refreshOrders();
+            });
         }
-    }
 
-    async manualRefresh() {
-        try {
-            console.log('🔄 Manual refresh triggered');
-            
-            // Use clientOrderSync if available
-            if (window.clientOrderSync) {
-                await clientOrderSync.manualRefresh();
-                await this.loadOrders();
-                this.renderOrders();
-                this.showNotification('✅ Orders refreshed from server!', 'success');
-            } else if (window.orderSync) {
-                // Fallback to old sync method
-                await window.orderSync.forceSync();
-                await this.loadOrders();
-                this.renderOrders();
-                this.showNotification('✅ Orders refreshed from server!', 'success');
-            } else {
-                // Basic reload
-                await this.loadOrders();
-                this.renderOrders();
-                this.showNotification('✅ Orders reloaded!', 'success');
-            }
-        } catch (error) {
-            console.error('Refresh failed:', error);
-            this.showNotification('❌ Refresh failed. Please try again.', 'error');
-        }
-    }
-
-    setupRealTimeUpdates() {
-        // Listen for storage changes
+        // Listen for storage updates from admin
         window.addEventListener('storage', (e) => {
-            if (e.key === 'de_order_history') {
-                console.log('🔄 Storage update detected, refreshing orders...');
-                this.loadOrders().then(() => this.renderOrders());
-            }
-        });
-
-        // Listen for custom sync events
-        window.addEventListener('orderHistoryUpdated', (e) => {
-            console.log('📢 Order history updated event received');
-            if (e.detail && e.detail.orders) {
-                this.orders = e.detail.orders;
+            if (e.key === this.storageKey || e.key === this.backupKey) {
+                console.log('🔄 Order history updated from admin');
+                this.loadOrders();
                 this.renderOrders();
-            } else {
-                this.loadOrders().then(() => this.renderOrders());
             }
         });
 
-        // Auto-refresh when page becomes visible
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                console.log('📱 Page visible, checking for updates...');
-                this.loadOrders().then(() => this.renderOrders());
-            }
-        });
-    }
-
-    setupAdminUpdateListener() {
-        console.log('👂 Setting up admin update listener...');
-        
-        // Listen for admin update events
-        window.addEventListener('adminOrderUpdate', (e) => {
-            console.log('📢 Admin update received:', e.detail);
-            this.handleAdminUpdate(e.detail);
-        });
-    }
-
-    handleAdminUpdate(updateDetail) {
-        const { orderId, newStatus } = updateDetail;
-        console.log(`🔄 Processing admin update: ${orderId} -> ${newStatus}`);
-        
-        // Find and update the order locally
-        const orderIndex = this.orders.findIndex(order => order.id === orderId);
-        if (orderIndex > -1) {
-            this.orders[orderIndex].status = newStatus;
-            this.orders[orderIndex].statusUpdated = new Date().toISOString();
-            
-            // Save changes back to storage
-            this.saveToStorage();
-            
-            // Re-render orders
+        // Listen for custom order update events
+        window.addEventListener('orderUpdated', () => {
+            console.log('🔄 Order update event received');
+            this.loadOrders();
             this.renderOrders();
-            
-            // Highlight updated order
-            this.highlightUpdatedOrder(orderId, newStatus);
-            
-            console.log(`✅ Updated order ${orderId} to ${newStatus} in UI`);
+        });
+    }
+
+    setFilter(filter) {
+        this.currentFilter = filter;
+        
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter === filter);
+        });
+        
+        this.renderOrders();
+    }
+
+    refreshOrders() {
+        console.log('🔄 Refreshing orders...');
+        
+        // Show loading
+        const container = document.getElementById('orders-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <p>Refreshing orders...</p>
+                </div>
+            `;
+        }
+        
+        // Reload after delay
+        setTimeout(() => {
+            this.loadOrders();
+            this.renderOrders();
+            this.showNotification('Orders refreshed', 'success');
+        }, 1000);
+    }
+
+    viewOrderDetails(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) {
+            this.showNotification('Order not found', 'error');
+            return;
+        }
+
+        const orderDate = new Date(order.orderDate || order.date).toLocaleString();
+        const status = order.status || 'pending';
+        const totalAmount = order.totalAmount || order.total || 0;
+        const currency = order.currency || 'KES';
+        const items = order.items || [];
+        const customer = order.customer || {};
+        
+        let details = `
+            <div class="order-details-modal">
+                <h3>Order #${orderId}</h3>
+                
+                <div class="details-section">
+                    <h4>📋 Order Information</h4>
+                    <p><strong>Date:</strong> ${orderDate}</p>
+                    <p><strong>Status:</strong> <span class="status-${status}">${this.formatStatus(status)}</span></p>
+                    <p><strong>Total:</strong> ${currency} ${totalAmount.toLocaleString()}</p>
+                </div>
+                
+                <div class="details-section">
+                    <h4>👤 Customer Information</h4>
+                    <p><strong>Name:</strong> ${customer.name || 'Not specified'}</p>
+                    <p><strong>City:</strong> ${customer.city || 'Not specified'}</p>
+                    <p><strong>Phone:</strong> ${customer.phone || 'Not specified'}</p>
+                </div>
+                
+                <div class="details-section">
+                    <h4>🛍️ Items (${items.length})</h4>
+                    <div class="items-list">
+        `;
+
+        if (items.length > 0) {
+            items.forEach((item, index) => {
+                const itemName = item.title || item.name || 'Unknown Item';
+                const itemPrice = item.price || 0;
+                const itemQty = item.qty || 1;
+                const itemTotal = itemPrice * itemQty;
+                const itemImage = item.image || 'https://via.placeholder.com/60x60/CCCCCC/666666?text=Item';
+                
+                details += `
+                    <div class="item-detail">
+                        <img src="${itemImage}" alt="${itemName}" class="item-image-small"
+                             onerror="this.src='https://via.placeholder.com/60x60/CCCCCC/666666?text=Item'">
+                        <div class="item-info">
+                            <div class="item-name">${itemName}</div>
+                            <div class="item-meta">
+                                <span>Qty: ${itemQty}</span>
+                                <span>Price: ${currency} ${itemPrice.toLocaleString()}</span>
+                                <span>Total: ${currency} ${itemTotal.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
         } else {
-            // Order not found, do a full refresh
-            console.log(`⚠️ Order ${orderId} not found, doing full refresh...`);
-            this.loadOrders().then(() => this.renderOrders());
+            details += '<p>No items in this order.</p>';
+        }
+
+        details += `
+                    </div>
+                </div>
+                
+                <div class="details-actions">
+                    <button class="btn btn-secondary" onclick="orderHistory.closeDetailsModal()">Close</button>
+                    <button class="btn btn-primary" onclick="orderHistory.contactSupport('${orderId}')">Contact Support</button>
+                </div>
+            </div>
+        `;
+
+        this.showDetailsModal(details);
+    }
+
+    showDetailsModal(content) {
+        let modal = document.getElementById('orderDetailsModal');
+        
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'orderDetailsModal';
+            modal.className = 'modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        modal.innerHTML = `
+            <div class="modal-content" style="
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                max-width: 600px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+                position: relative;
+            ">
+                <button class="modal-close" onclick="orderHistory.closeDetailsModal()" style="
+                    position: absolute;
+                    top: 15px;
+                    right: 15px;
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                    color: #666;
+                ">×</button>
+                ${content}
+            </div>
+        `;
+        
+        modal.style.display = 'flex';
+    }
+
+    closeDetailsModal() {
+        const modal = document.getElementById('orderDetailsModal');
+        if (modal) {
+            modal.style.display = 'none';
         }
     }
 
-    highlightUpdatedOrder(orderId, newStatus) {
-        const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
-        if (orderCard) {
-            // Add highlight animation
-            orderCard.style.transition = 'all 0.5s ease';
-            orderCard.style.backgroundColor = '#f0f8ff';
-            
-            setTimeout(() => {
-                orderCard.style.backgroundColor = '';
-            }, 2000);
-            
-            // Update status badge with animation
-            const statusBadge = orderCard.querySelector('.order-status');
-            if (statusBadge) {
-                statusBadge.textContent = this.getStatusText(newStatus);
-                statusBadge.className = `order-status ${this.getStatusClass(newStatus)} updated`;
-            }
+    trackOrder(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) {
+            this.showNotification('Order not found', 'error');
+            return;
+        }
+
+        if (window.progressTracker) {
+            window.progressTracker.showProgressModal(orderId);
+        } else {
+            this.showNotification('Tracking not available', 'error');
         }
     }
 
-    // Save orders to storage
-    saveToStorage() {
-        try {
-            if (window.clientOrderSync) {
-                clientOrderSync.saveLocalOrders(this.orders);
-            } else {
-                localStorage.setItem('de_order_history', JSON.stringify(this.orders));
-                localStorage.setItem('de_order_history_backup', JSON.stringify(this.orders));
-            }
-        } catch (error) {
-            console.error('Error saving orders:', error);
+    leaveReview(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order || order.status !== 'completed') {
+            this.showNotification('You can only review completed orders', 'error');
+            return;
+        }
+
+        const review = prompt('Please leave your review for this order:');
+        if (review) {
+            // Save review
+            order.review = review;
+            order.reviewDate = new Date().toISOString();
+            this.saveOrders();
+            this.showNotification('Thank you for your review!', 'success');
         }
     }
 
-    // Show notification
+    contactSupport(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) return;
+
+        const message = `Hello, I need support for my order #${orderId}.`;
+        const whatsappURL = `https://wa.me/254106590617?text=${encodeURIComponent(message)}`;
+        window.open(whatsappURL, '_blank');
+    }
+
     showNotification(message, type = 'info') {
         // Remove existing notification
-        const existingNotification = document.querySelector('.order-notification');
-        if (existingNotification) {
-            existingNotification.remove();
-        }
+        const existing = document.querySelector('.order-notification');
+        if (existing) existing.remove();
 
         const notification = document.createElement('div');
         notification.className = `order-notification ${type}`;
@@ -242,382 +518,281 @@ class OrderHistory {
             top: 20px;
             right: 20px;
             padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 10000;
-            max-width: 300px;
             background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1001;
             animation: slideIn 0.3s ease;
         `;
         
         notification.textContent = message;
         document.body.appendChild(notification);
 
+        // Auto remove after 5 seconds
         setTimeout(() => {
-            notification.remove();
-        }, 4000);
-    }
-
-    // Emergency recovery
-    emergencyRecovery() {
-        console.log('🚨 Emergency recovery triggered');
-        
-        if (window.clientOrderSync) {
-            const recovered = clientOrderSync.emergencyRecovery();
-            if (recovered) {
-                this.loadOrders().then(() => {
-                    this.renderOrders();
-                    this.showNotification('Orders recovered from backup!', 'success');
-                });
-            } else {
-                this.showNotification('No backup available for recovery.', 'error');
+            if (notification.parentNode) {
+                notification.remove();
             }
-        } else {
-            // Fallback recovery
-            const backup = JSON.parse(localStorage.getItem('de_order_history_backup') || '[]');
-            if (backup.length > 0) {
-                this.orders = backup;
-                this.saveToStorage();
-                this.renderOrders();
-                this.showNotification(`Recovered ${backup.length} orders from backup!`, 'success');
-            } else {
-                this.showNotification('No backup available for recovery.', 'error');
-            }
-        }
-    }
-
-    // ... (keep all your existing render methods unchanged)
-    setFilter(filter) {
-        this.currentFilter = filter;
-        
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.filter === filter);
-        });
-
-        this.renderOrders();
-    }
-
-    renderOrders() {
-        const container = document.getElementById('orders-container');
-        
-        if (!container) {
-            console.log('ℹ️ Orders container not found on this page');
-            return;
-        }
-
-        if (this.orders.length === 0) {
-            container.innerHTML = this.getEmptyState();
-            this.addRefreshButton();
-            return;
-        }
-
-        const filteredOrders = this.filterOrders();
-        
-        if (filteredOrders.length === 0) {
-            container.innerHTML = this.getNoResultsState();
-            return;
-        }
-
-        container.innerHTML = filteredOrders.map(order => this.createOrderCard(order)).join('');
-    }
-
-    filterOrders() {
-        if (this.currentFilter === 'all') {
-            return this.orders;
-        }
-        return this.orders.filter(order => order.status === this.currentFilter);
-    }
-
-    createOrderCard(order) {
-        const orderDate = new Date(order.orderDate || order.date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        const statusUpdated = order.statusUpdated ? 
-            new Date(order.statusUpdated).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : '';
-
-        return `
-            <div class="order-card" data-order-id="${order.id}">
-                <div class="order-header">
-                    <div class="order-info">
-                        <h3>Order #${order.id}</h3>
-                        <div class="order-meta">
-                            <span>📅 ${orderDate}</span>
-                            <span>📍 ${order.customer?.city || order.delivery?.city || 'N/A'}</span>
-                            <span>🚚 ${this.getDeliveryText(order)}</span>
-                            ${statusUpdated ? `<span>📝 ${statusUpdated}</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="order-status ${this.getStatusClass(order.status)}">
-                        ${this.getStatusText(order.status)}
-                    </div>
-                </div>
-                
-                <div class="order-items">
-                    ${(order.items || []).map(item => this.createOrderItem(item)).join('')}
-                </div>
-                
-                <div class="order-footer">
-                    <div class="order-total">
-                        Total: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
-                    </div>
-                    <div class="order-actions">
-                        <button class="btn btn-secondary" onclick="orderHistory.viewOrderDetails('${order.id}')">
-                            View Details
-                        </button>
-                        ${order.status === 'completed' ? `
-                            <button class="btn btn-primary" onclick="orderHistory.reorder('${order.id}')">
-                                Reorder
-                            </button>
-                        ` : ''}
-                        ${order.status === 'pending' || order.status === 'processing' ? `
-                            <button class="btn btn-secondary" onclick="orderHistory.contactSupport('${order.id}')">
-                                Contact Support
-                            </button>
-                        ` : ''}
-                        <button class="btn btn-secondary" onclick="orderHistory.refreshOrder('${order.id}')">
-                            🔄 Refresh
-                        </button>
-                    </div>
-                </div>
-                
-                ${this.getStatusMessage(order)}
-            </div>
-        `;
-    }
-
-    getStatusMessage(order) {
-        const messages = {
-            'pending': `
-                <div class="status-message pending">
-                    <p>📝 <strong>Your order is being reviewed.</strong> We'll start processing it shortly.</p>
-                    <small>You'll receive a WhatsApp notification when we start processing your order</small>
-                </div>
-            `,
-            'processing': `
-                <div class="status-message processing">
-                    <p>🔄 <strong>Your order is being processed.</strong> We're preparing your items for ${this.getDeliveryText(order) === 'Store Pickup' ? 'pickup' : 'delivery'}.</p>
-                    <small>You'll receive a WhatsApp notification when your order is ready</small>
-                </div>
-            `,
-            'completed': `
-                <div class="status-message completed">
-                    <p>✅ <strong>Order completed!</strong> ${this.getDeliveryText(order) === 'Store Pickup' ? 
-                        'Ready for pickup at our store.' : 
-                        'Delivered to your address.'}
-                    ${order.completedDate ? `Completed on ${new Date(order.completedDate).toLocaleDateString()}` : ''}</p>
-                </div>
-            `,
-            'cancelled': `
-                <div class="status-message cancelled">
-                    <p>❌ <strong>Order cancelled.</strong> Contact support for more information.</p>
-                </div>
-            `
-        };
-        
-        return messages[order.status] || '';
-    }
-
-    createOrderItem(item) {
-        const specs = [];
-        if (item.color) specs.push(`Color: ${item.color}`);
-        if (item.size) specs.push(`Size: ${item.size}`);
-        if (item.model && item.model !== 'Standard') specs.push(`Model: ${item.model}`);
-
-        return `
-            <div class="order-item">
-                <img src="${item.img || 'https://via.placeholder.com/60'}" 
-                     alt="${item.title}" 
-                     class="item-image">
-                <div class="item-details">
-                    <h4>${item.title || 'Unknown Item'}</h4>
-                    ${specs.length > 0 ? `
-                        <div class="item-specs">${specs.join(' • ')}</div>
-                    ` : ''}
-                    <div class="item-price">
-                        ${item.qty || 1} × ${item.currency || 'KES'} ${(item.price || 0).toLocaleString()}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    getDeliveryText(order) {
-        if (!order.delivery) return 'Delivery';
-        return order.delivery.method === 'pickup' ? 'Store Pickup' : 'Home Delivery';
-    }
-
-    getStatusClass(status) {
-        const statusClasses = {
-            'pending': 'status-pending',
-            'processing': 'status-processing',
-            'completed': 'status-completed',
-            'cancelled': 'status-cancelled'
-        };
-        return statusClasses[status] || 'status-pending';
-    }
-
-    getStatusText(status) {
-        const statusTexts = {
-            'pending': 'Pending',
-            'processing': 'Processing',
-            'completed': 'Completed',
-            'cancelled': 'Cancelled'
-        };
-        return statusTexts[status] || 'Pending';
-    }
-
-    getEmptyState() {
-        return `
-            <div class="empty-state">
-                <h3>No orders yet</h3>
-                <p>You haven't placed any orders yet. Start shopping to see your order history here!</p>
-                <a href="index.html" class="btn btn-primary">Start Shopping</a>
-                <button class="btn btn-secondary manual-refresh" onclick="orderHistory.emergencyRecovery()" style="margin-top: 10px;">
-                    🔄 Try Emergency Recovery
-                </button>
-            </div>
-        `;
-    }
-
-    getNoResultsState() {
-        return `
-            <div class="empty-state">
-                <h3>No orders found</h3>
-                <p>No orders match the current filter. Try selecting a different filter.</p>
-                <button class="btn btn-primary" onclick="orderHistory.setFilter('all')">
-                    Show All Orders
-                </button>
-            </div>
-        `;
-    }
-
-    viewOrderDetails(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            const details = `
-Order Details for #${order.id}
-
-Status: ${this.getStatusText(order.status)}
-Order Date: ${new Date(order.orderDate || order.date).toLocaleString()}
-${order.statusUpdated ? `Last Updated: ${new Date(order.statusUpdated).toLocaleString()}` : ''}
-${order.completedDate ? `Completed: ${new Date(order.completedDate).toLocaleString()}` : ''}
-
-Delivery: ${this.getDeliveryText(order)}
-${order.customer?.city ? `City: ${order.customer.city}` : ''}
-${order.delivery?.pickupCode ? `Pickup Code: ${order.delivery.pickupCode}` : ''}
-
-Items: ${order.items?.length || 0} item(s)
-Total: ${order.currency || 'KES'} ${order.totalAmount?.toLocaleString() || '0'}
-
-Customer: ${order.customer?.name || 'N/A'}
-Phone: ${order.customer?.phone || 'Not provided'}
-            `;
-            alert(details);
-        }
-    }
-
-    async refreshOrder(orderId) {
-        try {
-            await this.manualRefresh();
-        } catch (error) {
-            this.showNotification('Error refreshing order', 'error');
-        }
-    }
-
-    reorder(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            const cart = JSON.parse(localStorage.getItem('de_cart') || '[]');
-            
-            order.items.forEach(item => {
-                const existingItemIndex = cart.findIndex(cartItem => 
-                    cartItem.title === item.title && 
-                    cartItem.color === item.color && 
-                    cartItem.size === item.size
-                );
-
-                if (existingItemIndex > -1) {
-                    cart[existingItemIndex].qty += item.qty;
-                } else {
-                    cart.push({
-                        ...item,
-                        id: Date.now().toString()
-                    });
-                }
-            });
-
-            localStorage.setItem('de_cart', JSON.stringify(cart));
-            this.showNotification('All items from this order have been added to your cart!', 'success');
-            
-            setTimeout(() => {
-                window.location.href = 'cart.html';
-            }, 1000);
-        }
-    }
-
-    contactSupport(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order) {
-            const message = `Hello, I have a question about my order #${orderId} (Status: ${this.getStatusText(order.status)}).`;
-            const encodedMessage = encodeURIComponent(message);
-            const config = window.DEENICE_CONFIG || {};
-            const whatsappNumber = config.whatsappNumber ? config.whatsappNumber.replace('+', '') : '';
-            
-            if (whatsappNumber) {
-                window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
-            } else {
-                alert(`Contact support for order #${orderId}\n\nMessage: ${message}`);
-            }
-        }
+        }, 5000);
     }
 }
 
-// Initialize order history when page loads
-const orderHistory = new OrderHistory();
+// Initialize order history
+const orderHistory = new OrderHistoryManager();
+window.orderHistory = orderHistory;
 
-// Enhanced function to add orders from other pages
-window.addOrderToHistory = function(orderData) {
-    // Use clientOrderSync if available
-    if (window.clientOrderSync) {
-        return clientOrderSync.addNewOrder(orderData);
-    } else {
-        // Fallback to direct storage
-        const existingOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-        const newOrder = {
-            id: orderData.id || 'DF' + Date.now().toString(36).toUpperCase(),
-            orderDate: new Date().toISOString(),
-            status: 'pending',
-            statusUpdated: new Date().toISOString(),
-            ...orderData
-        };
-        existingOrders.unshift(newOrder);
-        localStorage.setItem('de_order_history', JSON.stringify(existingOrders));
-        localStorage.setItem('de_order_history_backup', JSON.stringify(existingOrders));
-        
-        // Refresh the order history display if on the page
-        if (typeof orderHistory !== 'undefined') {
-            orderHistory.loadOrders();
-            orderHistory.renderOrders();
+// Add CSS for loading and transitions
+const orderHistoryStyles = `
+    /* Loading fixes */
+    .loading-state {
+        text-align: center;
+        padding: 40px;
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Order cards */
+    .order-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: transform 0.2s ease;
+    }
+    
+    .order-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+    }
+    
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .bfm-badge {
+        background: #8EDBD1;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        margin-left: 8px;
+    }
+    
+    .order-body {
+        margin-bottom: 15px;
+    }
+    
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .product-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    
+    .order-progress {
+        margin: 15px 0;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #007bff, #8EDBD1);
+        transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .order-status {
+        margin: 10px 0;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-processing { background: #cce5ff; color: #004085; }
+    .status-shipped { background: #d1ecf1; color: #0c5460; }
+    .status-delivered { background: #d4edda; color: #155724; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    
+    .order-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+    
+    .order-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-view-details, .btn-track, .btn-review {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s ease;
+    }
+    
+    .btn-view-details { background: #007bff; color: white; }
+    .btn-track { background: #8EDBD1; color: white; }
+    .btn-review { background: #28a745; color: white; }
+    
+    .btn-view-details:hover { background: #0056b3; }
+    .btn-track:hover { background: #6dc9c0; }
+    .btn-review:hover { background: #1e7e34; }
+    
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+    
+    .empty-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary {
+        background: #007bff;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    /* Filter buttons */
+    .filter-btn {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .filter-btn.active {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+    
+    /* Animation */
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
         }
-        
-        return newOrder.id;
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
     }
-};
+    
+    /* Hide loading elements */
+    .loading, .spinner, .loader {
+        display: none !important;
+    }
+`;
 
-// Global emergency recovery function
-window.emergencyOrderRecovery = function() {
-    if (typeof orderHistory !== 'undefined') {
-        orderHistory.emergencyRecovery();
-    }
-};
+// Inject styles
+if (!document.getElementById('order-history-styles')) {
+    const styleSheet = document.createElement('style');
+    styleSheet.id = 'order-history-styles';
+    styleSheet.textContent = orderHistoryStyles;
+    document.head.appendChild(styleSheet);
+}
+
+// Auto-hide any remaining loading elements on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🏁 Order history page loaded');
+    
+    // Additional safety: hide all loading elements
+    setTimeout(() => {
+        const loaders = document.querySelectorAll('.loading, .spinner, .loader, [class*="loading"], [class*="spinner"]');
+        loaders.forEach(loader => {
+            loader.style.display = 'none';
+        });
+        
+        // Show orders container
+        const container = document.getElementById('orders-container');
+        if (container) {
+            container.style.display = 'block';
+        }
+    }, 1000);
+});
+
+// Export for global access
+window.OrderHistoryManager = OrderHistoryManager;
