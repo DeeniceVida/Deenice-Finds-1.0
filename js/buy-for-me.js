@@ -184,7 +184,7 @@
   // Currency conversion
   const USD_TO_KES = 135;
 
-  // --- SIMPLE STORAGE FUNCTION ---
+  // --- SIMPLE STORAGE ---
   function saveOrderToStorage(orderData) {
       try {
           // Save to admin storage
@@ -215,7 +215,6 @@
           return false;
       }
   }
-
   // --- HELPER FUNCTIONS (Keep your existing ones) ---
   function normalizeTownName(name = "") {
       return name.toLowerCase().replace(/\s+/g, " ").trim().replace(/\s*\(.*?\)\s*/g, "");
@@ -332,58 +331,27 @@
       `;
   }
 
-  // --- MAIN INIT ---
+// --- MAIN INIT ---
   document.addEventListener("DOMContentLoaded", () => {
       const priceInput = document.getElementById("bfm-price");
       const linkInput = document.getElementById("bfm-link");
       const townInput = document.getElementById("bfm-town");
       const resultBox = document.getElementById("bfm-results");
       const sendBtn = document.getElementById("bfm-send");
-      const dataList = document.getElementById('bfm-city-suggestions-list');
 
       if (!priceInput || !linkInput || !townInput || !resultBox) {
           console.error('Required BFM elements missing');
           return;
       }
 
-      // Populate datalist
-      const allTowns = [
-          ...NAIROBI_DISTANCES.map(z => z.name),
-          ...DELIVERY_ZONES.map(z => z.name)
-      ].filter((v, i, a) => a.indexOf(v) === i);
-
-      if (dataList) {
-          dataList.innerHTML = '';
-          allTowns.forEach(name => {
-              const option = document.createElement('option');
-              option.value = name.replace(/\s*\(.*?\)\s*/g, '');
-              dataList.appendChild(option);
-          });
-      }
-
-      // Live updates
-      function onInputsChanged() {
-          const price = parseFloat(priceInput.value);
-          const link = linkInput.value.trim();
-          const town = townInput.value.trim();
-          updateCityFeedback(town);
-          renderResults(resultBox, price, link, town);
-      }
-
-      priceInput.addEventListener("input", onInputsChanged);
-      linkInput.addEventListener("input", onInputsChanged);
-      townInput.addEventListener("input", onInputsChanged);
-
       // Send to WhatsApp
       if (sendBtn) {
           sendBtn.addEventListener("click", (e) => {
               e.preventDefault();
-              console.log('🟢 WhatsApp button clicked');
 
               const price = parseFloat(priceInput.value);
               const link = linkInput.value.trim();
               const town = townInput.value.trim();
-              const deliveryKES = getDeliveryFee(town);
 
               // Validation
               if (!link) {
@@ -394,11 +362,12 @@
                   alert("⚠️ Please enter a valid price");
                   return;
               }
-              if (!town || deliveryKES === 0) {
-                  alert("🚨 Please enter a valid delivery town");
+              if (!town) {
+                  alert("🚨 Please enter a delivery town");
                   return;
               }
 
+              const deliveryKES = getDeliveryFee(town);
               const { appleFee, totalUSD } = calculateTotal(price, link);
               const totalKES = Math.round(totalUSD * USD_TO_KES);
               const grandTotalKES = totalKES + deliveryKES;
@@ -421,7 +390,7 @@
                       qty: 1,
                       link: link,
                       type: 'buy-for-me'
-                      // NO image field - you'll upload from admin
+                      // NO image field - admin will add it
                   }],
                   totalAmount: grandTotalKES,
                   delivery: {
@@ -429,7 +398,7 @@
                       city: town,
                       fee: deliveryKES
                   }
-                  // NO image field at root - you'll upload from admin
+                  // NO image field at root - admin will add it
               };
 
               // Save order quietly
@@ -467,12 +436,8 @@
               // Open WhatsApp
               window.open(whatsappURL, '_blank');
               
-              // Simple confirmation
               alert('✅ Opening WhatsApp... Please send the message to complete your order.');
           });
       }
-
-      // Initial render
-      onInputsChanged();
   });
 })();
