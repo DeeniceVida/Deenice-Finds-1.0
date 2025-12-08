@@ -1,4 +1,114 @@
-// order-history.js - Fixed Version with Loading Fixes
+// Add this at the VERY TOP of order-history.js (before anything else)
+console.log('🚨 EMERGENCY LOADING FIX ACTIVATED');
+
+// Force stop all sync operations
+window.stopAllSync = function() {
+    console.log('🛑 Force stopping all sync operations');
+    
+    // Clear all intervals
+    const highestIntervalId = setInterval(() => {}, 0);
+    for (let i = 0; i < highestIntervalId; i++) {
+        clearInterval(i);
+    }
+    
+    // Clear all timeouts
+    const highestTimeoutId = setTimeout(() => {}, 0);
+    for (let i = 0; i < highestTimeoutId; i++) {
+        clearTimeout(i);
+    }
+    
+    // Clear any order sync intervals
+    if (window.orderSync && window.orderSync.syncIntervalId) {
+        clearInterval(window.orderSync.syncIntervalId);
+        window.orderSync.syncIntervalId = null;
+    }
+    
+    if (window.orderSync && window.orderSync.updatePollingInterval) {
+        clearInterval(window.orderSync.updatePollingInterval);
+        window.orderSync.updatePollingInterval = null;
+    }
+    
+    // Hide all loading elements IMMEDIATELY
+    const loaders = document.querySelectorAll('.loading, .spinner, .loader, .loading-spinner, .loading-state');
+    loaders.forEach(loader => {
+        loader.style.display = 'none';
+        loader.remove();
+    });
+    
+    // Show content
+    const containers = document.querySelectorAll('#orders-container, .orders-container, .order-history-content');
+    containers.forEach(container => {
+        if (container) {
+            container.style.display = 'block';
+            container.style.visibility = 'visible';
+            container.style.opacity = '1';
+        }
+    });
+    
+    console.log('✅ All sync stopped, loading elements hidden');
+    return true;
+};
+
+// Execute immediately
+setTimeout(() => {
+    window.stopAllSync();
+}, 100);
+
+// Also execute on load
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        window.stopAllSync();
+        
+        // Force render any existing orders
+        if (window.orderHistory && window.orderHistory.orders) {
+            const container = document.getElementById('orders-container');
+            if (container) {
+                if (window.orderHistory.orders.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">📦</div>
+                            <h3>No orders yet</h3>
+                            <p>You haven't placed any orders yet.</p>
+                            <div class="empty-actions">
+                                <a href="/shop.html" class="btn btn-primary">Start Shopping</a>
+                                <a href="/buy-for-me.html" class="btn btn-secondary">Buy For Me</a>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = window.orderHistory.orders.map(order => `
+                        <div class="order-card" data-order-id="${order.id}">
+                            <div class="order-header">
+                                <div class="order-id">
+                                    <strong>Order #${order.id}</strong>
+                                    ${order.type === 'buy-for-me' ? '<span class="bfm-badge">BFM</span>' : ''}
+                                </div>
+                                <div class="order-date">${new Date(order.orderDate || order.date).toLocaleDateString()}</div>
+                            </div>
+                            
+                            <div class="order-body">
+                                <div class="order-status">
+                                    <span class="status-badge status-${order.status}">
+                                        ${order.status || 'pending'}
+                                    </span>
+                                </div>
+                                <div class="order-total">
+                                    <strong>Total:</strong> ${order.currency || 'KES'} ${order.totalAmount || order.total || 0}
+                                </div>
+                            </div>
+                            
+                            <div class="order-footer">
+                                <button class="btn-view-details" onclick="orderHistory.viewOrderDetails('${order.id}')">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+    }, 500);
+});// order-history.js - Fixed Version with Loading Fixes
 class OrderHistoryManager {
     constructor() {
         this.orders = [];
