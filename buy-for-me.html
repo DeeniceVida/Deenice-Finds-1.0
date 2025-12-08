@@ -1,414 +1,198 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang='en'>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buy For Me Service | Deenice Finds</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="icon" href="https://i.postimg.cc/wv2Mnn2m/logo-1-3x-100.jpg" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
     <style>
-        /* Original Buy For Me Styles */
-        .buy-for-me-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .page-title {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #333;
-        }
-        
-        .page-title h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        
-        .page-title p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-        
-        .form-container {
-            background: #fff;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-        }
-        
-        .city-feedback {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border-left: 4px solid #007bff;
-            font-size: 14px;
-        }
-        
-        .results-container {
-            background: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            border: 1px solid #dee2e6;
-        }
-        
-        .quote-box {
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            border: 1px solid #dee2e6;
-        }
-        
-        .quote-box p {
-            margin: 8px 0;
-        }
-        
-        .quote-box hr {
-            margin: 15px 0;
-            border-color: #dee2e6;
-        }
-        
-        .grand-total {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #007bff;
-            padding-top: 10px;
-            border-top: 2px solid #dee2e6;
-        }
-        
-        .actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-        }
-        
-        .btn-primary {
-            background: #007bff;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #0056b3;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #545b62;
-        }
-        
-        .whatsapp-btn {
-            background: #25D366;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .whatsapp-btn:hover {
-            background: #1da851;
-        }
-        
-        .image-upload {
-            margin-top: 10px;
-        }
-        
-        .image-preview {
-            max-width: 200px;
-            max-height: 200px;
-            margin-top: 10px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-        }
-        
-        .info-box {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 6px;
-        }
-        
-        .info-box h4 {
-            margin-top: 0;
-            color: #856404;
-        }
-        
-        .info-box ul {
-            margin-bottom: 0;
-            padding-left: 20px;
-        }
-        
-        .info-box li {
-            margin-bottom: 5px;
-            color: #856404;
-        }
-        
-        @media (max-width: 768px) {
-            .buy-for-me-container {
-                padding: 15px;
-            }
-            
-            .form-container {
-                padding: 20px;
-            }
-            
-            .actions {
-                flex-direction: column;
-            }
-            
-            .page-title h1 {
-                font-size: 2rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="main-nav">
-        <div class="nav-container">
-            <a href="/" class="nav-logo">
-                <img src="https://res.cloudinary.com/dsthpp4oj/image/upload/v1731517302/Screenshot_2024-11-13_201028_kkbryk.png" alt="Deenice Finds" style="height: 40px;">
-            </a>
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/products.html">Shop</a>
-                <a href="/buy-for-me.html" class="active">Buy For Me</a>
-                <a href="/order-history.html">Orders</a>
-                <a href="/cart.html">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-count">0</span>
-                </a>
-            </div>
-        </div>
-    </nav>
+/* ---------------------------------------------------------------- */
+/* --- CSS for Glassy Premium Town Input --- */
+/* ---------------------------------------------------------------- */
 
-    <!-- Main Content -->
-    <div class="buy-for-me-container">
-        <div class="page-title">
-            <h1>🛍️ Buy For Me Service</h1>
-            <p>Can't find it locally? We'll import it for you from anywhere in the world!</p>
-        </div>
-        
-        <div class="form-container">
-            <form id="buyForMeForm">
-                <!-- Product Link -->
-                <div class="form-group">
-                    <label for="bfm-link">
-                        <i class="fas fa-link"></i> Product Link *
-                    </label>
-                    <input type="url" 
-                           id="bfm-link" 
-                           placeholder="https://www.amazon.com/dp/EXAMPLE123"
-                           required>
-                    <small style="color: #666; display: block; margin-top: 5px;">
-                        Paste the exact link of the product you want (Amazon, eBay, AliExpress, etc.)
-                    </small>
-                </div>
-                
-                <!-- Product Image (Optional) -->
-                <div class="form-group">
-                    <label for="bfm-image-upload">
-                        <i class="fas fa-image"></i> Product Image (Optional)
-                    </label>
-                    <input type="file" 
-                           id="bfm-image-upload" 
-                           class="image-upload"
-                           accept="image/*">
-                    <small style="color: #666; display: block; margin-top: 5px;">
-                        Upload a photo to help us identify the exact product you want
-                    </small>
-                    <div id="image-preview-container" style="display: none;">
-                        <img id="image-preview" class="image-preview" alt="Product Preview">
-                        <button type="button" onclick="removeImage()" style="margin-top: 10px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Remove Image
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Price -->
-                <div class="form-group">
-                    <label for="bfm-price">
-                        <i class="fas fa-tag"></i> Product Price (USD) *
-                    </label>
-                    <input type="number" 
-                           id="bfm-price" 
-                           placeholder="49.99"
-                           min="0.01"
-                           step="0.01"
-                           required>
-                </div>
-                
-                <!-- Town/City -->
-                <div class="form-group">
-                    <label for="bfm-town">
-                        <i class="fas fa-map-marker-alt"></i> Delivery Town/City *
-                    </label>
-                    <input type="text" 
-                           id="bfm-town" 
-                           list="city-suggestions"
-                           placeholder="e.g., Nairobi, Mombasa, Eldoret..."
-                           required>
-                    <datalist id="city-suggestions">
-                        <!-- Will be populated by JavaScript -->
-                    </datalist>
-                    <div id="bfm-city-feedback" class="city-feedback">
-                        Enter your town to see delivery fee
-                    </div>
-                </div>
-                
-                <!-- Results -->
-                <div class="results-container">
-                    <h3 style="margin-top: 0; margin-bottom: 15px;">Your Quote</h3>
-                    <div id="bfm-results">
-                        <p style="color: #666; text-align: center; padding: 20px;">
-                            Enter product details above to see the total cost
-                        </p>
-                    </div>
-                </div>
-                
-                <!-- Actions -->
-                <div class="actions">
-                    <a href="/products.html" class="btn btn-secondary">
-                        <i class="fas fa-shopping-bag"></i> Browse Our Shop
-                    </a>
-                    <button type="button" id="bfm-send" class="btn whatsapp-btn">
-                        <i class="fab fa-whatsapp"></i> Send via WhatsApp
-                    </button>
-                </div>
-            </form>
-            
-            <!-- Important Information -->
-            <div class="info-box">
-                <h4><i class="fas fa-info-circle"></i> Important Information</h4>
-                <ul>
-                    <li>Delivery time: 2-4 weeks depending on origin</li>
-                    <li>All customs duties and taxes are included</li>
-                    <li>Apple products have additional $65 pickup fee</li>
-                    <li>We'll contact you via WhatsApp to confirm details</li>
-                    <li>Final price may vary slightly due to exchange rates</li>
-                </ul>
-            </div>
-        </div>
-        
-        <!-- How It Works -->
-        <div class="form-container">
-            <h2 style="margin-top: 0;">How It Works</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                <div style="text-align: center; padding: 15px;">
-                    <div style="font-size: 40px; color: #007bff; margin-bottom: 10px;">1</div>
-                    <h4 style="margin-bottom: 10px;">Share Link</h4>
-                    <p style="color: #666;">Send us the product link</p>
-                </div>
-                <div style="text-align: center; padding: 15px;">
-                    <div style="font-size: 40px; color: #007bff; margin-bottom: 10px;">2</div>
-                    <h4 style="margin-bottom: 10px;">Get Quote</h4>
-                    <p style="color: #666;">We calculate total cost</p>
-                </div>
-                <div style="text-align: center; padding: 15px;">
-                    <div style="font-size: 40px; color: #007bff; margin-bottom: 10px;">3</div>
-                    <h4 style="margin-bottom: 10px;">Confirm & Pay</h4>
-                    <p style="color: #666;">Review and make payment</p>
-                </div>
-                <div style="text-align: center; padding: 15px;">
-                    <div style="font-size: 40px; color: #007bff; margin-bottom: 10px;">4</div>
-                    <h4 style="margin-bottom: 10px;">We Deliver</h4>
-                    <p style="color: #666;">We handle shipping to your door</p>
-                </div>
-            </div>
-        </div>
-    </div>
+/* 1. The Container: This creates the glassy background */
+#bfm-town-container {
+    padding: 15px;
+    margin-top: 20px;
+    margin-bottom: 15px; /* Added some margin for spacing */
+    border-radius: 12px;
     
-    <!-- Footer -->
-    <footer style="background: #f8f9fa; padding: 30px 20px; margin-top: 50px; text-align: center; border-top: 1px solid #dee2e6;">
-        <div style="max-width: 800px; margin: 0 auto;">
-            <p style="margin-bottom: 20px;">
-                <strong>Need Help?</strong><br>
-                WhatsApp: <a href="https://wa.me/254106590617" style="color: #007bff;">+254 106 590 617</a><br>
-                Email: support@deenicefinds.com
-            </p>
-            <p style="color: #666; font-size: 14px;">
-                &copy; 2024 Deenice Finds. All rights reserved.
-            </p>
-        </div>
-    </footer>
+    /* THE GLASSY EFFECT */
+    background: rgba(255, 255, 255, 0.5); /* Semi-transparent white background */
+    border: 1px solid rgba(255, 255, 255, 0.7); /* Light, subtle border */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
     
-    <!-- JavaScript -->
-    <script src="js/buy-for-me.js"></script>
-    
-    <!-- Image Preview Script -->
+    /* The most important part for "glass" - BLUR */
+    backdrop-filter: blur(5px); 
+    -webkit-backdrop-filter: blur(5px); /* For Safari support */
+}
+
+/* 2. Style the Input Field inside the glassy container */
+#bfm-town-container input {
+    /* Override your old inline styles */
+    background: transparent; 
+    border: 1px solid #ccc; 
+    padding: 10px; 
+    border-radius: 6px;
+    width: 100%; 
+    box-sizing: border-box;
+    margin-top: 5px; /* Spacing below the label text */
+    transition: border-color 0.3s;
+}
+
+/* 3. Style the Input Field when focused */
+#bfm-town-container input:focus {
+    border-color: #007bff; /* Highlight blue border on focus */
+    outline: none;
+}
+
+/* Optional: Make the label text look better inside the container */
+#bfm-town-container label {
+    font-weight: bold;
+    color: #333;
+    display: block; /* Make the label take up a full line */
+}
+</style>
     <script>
-        // Image preview functionality
-        document.getElementById('bfm-image-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const previewContainer = document.getElementById('image-preview-container');
-                    const preview = document.getElementById('image-preview');
-                    preview.src = e.target.result;
-                    previewContainer.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        function removeImage() {
-            document.getElementById('bfm-image-upload').value = '';
-            document.getElementById('image-preview-container').style.display = 'none';
-        }
-        
-        // Prevent form submission
-        document.getElementById('buyForMeForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-        });
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXX');
     </script>
+    <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', 'PIXEL_ID');
+    fbq('track', 'PageView');
+    </script>
+    <title>Buy-for-me — Deenice Finds</title>
+    <link rel='stylesheet' href='css/styles.css' />
+    
+    <style>
+    #bfm-town-container {
+        padding: 15px;
+        margin-top: 20px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        
+        /* THE GLASSY EFFECT */
+        background: rgba(255, 255, 255, 0.5); 
+        border: 1px solid rgba(255, 255, 255, 0.7); 
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+        
+        /* The most important part for "glass" - BLUR */
+        backdrop-filter: blur(5px); 
+        -webkit-backdrop-filter: blur(5px);
+    }
+
+    #bfm-town-container label {
+        font-weight: bold;
+        color: #333;
+        display: block; 
+    }
+
+    /* Style the Input Field inside the glassy container */
+    #bfm-town-container input {
+        /* Remove old inline styles and apply new ones */
+        background: transparent; 
+        border: 1px solid #ccc; 
+        padding: 10px; 
+        border-radius: 6px;
+        width: 100%; 
+        box-sizing: border-box;
+        margin-top: 5px; 
+        transition: border-color 0.3s;
+        
+        /* Ensure the input itself doesn't have the old inline margin-bottom:4px; */
+        margin-bottom: 0; 
+    }
+
+    /* Style the Input Field when focused */
+    #bfm-town-container input:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+    
+    /* Adjust feedback box margin for the new structure */
+    #bfm-city-feedback {
+        margin-top: 10px !important;
+    }
+    </style>
+    </head>
+<body>
+    <a href='index.html'>Home</a>
+    <div class="bfm-header">
+        <h1>Buy For Me Service</h1>
+        <p>Get US products shipped directly to Kenya</p>
+    </div>
+    <div class='calc-card'>
+        <label>Product link (paste): 
+            <input id='bfm-link' placeholder='https://...' required>
+        </label>
+        
+        <label>Price (USD): 
+            <input id='bfm-price' type='number' step='0.01'>
+        </label>
+        
+        <div id="bfm-town-container"> 
+            <label for="bfm-town">
+                <strong>Required Delivery Town/City:</strong>
+                <span style="font-size:0.8em; display:block; color:#555;">(Type your town for suggestions)</span>
+            </label>
+            <input 
+                id="bfm-town" 
+                list="bfm-city-suggestions-list" 
+                type="text" 
+                placeholder="E.g., Mombasa, Nakuru, Nairobi" 
+                required 
+                />
+            
+            <datalist id="bfm-city-suggestions-list">
+                <option value="Nairobi and Environs"></option>
+            </datalist>
+
+            <div id="bfm-city-feedback" style="margin-top: 5px; background-color:#f0f8ff; padding:8px; border-radius:4px;">
+            </div>
+        </div>
+        <div id='bfm-results' class='bfm-results'></div>
+        
+        <button id='bfm-send' class='primary'>Place order via WhatsApp</button>
+    </div>
+    <section class="how-it-works">
+        <h2>How It Works</h2>
+        <div class="how-step">
+            <div class="how-number">1</div>
+            <div class="how-text">
+                <h3>Find Your Product</h3>
+                <p>Browse any US website and find the product you want. Copy the product link.</p>
+            </div>
+        </div>
+        <div class="how-step">
+            <div class="how-number">2</div>
+            <div class="how-text">
+                <h3>Get Your Quote</h3>
+                <p>Paste the link and enter the price. Our calculator will show you the total cost in KES.</p>
+            </div>
+        </div>
+        <div class="how-step">
+            <div class="how-number">3</div>
+            <div class="how-text">
+                <h3>Place Your Order</h3>
+                <p>If you're satisfied with the quote, send it to us via WhatsApp to proceed.</p>
+            </div>
+        </div>
+        <div class="how-step">
+            <div class="how-number">4</div>
+            <div class="how-text">
+                <h3>Receive Your Item</h3>
+                <p>We'll purchase, ship, and deliver your item within 3 weeks!</p>
+            </div>
+        </div>
+    </section>
+    <script src='js/config.js'></script>
+    <script src='js/buy-for-me.js'></script>
 </body>
 </html>
