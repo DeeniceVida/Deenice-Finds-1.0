@@ -10,10 +10,18 @@ class OrderHistoryManager {
 
     init() {
         console.log('🔄 OrderHistoryManager initializing...');
+        this.stopAutoSync(); // NEW: Stop any existing sync first
         this.loadOrders();
         this.renderOrders();
         this.setupEventListeners();
         this.fixLoadingIssues(); // NEW: Add loading fix
+    }
+
+    // NEW: Stop auto-sync to prevent loops
+    stopAutoSync() {
+        if (window.orderSync) {
+            window.orderSync.stopAllSync();
+        }
     }
 
     // NEW: Fix loading issues
@@ -60,6 +68,9 @@ class OrderHistoryManager {
                 }
             }
             
+            // Enhance Buy For Me detection
+            orders = this.enhanceBuyForMeDetection(orders);
+            
             // Sort by date (newest first)
             this.orders = orders.sort((a, b) => {
                 const dateA = new Date(a.orderDate || a.date || 0);
@@ -68,11 +79,29 @@ class OrderHistoryManager {
             });
             
             console.log(`📦 Loaded ${this.orders.length} orders from history`);
+            console.log(`🛍️ BFM Orders: ${this.orders.filter(o => o.type === 'buy-for-me').length}`);
+            console.log(`🖼️ Orders with images: ${this.orders.filter(o => o.image).length}`);
             
         } catch (error) {
             console.error('❌ Error loading order history:', error);
             this.orders = [];
         }
+    }
+
+    // NEW: Enhance Buy For Me detection
+    enhanceBuyForMeDetection(orders) {
+        return orders.map(order => {
+            // Add explicit BFM detection
+            const isBFM = order.type === 'buy-for-me' || 
+                         order.source === 'buy-for-me' ||
+                         (order.items && order.items.some(item => item.link || item.type === 'buy-for-me')) ||
+                         (order.id && order.id.startsWith('BFM'));
+            
+            if (isBFM && !order.type) {
+                order.type = 'buy-for-me';
+            }
+            return order;
+        });
     }
 
     saveOrders() {
@@ -117,7 +146,7 @@ class OrderHistoryManager {
         const items = order.items || [];
         const isBuyForMe = order.type === 'buy-for-me' || order.source === 'buy-for-me';
         
-        // Get product image (admin will upload this)
+        // Get product image - admin will upload this
         const productImage = order.image || 
                             (items[0] && items[0].image) || 
                             'https://via.placeholder.com/80x80/CCCCCC/666666?text=No+Image';
@@ -125,6 +154,12 @@ class OrderHistoryManager {
         // Get first item title
         const firstItem = items[0] || {};
         const productTitle = firstItem.title || firstItem.name || 'Buy For Me Product';
+        
+        // Show image uploaded info
+        let imageInfo = '';
+        if (order.imageUploaded) {
+            imageInfo = `<div class="image-info" style="font-size: 11px; color: #666; margin-top: 5px;">Image uploaded: ${new Date(order.imageUploaded).toLocaleDateString()}</div>`;
+        }
         
         // Progress tracking for Buy For Me orders
         let progressHtml = '';
@@ -159,10 +194,13 @@ class OrderHistoryManager {
                         <img src="${productImage}" 
                              alt="${productTitle}" 
                              class="product-image"
-                             onerror="this.src='https://via.placeholder.com/80x80/CCCCCC/666666?text=No+Image'">
+                             onerror="this.src='https://via.placeholder.com/80x80/CCCCCC/666666?text=No+Image'"
+                             style="cursor: ${order.image ? 'pointer' : 'default'};"
+                             onclick="${order.image ? `orderHistory.viewImage('${orderId}')` : ''}">
                         <div class="product-details">
                             <div class="product-title">${productTitle}</div>
                             <div class="order-items-count">${items.length} item${items.length !== 1 ? 's' : ''}</div>
+                            ${imageInfo}
                         </div>
                     </div>
                     
@@ -195,6 +233,38 @@ class OrderHistoryManager {
                 </div>
             </div>
         `;
+    }
+
+    // NEW: View full image
+    viewImage(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (order && order.image) {
+            const imgWindow = window.open('', '_blank');
+            imgWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Product Image - Order #${orderId}</title>
+                        <style>
+                            body { margin: 0; padding: 20px; background: #f0f0f0; text-align: center; font-family: Arial, sans-serif; }
+                            img { max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+                            button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; }
+                            .info { background: white; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 600px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="info">
+                            <h2>Product Image - Order #${orderId}</h2>
+                            <p><strong>Customer:</strong> ${order.customer?.name || 'N/A'}</p>
+                            <p><strong>Status:</strong> ${order.status || 'pending'}</p>
+                            <p><strong>Uploaded:</strong> ${order.imageUploaded ? new Date(order.imageUploaded).toLocaleString() : 'Unknown'}</p>
+                        </div>
+                        <img src="${order.image}" alt="Product Image">
+                        <br><br>
+                        <button onclick="window.close()">Close</button>
+                    </body>
+                </html>
+            `);
+        }
     }
 
     formatStatus(status) {
@@ -252,7 +322,7 @@ class OrderHistoryManager {
 
     hideAllLoading() {
         // Hide any loading indicators
-        const loaders = document.querySelectorAll('.loading-indicator, .loading, .spinner');
+        const loaders = document.querySelectorAll('.loading-indicator, .loading, .spinner, .loader');
         loaders.forEach(loader => {
             loader.style.display = 'none';
         });
@@ -287,6 +357,14 @@ class OrderHistoryManager {
                 console.log('🔄 Order history updated from admin');
                 this.loadOrders();
                 this.renderOrders();
+                this.showNotification('Orders updated!', 'success');
+            }
+            
+            // Listen for admin updates specifically
+            if (e.key === 'de_admin_updates' || e.key === 'de_order_sync_markers') {
+                console.log('👑 Admin update detected');
+                this.loadOrders();
+                this.renderOrders();
             }
         });
 
@@ -295,6 +373,15 @@ class OrderHistoryManager {
             console.log('🔄 Order update event received');
             this.loadOrders();
             this.renderOrders();
+        });
+        
+        // Listen for image uploads
+        window.addEventListener('imageUploaded', (e) => {
+            if (e.detail && e.detail.orderId) {
+                console.log('🖼️ Image upload event received:', e.detail.orderId);
+                this.loadOrders();
+                this.renderOrders();
+            }
         });
     }
 
@@ -344,15 +431,17 @@ class OrderHistoryManager {
         const currency = order.currency || 'KES';
         const items = order.items || [];
         const customer = order.customer || {};
+        const isBuyForMe = order.type === 'buy-for-me' || order.source === 'buy-for-me';
         
         let details = `
             <div class="order-details-modal">
-                <h3>Order #${orderId}</h3>
+                <h3>Order #${orderId} ${isBuyForMe ? '🛍️' : ''}</h3>
                 
                 <div class="details-section">
                     <h4>📋 Order Information</h4>
                     <p><strong>Date:</strong> ${orderDate}</p>
                     <p><strong>Status:</strong> <span class="status-${status}">${this.formatStatus(status)}</span></p>
+                    <p><strong>Type:</strong> ${isBuyForMe ? 'Buy For Me' : 'Regular Order'}</p>
                     <p><strong>Total:</strong> ${currency} ${totalAmount.toLocaleString()}</p>
                 </div>
                 
@@ -362,7 +451,28 @@ class OrderHistoryManager {
                     <p><strong>City:</strong> ${customer.city || 'Not specified'}</p>
                     <p><strong>Phone:</strong> ${customer.phone || 'Not specified'}</p>
                 </div>
-                
+        `;
+        
+        // Add image section if available
+        if (order.image) {
+            details += `
+                <div class="details-section">
+                    <h4>🖼️ Product Image</h4>
+                    <div style="text-align: center; margin: 15px 0;">
+                        <img src="${order.image}" 
+                             alt="Product Image" 
+                             style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer;"
+                             onclick="orderHistory.viewImage('${orderId}')"
+                             title="Click to view full image">
+                        <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                            ${order.imageUploaded ? `Uploaded: ${new Date(order.imageUploaded).toLocaleDateString()}` : 'Product image'}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        details += `
                 <div class="details-section">
                     <h4>🛍️ Items (${items.length})</h4>
                     <div class="items-list">
@@ -374,7 +484,7 @@ class OrderHistoryManager {
                 const itemPrice = item.price || 0;
                 const itemQty = item.qty || 1;
                 const itemTotal = itemPrice * itemQty;
-                const itemImage = item.image || 'https://via.placeholder.com/60x60/CCCCCC/666666?text=Item';
+                const itemImage = item.image || item.img || item.thumbnail || 'https://via.placeholder.com/60x60/CCCCCC/666666?text=Item';
                 
                 details += `
                     <div class="item-detail">
@@ -387,6 +497,7 @@ class OrderHistoryManager {
                                 <span>Price: ${currency} ${itemPrice.toLocaleString()}</span>
                                 <span>Total: ${currency} ${itemTotal.toLocaleString()}</span>
                             </div>
+                            ${item.link ? `<div><a href="${item.link}" target="_blank" style="color: #007bff; font-size: 12px;">View Product Link</a></div>` : ''}
                         </div>
                     </div>
                 `;
@@ -765,6 +876,47 @@ const orderHistoryStyles = `
     .loading, .spinner, .loader {
         display: none !important;
     }
+    
+    /* Item details in modal */
+    .item-detail {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .item-image-small {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+    }
+    
+    .item-meta {
+        display: flex;
+        gap: 15px;
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .details-section {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .details-section:last-child {
+        border-bottom: none;
+    }
+    
+    .details-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
 `;
 
 // Inject styles
@@ -792,6 +944,22 @@ document.addEventListener('DOMContentLoaded', function() {
             container.style.display = 'block';
         }
     }, 1000);
+});
+
+// Emergency loading fix
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        const loaders = document.querySelectorAll('.loading, .spinner, .loading-spinner, .loader');
+        loaders.forEach(loader => loader.style.display = 'none');
+        
+        const containers = document.querySelectorAll('#orders-container, .order-history-content');
+        containers.forEach(container => {
+            if (container) {
+                container.style.display = 'block';
+                container.style.visibility = 'visible';
+            }
+        });
+    }, 2000);
 });
 
 // Export for global access
