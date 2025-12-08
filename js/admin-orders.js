@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🏁 Admin panel loaded');
     initializeAdminFixes();
 });
+
 class AdminOrderManager {
     constructor() {
         this.orders = [];
@@ -99,6 +100,7 @@ class AdminOrderManager {
         this.baseURL = 'https://deenice-finds-1-0-1.onrender.com/api';
         this.token = localStorage.getItem('admin_token');
         this.isLoading = false;
+        this.syncInterval = null; // Track sync interval
         
         // BULLETPROOF STORAGE KEYS
         this.primaryStorageKey = 'de_admin_orders_secure_v3';
@@ -135,8 +137,10 @@ class AdminOrderManager {
         this.fixAdminButtons();
         this.fixInfiniteLoading(); // NEW: Fix infinite loading
         
-        // STEP 5: Background sync (don't block UI)
-        this.syncWithBackend().catch(console.error);
+        // STEP 5: Background sync (don't block UI) - BUT WITH FIX
+        setTimeout(() => {
+            this.syncWithBackend().catch(console.error);
+        }, 2000);
         
         console.log('✅ AdminOrderManager initialized with', this.orders.length, 'orders');
     }
@@ -144,6 +148,9 @@ class AdminOrderManager {
     // NEW: Fix infinite loading
     fixInfiniteLoading() {
         console.log('🔧 Fixing infinite loading...');
+        
+        // Stop any auto-sync
+        this.stopAutoSync();
         
         // Force hide loading elements after 3 seconds
         setTimeout(() => {
@@ -161,6 +168,16 @@ class AdminOrderManager {
                 element.style.display = 'block';
             });
         }, 3000);
+    }
+
+    // NEW: Stop auto-sync to prevent loops
+    stopAutoSync() {
+        if (this.syncInterval) {
+            clearInterval(this.syncInterval);
+            this.syncInterval = null;
+            console.log('🛑 Stopped auto-sync');
+        }
+        this.isLoading = false;
     }
 
     // ADD THIS NEW METHOD TO FIX BUTTONS
@@ -257,14 +274,36 @@ class AdminOrderManager {
             }
         }
         
+        // NEW: Better detection of Buy For Me orders
+        orders = this.enhanceBuyForMeDetection(orders);
+        
         this.orders = orders;
         
-        // Final fallback: Server (async)
+        // Final fallback: Server (async) - but don't block
         if (this.orders.length === 0) {
-            this.attemptServerLoad().catch(console.error);
+            setTimeout(() => {
+                this.attemptServerLoad().catch(console.error);
+            }, 1000);
         }
         
         console.log(`✅ Loaded ${this.orders.length} orders total`);
+        return orders;
+    }
+
+    // NEW: Enhance Buy For Me detection
+    enhanceBuyForMeDetection(orders) {
+        return orders.map(order => {
+            // Add explicit BFM detection
+            const isBFM = order.type === 'buy-for-me' || 
+                         order.source === 'buy-for-me' ||
+                         (order.items && order.items.some(item => item.link || item.type === 'buy-for-me')) ||
+                         (order.id && order.id.startsWith('BFM'));
+            
+            if (isBFM && !order.type) {
+                order.type = 'buy-for-me';
+            }
+            return order;
+        });
     }
 
     // SIMPLE STORAGE METHODS
@@ -433,9 +472,12 @@ class AdminOrderManager {
         return recoveredOrders;
     }
 
-    // SERVER SYNC
+    // SERVER SYNC - UPDATED TO PREVENT LOOPS
     async syncWithBackend() {
-        if (this.isLoading) return;
+        if (this.isLoading) {
+            console.log('⏳ Sync already in progress, skipping...');
+            return;
+        }
         
         this.isLoading = true;
         try {
@@ -761,6 +803,11 @@ class AdminOrderManager {
         order.imageUploaded = new Date().toISOString();
         order.imageUploadedBy = 'Admin';
         
+        // Mark as Buy For Me if not already
+        if (!order.type) {
+            order.type = 'buy-for-me';
+        }
+        
         // Update UI
         this.renderStats();
         this.renderOrders();
@@ -790,6 +837,11 @@ class AdminOrderManager {
                 // Update root image
                 clientOrders[orderIndex].image = imageData;
                 clientOrders[orderIndex].imageUploaded = new Date().toISOString();
+                
+                // Mark as BFM
+                if (!clientOrders[orderIndex].type) {
+                    clientOrders[orderIndex].type = 'buy-for-me';
+                }
                 
                 this.saveToStorage(this.clientStorageKey, clientOrders);
                 this.saveToStorage('de_order_history_backup', clientOrders);
@@ -906,7 +958,7 @@ class AdminOrderManager {
         }
     }
 
-    // UI RENDERING - UPDATED TO SHOW IMAGE UPLOAD BUTTON
+    // UI RENDERING - UPDATED TO SHOW IMAGE UPLOAD BUTTON AND IMAGE PREVIEW
     showLoadingState() {
         const statsGrid = document.getElementById('statsGrid');
         const ordersTable = document.getElementById('ordersTableBody');
@@ -956,7 +1008,8 @@ class AdminOrderManager {
             pending: this.orders.filter(o => o.status === 'pending').length,
             processing: this.orders.filter(o => o.status === 'processing').length,
             completed: this.orders.filter(o => o.status === 'completed').length,
-            cancelled: this.orders.filter(o => o.status === 'cancelled').length
+            cancelled: this.orders.filter(o => o.status === 'cancelled').length,
+            buyForMe: this.orders.filter(o => o.type === 'buy-for-me' || o.source === 'buy-for-me').length
         };
 
         const statsGrid = document.getElementById('statsGrid');
@@ -981,6 +1034,10 @@ class AdminOrderManager {
                 <div class="stat-card">
                     <div class="stat-number stat-cancelled">${stats.cancelled}</div>
                     <div>Cancelled</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" style="color: #8EDBD1;">${stats.buyForMe}</div>
+                    <div>Buy For Me</div>
                 </div>
             `;
         }
@@ -1017,15 +1074,30 @@ class AdminOrderManager {
         const status = order.status || 'pending';
         const items = order.items || [];
 
-        // Check if this is a Buy For Me order
+        // Check if this is a Buy For Me order (IMPROVED DETECTION)
         const isBuyForMe = order.type === 'buy-for-me' || 
-                          (order.items && order.items.some(item => item.link)) ||
+                          order.source === 'buy-for-me' ||
+                          (order.items && order.items.some(item => item.link || item.type === 'buy-for-me')) ||
                           (order.id && order.id.startsWith('BFM'));
+
+        // Show image preview if exists
+        let imagePreview = '';
+        if (order.image) {
+            imagePreview = `
+                <div style="margin-top: 5px; cursor: pointer;" onclick="adminManager.viewImage('${order.id}')">
+                    <img src="${order.image}" 
+                         alt="Product image" 
+                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;"
+                         title="Click to view full image">
+                    <small style="font-size: 10px; color: #666;">Image ✓</small>
+                </div>
+            `;
+        }
 
         // Get progress data - only for Buy For Me orders
         let progressDisplay = '';
         if (isBuyForMe && window.progressTracker) {
-            const progressData = progressTracker.getProgressDataForAdmin(order);
+            const progressData = window.progressTracker.getProgressDataForAdmin(order);
             if (progressData) {
                 progressDisplay = `
                     <div class="progress-tracker compact">
@@ -1062,6 +1134,7 @@ class AdminOrderManager {
                         <div class="customer-name">${customerName}</div>
                         <div class="customer-city">${customerCity}</div>
                         <div class="customer-phone">📞 ${customerPhone}</div>
+                        ${imagePreview}
                     </div>
                 </td>
 
@@ -1102,7 +1175,7 @@ class AdminOrderManager {
                         ${isBuyForMe ? `
                             <button class="image-upload-btn" onclick="adminManager.openImageUploadModal('${order.id}')"
                                 style="background: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin: 2px; display: block; width: 100%;">
-                                📸 Add Image
+                                ${order.image ? '🔄 Update Image' : '📸 Add Image'}
                             </button>
                         ` : ''}
                         
@@ -1136,7 +1209,8 @@ class AdminOrderManager {
         if (!item) return '';
         
         const title = item.title || item.name || 'Unknown Item';
-        const imageUrl = item.img || item.image || item.thumbnail || 
+        // Use uploaded image first, then fallback
+        const imageUrl = item.image || item.img || item.thumbnail || 
                         'https://via.placeholder.com/40x40/CCCCCC/666666?text=No+Image';
         const qty = item.qty || 1;
         
@@ -1261,6 +1335,38 @@ class AdminOrderManager {
             btn.classList.toggle('active', btn.dataset.filter === filter);
         });
         this.renderOrders();
+    }
+
+    // NEW: View full image method
+    viewImage(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (order && order.image) {
+            const imgWindow = window.open('', '_blank');
+            imgWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Product Image - Order #${orderId}</title>
+                        <style>
+                            body { margin: 0; padding: 20px; background: #f0f0f0; text-align: center; font-family: Arial, sans-serif; }
+                            img { max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+                            button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; }
+                            .info { background: white; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 600px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="info">
+                            <h2>Product Image - Order #${orderId}</h2>
+                            <p><strong>Customer:</strong> ${order.customer?.name || 'N/A'}</p>
+                            <p><strong>Status:</strong> ${order.status || 'pending'}</p>
+                            <p><strong>Uploaded:</strong> ${order.imageUploaded ? new Date(order.imageUploaded).toLocaleString() : 'Unknown'}</p>
+                        </div>
+                        <img src="${order.image}" alt="Product Image">
+                        <br><br>
+                        <button onclick="window.close()">Close</button>
+                    </body>
+                </html>
+            `);
+        }
     }
 
     // PROGRESS MODAL FUNCTIONS
@@ -1415,8 +1521,12 @@ class AdminOrderManager {
             
             const items = order.items || [];
             
+            // Check if it's a Buy For Me order
+            const isBuyForMe = order.type === 'buy-for-me' || order.source === 'buy-for-me';
+            
             let details = `
 ORDER #${order.id} - DETAILS
+${isBuyForMe ? '🛍️ BUY FOR ME ORDER\n' : ''}
 
 📋 CUSTOMER INFORMATION:
 ├── Name: ${customerName}
@@ -1426,14 +1536,21 @@ ORDER #${order.id} - DETAILS
 
 📦 ORDER INFORMATION:
 ├── Status: ${order.status.toUpperCase()}
+├── Type: ${isBuyForMe ? 'Buy For Me' : 'Regular Order'}
 ├── Order Date: ${orderDate}
 ├── Last Updated: ${statusUpdated}
 ├── Total: ${currency} ${totalAmount.toLocaleString()}
 └── Delivery: ${deliveryMethod}
    ${deliveryMethod === 'pickup' ? `├── Pickup Code: ${pickupCode}` : `├── Address: ${deliveryAddress}`}
 
-🛍️ ITEMS (${items.length}):
 `;
+
+            // Add image info if exists
+            if (order.image) {
+                details += `🖼️ PRODUCT IMAGE: Available (uploaded on ${order.imageUploaded ? new Date(order.imageUploaded).toLocaleDateString() : 'Unknown'})\n\n`;
+            }
+
+            details += `🛍️ ITEMS (${items.length}):\n`;
 
             if (items.length > 0) {
                 items.forEach((item, index) => {
@@ -1451,6 +1568,7 @@ ORDER #${order.id} - DETAILS
                     if (item.color) details += `\n   ├── Color: ${item.color}`;
                     if (item.model) details += `\n   ├── Model: ${item.model}`;
                     if (item.size) details += `\n   ├── Size: ${item.size}`;
+                    if (item.link) details += `\n   ├── Link: ${item.link}`;
                 });
                 
                 const subtotal = items.reduce((sum, item) => {
@@ -1555,7 +1673,7 @@ ORDER #${order.id} - DETAILS
         }
     }
 
-    // ITEMS MODAL
+    // ITEMS MODAL - UPDATED TO SHOW IMAGES
     viewOrderItems(orderId) {
         const order = this.orders.find(o => o.id === orderId);
         if (!order) return;
@@ -1573,7 +1691,8 @@ ORDER #${order.id} - DETAILS
         } else {
             modalContent.innerHTML = items.map((item, index) => {
                 const title = item.title || item.name || 'Unknown Item';
-                const imageUrl = item.img || item.image || item.thumbnail || 
+                // Use uploaded image first, then fallback
+                const imageUrl = item.image || item.img || item.thumbnail || 
                                'https://via.placeholder.com/80x80/CCCCCC/666666?text=No+Image';
                 const price = item.price || 0;
                 const qty = item.qty || 1;
@@ -1603,6 +1722,7 @@ ORDER #${order.id} - DETAILS
                                 ${item.color ? `<div>Color: ${item.color}</div>` : ''}
                                 ${item.size ? `<div>Size: ${item.size}</div>` : ''}
                                 ${item.model ? `<div>Model: ${item.model}</div>` : ''}
+                                ${item.link ? `<div><a href="${item.link}" target="_blank" style="color: #007bff;">View Product Link</a></div>` : ''}
                             </div>
                         </div>
                     </div>
@@ -1747,6 +1867,9 @@ ORDER #${order.id} - DETAILS
         const backup = this.loadFromStorage(this.backupStorageKey);
         const client = this.loadFromStorage(this.clientStorageKey);
         
+        const bfmOrders = primary.filter(o => o.type === 'buy-for-me' || o.source === 'buy-for-me');
+        const ordersWithImages = primary.filter(o => o.image);
+        
         const debugInfo = `
 🔍 STORAGE DEBUG:
 Primary: ${primary.length} orders
@@ -1754,8 +1877,11 @@ Backup: ${backup.length} orders
 Client: ${client.length} orders
 Memory: ${this.orders.length} orders
 
-🆔 Primary Order IDs: ${primary.map(o => o.id).join(', ') || 'None'}
-🆔 Memory Order IDs: ${this.orders.map(o => o.id).join(', ') || 'None'}
+🛍️ Buy For Me Orders: ${bfmOrders.length}
+🖼️ Orders with Images: ${ordersWithImages.length}
+
+🆔 Primary Order IDs: ${primary.slice(0, 5).map(o => o.id).join(', ') || 'None'}${primary.length > 5 ? '...' : ''}
+🆔 Memory Order IDs: ${this.orders.slice(0, 5).map(o => o.id).join(', ') || 'None'}${this.orders.length > 5 ? '...' : ''}
         `.trim();
 
         console.log(debugInfo);
@@ -1765,12 +1891,13 @@ Memory: ${this.orders.length} orders
     debugOrders() {
         console.log('🐛 Debug Info:', {
             totalOrders: this.orders.length,
-            orders: this.orders,
-            localStorage: JSON.parse(localStorage.getItem('de_order_history') || '[]').length,
-            currentFilter: this.currentFilter
+            bfmOrders: this.orders.filter(o => o.type === 'buy-for-me' || o.source === 'buy-for-me').length,
+            ordersWithImages: this.orders.filter(o => o.image).length,
+            currentFilter: this.currentFilter,
+            orders: this.orders.slice(0, 3) // Show first 3
         });
         
-        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nCheck console for details.`);
+        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nBFM Orders: ${this.orders.filter(o => o.type === 'buy-for-me' || o.source === 'buy-for-me').length}\nOrders with Images: ${this.orders.filter(o => o.image).length}\nCheck console for details.`);
     }
 
     // NOTIFICATION SYSTEM
@@ -1863,3 +1990,19 @@ window.onclick = function(event) {
         adminManager.closeImageUploadModal();
     }
 };
+
+// Emergency loading fix
+window.addEventListener('load', function() {
+    setTimeout(function() {
+        const loaders = document.querySelectorAll('.loading, .spinner, .loading-spinner, .loader');
+        loaders.forEach(loader => loader.style.display = 'none');
+        
+        const containers = document.querySelectorAll('#ordersTableBody, .orders-table, .orders-list');
+        containers.forEach(container => {
+            if (container) {
+                container.style.display = 'block';
+                container.style.visibility = 'visible';
+            }
+        });
+    }, 2000);
+});
