@@ -1,98 +1,4 @@
-// =============================================
-// ADMIN ORDERS FIXES - ADD TO admin-orders.js
-// =============================================
-
-// Fix button functionality
-function initializeAdminFixes() {
-    console.log('🛠️ Initializing admin fixes...');
-    
-    // Fix refresh button
-    const refreshBtn = document.getElementById('refresh-orders');
-    if (refreshBtn) {
-        refreshBtn.onclick = function(e) {
-            e.preventDefault();
-            console.log('🔄 Refresh button clicked');
-            
-            // Show loading state
-            const originalText = this.innerHTML;
-            this.innerHTML = '🔄 Refreshing...';
-            this.disabled = true;
-            
-            // Reload orders
-            setTimeout(() => {
-                if (typeof loadOrders === 'function') {
-                    loadOrders();
-                } else {
-                    window.location.reload();
-                }
-                this.innerHTML = originalText;
-                this.disabled = false;
-            }, 1000);
-        };
-    }
-    
-    // Fix logout button
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.onclick = function(e) {
-            e.preventDefault();
-            console.log('🚪 Logout button clicked');
-            
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('admin_authenticated');
-                localStorage.removeItem('admin_session');
-                sessionStorage.clear();
-                window.location.href = 'login.html';
-            }
-        };
-    }
-    
-    // Fix debug button
-    const debugBtn = document.getElementById('debug-btn');
-    if (debugBtn) {
-        debugBtn.onclick = function(e) {
-            e.preventDefault();
-            console.log('🐛 Debug button clicked');
-            debugOrders();
-        };
-    }
-    
-    // Fix loading issues
-    fixLoadingIssues();
-}
-
-// Fix loading issues
-function fixLoadingIssues() {
-    // Hide loading elements after timeout
-    setTimeout(() => {
-        const loadingElements = document.querySelectorAll('.loading, .spinner');
-        loadingElements.forEach(element => {
-            if (element.style.display !== 'none') {
-                element.style.display = 'none';
-            }
-        });
-    }, 3000);
-}
-
-// Debug function
-function debugOrders() {
-    const adminOrders = JSON.parse(localStorage.getItem('de_admin_orders_secure_v3') || '[]');
-    const clientOrders = JSON.parse(localStorage.getItem('de_order_history') || '[]');
-    
-    console.log('🐛 DEBUG INFO:');
-    console.log(`Admin orders: ${adminOrders.length}`);
-    console.log(`Client orders: ${clientOrders.length}`);
-    console.log(`Buy For Me orders: ${adminOrders.filter(order => order.type === 'buy-for-me').length}`);
-    
-    alert(`Debug Info:\nAdmin Orders: ${adminOrders.length}\nClient Orders: ${clientOrders.length}\nBFM Orders: ${adminOrders.filter(order => order.type === 'buy-for-me').length}`);
-}
-
-// Initialize when DOM loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🏁 Admin panel loaded');
-    initializeAdminFixes();
-});
-
+// admin-orders.js - COMPLETE BULLETPROOF VERSION WITH PROGRESS BAR
 class AdminOrderManager {
     constructor() {
         this.orders = [];
@@ -100,7 +6,6 @@ class AdminOrderManager {
         this.baseURL = 'https://deenice-finds-1-0-1.onrender.com/api';
         this.token = localStorage.getItem('admin_token');
         this.isLoading = false;
-        this.syncInterval = null; // Track sync interval
         
         // BULLETPROOF STORAGE KEYS
         this.primaryStorageKey = 'de_admin_orders_secure_v3';
@@ -131,112 +36,11 @@ class AdminOrderManager {
         this.createItemsModal();
         this.createOrderDetailsModal();
         this.createProgressModal();
-        this.createImageUploadModal(); // NEW: Add image upload modal
         
-        // STEP 4: Fix buttons and loading issues
-        this.fixAdminButtons();
-        this.fixInfiniteLoading(); // NEW: Fix infinite loading
-        
-        // STEP 5: Background sync (don't block UI) - BUT WITH FIX
-        setTimeout(() => {
-            this.syncWithBackend().catch(console.error);
-        }, 2000);
+        // STEP 4: Background sync (don't block UI)
+        this.syncWithBackend().catch(console.error);
         
         console.log('✅ AdminOrderManager initialized with', this.orders.length, 'orders');
-    }
-
-    // NEW: Fix infinite loading
-    fixInfiniteLoading() {
-        console.log('🔧 Fixing infinite loading...');
-        
-        // Stop any auto-sync
-        this.stopAutoSync();
-        
-        // Force hide loading elements after 3 seconds
-        setTimeout(() => {
-            const loadingElements = document.querySelectorAll('.loading, .spinner, .loading-spinner');
-            loadingElements.forEach(element => {
-                if (element) {
-                    element.style.display = 'none';
-                    element.classList.remove('loading');
-                }
-            });
-            
-            // Show all hidden content
-            const hiddenContent = document.querySelectorAll('[style*="display: none"]');
-            hiddenContent.forEach(element => {
-                element.style.display = 'block';
-            });
-        }, 3000);
-    }
-
-    // NEW: Stop auto-sync to prevent loops
-    stopAutoSync() {
-        if (this.syncInterval) {
-            clearInterval(this.syncInterval);
-            this.syncInterval = null;
-            console.log('🛑 Stopped auto-sync');
-        }
-        this.isLoading = false;
-    }
-
-    // ADD THIS NEW METHOD TO FIX BUTTONS
-    fixAdminButtons() {
-        console.log('🔧 Fixing admin buttons...');
-        
-        // Fix refresh button
-        const refreshBtn = document.getElementById('refresh-orders');
-        if (refreshBtn) {
-            refreshBtn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('🔄 Refresh button clicked');
-                
-                // Show loading state
-                const originalText = refreshBtn.innerHTML;
-                refreshBtn.innerHTML = '🔄 Refreshing...';
-                refreshBtn.disabled = true;
-                
-                // Reload orders
-                setTimeout(() => {
-                    this.loadOrdersImmediately().then(() => {
-                        this.renderStats();
-                        this.renderOrders();
-                        refreshBtn.innerHTML = originalText;
-                        refreshBtn.disabled = false;
-                        this.showNotification('Orders refreshed successfully', 'success');
-                    });
-                }, 1000);
-            };
-            console.log('✅ Refresh button fixed');
-        }
-        
-        // Fix logout button
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('🚪 Logout button clicked');
-                
-                if (confirm('Are you sure you want to logout?')) {
-                    this.logout();
-                }
-            };
-            console.log('✅ Logout button fixed');
-        }
-        
-        // Fix debug button
-        const debugBtn = document.getElementById('debug-btn');
-        if (debugBtn) {
-            debugBtn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('🐛 Debug button clicked');
-                this.debugOrders();
-            };
-            console.log('✅ Debug button fixed');
-        }
     }
 
     // BULLETPROOF ORDER LOADING
@@ -274,36 +78,14 @@ class AdminOrderManager {
             }
         }
         
-        // NEW: Better detection of Buy For Me orders
-        orders = this.enhanceBuyForMeDetection(orders);
-        
         this.orders = orders;
         
-        // Final fallback: Server (async) - but don't block
+        // Final fallback: Server (async)
         if (this.orders.length === 0) {
-            setTimeout(() => {
-                this.attemptServerLoad().catch(console.error);
-            }, 1000);
+            this.attemptServerLoad().catch(console.error);
         }
         
         console.log(`✅ Loaded ${this.orders.length} orders total`);
-        return orders;
-    }
-
-    // NEW: Enhance Buy For Me detection
-    enhanceBuyForMeDetection(orders) {
-        return orders.map(order => {
-            // Add explicit BFM detection
-            const isBFM = order.type === 'buy-for-me' || 
-                         order.source === 'buy-for-me' ||
-                         (order.items && order.items.some(item => item.link || item.type === 'buy-for-me')) ||
-                         (order.id && order.id.startsWith('BFM'));
-            
-            if (isBFM && !order.type) {
-                order.type = 'buy-for-me';
-            }
-            return order;
-        });
     }
 
     // SIMPLE STORAGE METHODS
@@ -416,13 +198,6 @@ class AdminOrderManager {
             await originalDelete.call(this, orderId);
             this.saveOrders(this.orders);
         };
-
-        // Save after image uploads
-        const originalUploadImage = this.uploadProductImage;
-        this.uploadProductImage = async (orderId, imageData) => {
-            await originalUploadImage.call(this, orderId, imageData);
-            this.saveOrders(this.orders);
-        };
     }
 
     // LEGACY STORAGE RECOVERY
@@ -472,12 +247,9 @@ class AdminOrderManager {
         return recoveredOrders;
     }
 
-    // SERVER SYNC - UPDATED TO PREVENT LOOPS
+    // SERVER SYNC
     async syncWithBackend() {
-        if (this.isLoading) {
-            console.log('⏳ Sync already in progress, skipping...');
-            return;
-        }
+        if (this.isLoading) return;
         
         this.isLoading = true;
         try {
@@ -606,257 +378,7 @@ class AdminOrderManager {
         }
     }
 
-    // NEW: IMAGE UPLOAD FOR BUY FOR ME ORDERS
-    createImageUploadModal() {
-        if (document.getElementById('imageUploadModal')) return;
-
-        const modalHTML = `
-            <div id="imageUploadModal" class="modal" style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                display: none;
-                justify-content: center;
-                align-items: center;
-                z-index: 10000;
-            ">
-                <div class="modal-content" style="
-                    background: white;
-                    padding: 30px;
-                    border-radius: 12px;
-                    max-width: 500px;
-                    width: 90%;
-                    max-height: 80vh;
-                    overflow-y: auto;
-                    position: relative;
-                ">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="margin: 0;" id="imageUploadTitle">Upload Product Image</h3>
-                        <button onclick="adminManager.closeImageUploadModal()" style="
-                            background: none;
-                            border: none;
-                            font-size: 1.5em;
-                            cursor: pointer;
-                            color: #666;
-                            padding: 5px;
-                        ">×</button>
-                    </div>
-                    <div id="imageUploadContent">
-                        <p>Upload product image for <strong id="uploadOrderId"></strong>:</p>
-                        <div style="margin: 20px 0;">
-                            <input type="file" id="productImageInput" accept="image/*" style="
-                                padding: 10px;
-                                border: 2px dashed #ccc;
-                                border-radius: 8px;
-                                width: 100%;
-                                cursor: pointer;
-                            ">
-                        </div>
-                        <div id="imagePreview" style="
-                            margin: 20px 0;
-                            text-align: center;
-                            display: none;
-                        ">
-                            <img id="previewImage" style="
-                                max-width: 200px;
-                                max-height: 200px;
-                                border-radius: 8px;
-                                border: 1px solid #ddd;
-                            ">
-                        </div>
-                        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
-                            <button onclick="adminManager.closeImageUploadModal()" style="
-                                padding: 10px 20px;
-                                background: #6c757d;
-                                color: white;
-                                border: none;
-                                border-radius: 6px;
-                                cursor: pointer;
-                            ">Cancel</button>
-                            <button onclick="adminManager.uploadImage()" id="uploadImageBtn" style="
-                                padding: 10px 20px;
-                                background: #007bff;
-                                color: white;
-                                border: none;
-                                border-radius: 6px;
-                                cursor: pointer;
-                            ">Upload Image</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-        // Setup image preview
-        const imageInput = document.getElementById('productImageInput');
-        if (imageInput) {
-            imageInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const preview = document.getElementById('previewImage');
-                        const previewContainer = document.getElementById('imagePreview');
-                        preview.src = e.target.result;
-                        previewContainer.style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-    }
-
-    openImageUploadModal(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (!order) {
-            this.showNotification('Order not found', 'error');
-            return;
-        }
-
-        // Check if it's a Buy For Me order
-        const isBuyForMe = order.type === 'buy-for-me' || 
-                          (order.items && order.items.some(item => item.link)) ||
-                          (order.id && order.id.startsWith('BFM'));
-
-        if (!isBuyForMe) {
-            this.showNotification('Only Buy For Me orders need product images', 'info');
-            return;
-        }
-
-        this.currentImageUploadOrderId = orderId;
-        
-        const modal = document.getElementById('imageUploadModal');
-        const title = document.getElementById('uploadOrderId');
-        
-        if (modal && title) {
-            title.textContent = `Order #${orderId}`;
-            modal.style.display = 'flex';
-            
-            // Reset preview
-            const previewContainer = document.getElementById('imagePreview');
-            const imageInput = document.getElementById('productImageInput');
-            if (previewContainer) previewContainer.style.display = 'none';
-            if (imageInput) imageInput.value = '';
-        }
-    }
-
-    closeImageUploadModal() {
-        const modal = document.getElementById('imageUploadModal');
-        if (modal) {
-            modal.style.display = 'none';
-            this.currentImageUploadOrderId = null;
-        }
-    }
-
-    async uploadImage() {
-        if (!this.currentImageUploadOrderId) {
-            this.showNotification('No order selected for image upload', 'error');
-            return;
-        }
-
-        const fileInput = document.getElementById('productImageInput');
-        if (!fileInput.files || fileInput.files.length === 0) {
-            this.showNotification('Please select an image file', 'error');
-            return;
-        }
-
-        const file = fileInput.files[0];
-        if (!file.type.startsWith('image/')) {
-            this.showNotification('Please select an image file (JPEG, PNG, etc.)', 'error');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const imageData = e.target.result;
-                await this.uploadProductImage(this.currentImageUploadOrderId, imageData);
-                this.closeImageUploadModal();
-            } catch (error) {
-                this.showNotification('Image upload failed: ' + error.message, 'error');
-            }
-        };
-        reader.readAsDataURL(file);
-    }
-
-    async uploadProductImage(orderId, imageData) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (!order) {
-            throw new Error('Order not found');
-        }
-
-        // Save image to order
-        if (!order.items) order.items = [];
-        
-        // Update all items with the image
-        order.items.forEach(item => {
-            item.image = imageData;
-        });
-        
-        // Also save at root level for easy access
-        order.image = imageData;
-        order.imageUploaded = new Date().toISOString();
-        order.imageUploadedBy = 'Admin';
-        
-        // Mark as Buy For Me if not already
-        if (!order.type) {
-            order.type = 'buy-for-me';
-        }
-        
-        // Update UI
-        this.renderStats();
-        this.renderOrders();
-        
-        // Save to storage
-        this.saveOrders(this.orders);
-        
-        // Sync to client storage
-        this.syncImageToClient(orderId, imageData);
-        
-        this.showNotification(`Product image uploaded for order #${orderId}`, 'success');
-    }
-
-    async syncImageToClient(orderId, imageData) {
-        try {
-            const clientOrders = this.loadFromStorage(this.clientStorageKey);
-            const orderIndex = clientOrders.findIndex(order => order.id === orderId);
-            
-            if (orderIndex > -1) {
-                // Update items with image
-                if (clientOrders[orderIndex].items) {
-                    clientOrders[orderIndex].items.forEach(item => {
-                        item.image = imageData;
-                    });
-                }
-                
-                // Update root image
-                clientOrders[orderIndex].image = imageData;
-                clientOrders[orderIndex].imageUploaded = new Date().toISOString();
-                
-                // Mark as BFM
-                if (!clientOrders[orderIndex].type) {
-                    clientOrders[orderIndex].type = 'buy-for-me';
-                }
-                
-                this.saveToStorage(this.clientStorageKey, clientOrders);
-                this.saveToStorage('de_order_history_backup', clientOrders);
-                
-                // Trigger storage event for real-time updates
-                window.dispatchEvent(new Event('storage'));
-                
-                console.log(`✅ Client image updated: ${orderId}`);
-            }
-        } catch (error) {
-            console.error('Error updating client image:', error);
-        }
-    }
-
-    // ORDER ACTIONS - UPDATED TO INCLUDE IMAGE UPLOAD BUTTON
+    // ORDER ACTIONS
     async deleteOrder(orderId) {
         if (!confirm(`Are you sure you want to delete order #${orderId}? This cannot be undone.`)) {
             return;
@@ -913,7 +435,6 @@ class AdminOrderManager {
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_logged_in');
         localStorage.removeItem('admin_user');
-        sessionStorage.clear();
         
         console.log('✅ Logout completed - data secured');
         window.location.href = 'admin-login.html';
@@ -958,7 +479,7 @@ class AdminOrderManager {
         }
     }
 
-    // UI RENDERING - UPDATED TO SHOW IMAGE UPLOAD BUTTON AND IMAGE PREVIEW
+    // UI RENDERING
     showLoadingState() {
         const statsGrid = document.getElementById('statsGrid');
         const ordersTable = document.getElementById('ordersTableBody');
@@ -1008,8 +529,7 @@ class AdminOrderManager {
             pending: this.orders.filter(o => o.status === 'pending').length,
             processing: this.orders.filter(o => o.status === 'processing').length,
             completed: this.orders.filter(o => o.status === 'completed').length,
-            cancelled: this.orders.filter(o => o.status === 'cancelled').length,
-            buyForMe: this.orders.filter(o => o.type === 'buy-for-me' || o.source === 'buy-for-me').length
+            cancelled: this.orders.filter(o => o.status === 'cancelled').length
         };
 
         const statsGrid = document.getElementById('statsGrid');
@@ -1034,10 +554,6 @@ class AdminOrderManager {
                 <div class="stat-card">
                     <div class="stat-number stat-cancelled">${stats.cancelled}</div>
                     <div>Cancelled</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" style="color: #8EDBD1;">${stats.buyForMe}</div>
-                    <div>Buy For Me</div>
                 </div>
             `;
         }
@@ -1074,30 +590,15 @@ class AdminOrderManager {
         const status = order.status || 'pending';
         const items = order.items || [];
 
-        // Check if this is a Buy For Me order (IMPROVED DETECTION)
+        // Check if this is a Buy For Me order
         const isBuyForMe = order.type === 'buy-for-me' || 
-                          order.source === 'buy-for-me' ||
-                          (order.items && order.items.some(item => item.link || item.type === 'buy-for-me')) ||
+                          (order.items && order.items.some(item => item.link)) ||
                           (order.id && order.id.startsWith('BFM'));
-
-        // Show image preview if exists
-        let imagePreview = '';
-        if (order.image) {
-            imagePreview = `
-                <div style="margin-top: 5px; cursor: pointer;" onclick="adminManager.viewImage('${order.id}')">
-                    <img src="${order.image}" 
-                         alt="Product image" 
-                         style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;"
-                         title="Click to view full image">
-                    <small style="font-size: 10px; color: #666;">Image ✓</small>
-                </div>
-            `;
-        }
 
         // Get progress data - only for Buy For Me orders
         let progressDisplay = '';
         if (isBuyForMe && window.progressTracker) {
-            const progressData = window.progressTracker.getProgressDataForAdmin(order);
+            const progressData = progressTracker.getProgressDataForAdmin(order);
             if (progressData) {
                 progressDisplay = `
                     <div class="progress-tracker compact">
@@ -1134,7 +635,6 @@ class AdminOrderManager {
                         <div class="customer-name">${customerName}</div>
                         <div class="customer-city">${customerCity}</div>
                         <div class="customer-phone">📞 ${customerPhone}</div>
-                        ${imagePreview}
                     </div>
                 </td>
 
@@ -1170,15 +670,6 @@ class AdminOrderManager {
                     <div class="actions">
                         <button class="view-btn" onclick="adminManager.viewOrderDetails('${order.id}')">Details</button>
                         <button class="view-btn items-btn" onclick="adminManager.viewOrderItems('${order.id}')">Items</button>
-                        
-                        <!-- NEW: IMAGE UPLOAD BUTTON FOR BFM ORDERS -->
-                        ${isBuyForMe ? `
-                            <button class="image-upload-btn" onclick="adminManager.openImageUploadModal('${order.id}')"
-                                style="background: #28a745; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; margin: 2px; display: block; width: 100%;">
-                                ${order.image ? '🔄 Update Image' : '📸 Add Image'}
-                            </button>
-                        ` : ''}
-                        
                         <button class="edit-btn" onclick="adminManager.contactCustomer('${order.id}')">Contact</button>
 
                         <!-- PRINT BUTTONS -->
@@ -1209,8 +700,7 @@ class AdminOrderManager {
         if (!item) return '';
         
         const title = item.title || item.name || 'Unknown Item';
-        // Use uploaded image first, then fallback
-        const imageUrl = item.image || item.img || item.thumbnail || 
+        const imageUrl = item.img || item.image || item.thumbnail || 
                         'https://via.placeholder.com/40x40/CCCCCC/666666?text=No+Image';
         const qty = item.qty || 1;
         
@@ -1335,38 +825,6 @@ class AdminOrderManager {
             btn.classList.toggle('active', btn.dataset.filter === filter);
         });
         this.renderOrders();
-    }
-
-    // NEW: View full image method
-    viewImage(orderId) {
-        const order = this.orders.find(o => o.id === orderId);
-        if (order && order.image) {
-            const imgWindow = window.open('', '_blank');
-            imgWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Product Image - Order #${orderId}</title>
-                        <style>
-                            body { margin: 0; padding: 20px; background: #f0f0f0; text-align: center; font-family: Arial, sans-serif; }
-                            img { max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-                            button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; }
-                            .info { background: white; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 600px; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="info">
-                            <h2>Product Image - Order #${orderId}</h2>
-                            <p><strong>Customer:</strong> ${order.customer?.name || 'N/A'}</p>
-                            <p><strong>Status:</strong> ${order.status || 'pending'}</p>
-                            <p><strong>Uploaded:</strong> ${order.imageUploaded ? new Date(order.imageUploaded).toLocaleString() : 'Unknown'}</p>
-                        </div>
-                        <img src="${order.image}" alt="Product Image">
-                        <br><br>
-                        <button onclick="window.close()">Close</button>
-                    </body>
-                </html>
-            `);
-        }
     }
 
     // PROGRESS MODAL FUNCTIONS
@@ -1521,12 +979,8 @@ class AdminOrderManager {
             
             const items = order.items || [];
             
-            // Check if it's a Buy For Me order
-            const isBuyForMe = order.type === 'buy-for-me' || order.source === 'buy-for-me';
-            
             let details = `
 ORDER #${order.id} - DETAILS
-${isBuyForMe ? '🛍️ BUY FOR ME ORDER\n' : ''}
 
 📋 CUSTOMER INFORMATION:
 ├── Name: ${customerName}
@@ -1536,21 +990,14 @@ ${isBuyForMe ? '🛍️ BUY FOR ME ORDER\n' : ''}
 
 📦 ORDER INFORMATION:
 ├── Status: ${order.status.toUpperCase()}
-├── Type: ${isBuyForMe ? 'Buy For Me' : 'Regular Order'}
 ├── Order Date: ${orderDate}
 ├── Last Updated: ${statusUpdated}
 ├── Total: ${currency} ${totalAmount.toLocaleString()}
 └── Delivery: ${deliveryMethod}
    ${deliveryMethod === 'pickup' ? `├── Pickup Code: ${pickupCode}` : `├── Address: ${deliveryAddress}`}
 
+🛍️ ITEMS (${items.length}):
 `;
-
-            // Add image info if exists
-            if (order.image) {
-                details += `🖼️ PRODUCT IMAGE: Available (uploaded on ${order.imageUploaded ? new Date(order.imageUploaded).toLocaleDateString() : 'Unknown'})\n\n`;
-            }
-
-            details += `🛍️ ITEMS (${items.length}):\n`;
 
             if (items.length > 0) {
                 items.forEach((item, index) => {
@@ -1568,7 +1015,6 @@ ${isBuyForMe ? '🛍️ BUY FOR ME ORDER\n' : ''}
                     if (item.color) details += `\n   ├── Color: ${item.color}`;
                     if (item.model) details += `\n   ├── Model: ${item.model}`;
                     if (item.size) details += `\n   ├── Size: ${item.size}`;
-                    if (item.link) details += `\n   ├── Link: ${item.link}`;
                 });
                 
                 const subtotal = items.reduce((sum, item) => {
@@ -1673,7 +1119,7 @@ ${isBuyForMe ? '🛍️ BUY FOR ME ORDER\n' : ''}
         }
     }
 
-    // ITEMS MODAL - UPDATED TO SHOW IMAGES
+    // ITEMS MODAL
     viewOrderItems(orderId) {
         const order = this.orders.find(o => o.id === orderId);
         if (!order) return;
@@ -1691,8 +1137,7 @@ ${isBuyForMe ? '🛍️ BUY FOR ME ORDER\n' : ''}
         } else {
             modalContent.innerHTML = items.map((item, index) => {
                 const title = item.title || item.name || 'Unknown Item';
-                // Use uploaded image first, then fallback
-                const imageUrl = item.image || item.img || item.thumbnail || 
+                const imageUrl = item.img || item.image || item.thumbnail || 
                                'https://via.placeholder.com/80x80/CCCCCC/666666?text=No+Image';
                 const price = item.price || 0;
                 const qty = item.qty || 1;
@@ -1722,7 +1167,6 @@ ${isBuyForMe ? '🛍️ BUY FOR ME ORDER\n' : ''}
                                 ${item.color ? `<div>Color: ${item.color}</div>` : ''}
                                 ${item.size ? `<div>Size: ${item.size}</div>` : ''}
                                 ${item.model ? `<div>Model: ${item.model}</div>` : ''}
-                                ${item.link ? `<div><a href="${item.link}" target="_blank" style="color: #007bff;">View Product Link</a></div>` : ''}
                             </div>
                         </div>
                     </div>
@@ -1867,9 +1311,6 @@ ${isBuyForMe ? '🛍️ BUY FOR ME ORDER\n' : ''}
         const backup = this.loadFromStorage(this.backupStorageKey);
         const client = this.loadFromStorage(this.clientStorageKey);
         
-        const bfmOrders = primary.filter(o => o.type === 'buy-for-me' || o.source === 'buy-for-me');
-        const ordersWithImages = primary.filter(o => o.image);
-        
         const debugInfo = `
 🔍 STORAGE DEBUG:
 Primary: ${primary.length} orders
@@ -1877,11 +1318,8 @@ Backup: ${backup.length} orders
 Client: ${client.length} orders
 Memory: ${this.orders.length} orders
 
-🛍️ Buy For Me Orders: ${bfmOrders.length}
-🖼️ Orders with Images: ${ordersWithImages.length}
-
-🆔 Primary Order IDs: ${primary.slice(0, 5).map(o => o.id).join(', ') || 'None'}${primary.length > 5 ? '...' : ''}
-🆔 Memory Order IDs: ${this.orders.slice(0, 5).map(o => o.id).join(', ') || 'None'}${this.orders.length > 5 ? '...' : ''}
+🆔 Primary Order IDs: ${primary.map(o => o.id).join(', ') || 'None'}
+🆔 Memory Order IDs: ${this.orders.map(o => o.id).join(', ') || 'None'}
         `.trim();
 
         console.log(debugInfo);
@@ -1891,13 +1329,12 @@ Memory: ${this.orders.length} orders
     debugOrders() {
         console.log('🐛 Debug Info:', {
             totalOrders: this.orders.length,
-            bfmOrders: this.orders.filter(o => o.type === 'buy-for-me' || o.source === 'buy-for-me').length,
-            ordersWithImages: this.orders.filter(o => o.image).length,
-            currentFilter: this.currentFilter,
-            orders: this.orders.slice(0, 3) // Show first 3
+            orders: this.orders,
+            localStorage: JSON.parse(localStorage.getItem('de_order_history') || '[]').length,
+            currentFilter: this.currentFilter
         });
         
-        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nBFM Orders: ${this.orders.filter(o => o.type === 'buy-for-me' || o.source === 'buy-for-me').length}\nOrders with Images: ${this.orders.filter(o => o.image).length}\nCheck console for details.`);
+        alert(`Debug Info:\nTotal Orders: ${this.orders.length}\nCheck console for details.`);
     }
 
     // NOTIFICATION SYSTEM
@@ -1966,7 +1403,6 @@ window.syncWithBackend = () => adminManager.syncWithBackend();
 window.closeItemsModal = () => adminManager.closeItemsModal();
 window.closeOrderDetailsModal = () => adminManager.closeOrderDetailsModal();
 window.closeProgressModal = () => adminManager.closeProgressModal();
-window.closeImageUploadModal = () => adminManager.closeImageUploadModal();
 
 // Close modal when clicking outside
 window.onclick = function(event) {
@@ -1984,25 +1420,4 @@ window.onclick = function(event) {
     if (event.target === orderDetailsModal) {
         adminManager.closeOrderDetailsModal();
     }
-    
-    const imageUploadModal = document.getElementById('imageUploadModal');
-    if (event.target === imageUploadModal) {
-        adminManager.closeImageUploadModal();
-    }
 };
-
-// Emergency loading fix
-window.addEventListener('load', function() {
-    setTimeout(function() {
-        const loaders = document.querySelectorAll('.loading, .spinner, .loading-spinner, .loader');
-        loaders.forEach(loader => loader.style.display = 'none');
-        
-        const containers = document.querySelectorAll('#ordersTableBody, .orders-table, .orders-list');
-        containers.forEach(container => {
-            if (container) {
-                container.style.display = 'block';
-                container.style.visibility = 'visible';
-            }
-        });
-    }, 2000);
-});
