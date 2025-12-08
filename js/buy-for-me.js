@@ -1,4 +1,4 @@
-// Buy-For-Me — Full Fixed & Improved Script with Storage Integration
+// Buy-For-Me — Fixed Script - Orders Only to WhatsApp
 (() => {
   // --- 1. ACCURATE WELLS FARGO DELIVERY DATA (OUTSIDE NAIROBI) ---
   const DELIVERY_ZONES = [
@@ -153,7 +153,6 @@
   ];
 
   // --- 2. NAIROBI AND ENVIRONS DISTANCE DATA (Distance from CBD/GPO) ---
-  // Fee: Distance (km) * KES 60. Minimum fee is 360 KES.
   const NAIROBI_DISTANCES = [
     { name: "Westlands", distance: 5 },
     { name: "Upper Hill", distance: 4 },
@@ -179,362 +178,207 @@
   // 🟢 NEW CONSTANT FOR APPLE FEE 🟢
   const APPLE_PICKUP_FEE_USD = 65.00;
 
-  // WhatsApp number already present in your code — kept as-is
-  // Format: country code + number (no plus). Example: 2547XXXXXXXX
+  // WhatsApp number
   const WHATSAPP_NUMBER = "254106590617";
 
   // Currency conversion
   const USD_TO_KES = 135;
 
-  // --- STORAGE FUNCTIONS ---
- function saveOrderToAdminStorage(orderData) {
+  // --- SIMPLE STORAGE ---
+  function saveOrderToStorage(orderData) {
       try {
-          // Save to admin storage with cross-device compatibility
+          // Save to admin storage
           const adminStorageKey = 'de_admin_orders_secure_v3';
-          const adminBackupKey = 'de_admin_orders_backup_secure_v3';
-          
           let adminOrders = JSON.parse(localStorage.getItem(adminStorageKey) || '[]');
           
-          // Check if order already exists
-          const existingOrderIndex = adminOrders.findIndex(order => order.id === orderData.id);
-          
-          if (existingOrderIndex > -1) {
-              // Update existing order
-              adminOrders[existingOrderIndex] = orderData;
-          } else {
-              // Add new order with timestamp for sorting
-              orderData.createdAt = new Date().toISOString();
-              orderData.updatedAt = new Date().toISOString();
+          // Check if order exists
+          const exists = adminOrders.find(order => order.id === orderData.id);
+          if (!exists) {
               adminOrders.unshift(orderData);
-          }
-          
-          // Save to admin storage with error handling
-          try {
               localStorage.setItem(adminStorageKey, JSON.stringify(adminOrders));
-              localStorage.setItem(adminBackupKey, JSON.stringify(adminOrders));
-              console.log('✅ Order saved to admin storage:', orderData.id);
-              
-              // Also save to client storage
-              saveOrderToClientStorage(orderData);
-              
-              // Trigger custom event for admin panel refresh
-              window.dispatchEvent(new CustomEvent('orderUpdated', { 
-                  detail: { orderId: orderData.id, action: 'created' }
-              }));
-              
-              return true;
-          } catch (storageError) {
-              console.error('❌ LocalStorage error:', storageError);
-              // Fallback: Try to save to sessionStorage
-              try {
-                  sessionStorage.setItem(adminStorageKey + '_fallback', JSON.stringify(adminOrders));
-                  console.log('📦 Order saved to sessionStorage fallback');
-                  return true;
-              } catch (e) {
-                  console.error('❌ All storage methods failed');
-                  return false;
-              }
           }
-      } catch (error) {
-          console.error('❌ Error saving to admin storage:', error);
-          return false;
-      }
-  }
-
-  function saveOrderToClientStorage(orderData) {
-      try {
-          const clientStorageKey = 'de_order_history';
-          const clientBackupKey = 'de_order_history_backup';
           
+          // Save to client storage
+          const clientStorageKey = 'de_order_history';
           let clientOrders = JSON.parse(localStorage.getItem(clientStorageKey) || '[]');
           
-          // Check if order already exists
-          const existingOrderIndex = clientOrders.findIndex(order => order.id === orderData.id);
-          
-          if (existingOrderIndex > -1) {
-              clientOrders[existingOrderIndex] = orderData;
-          } else {
-              // Add timestamp for client orders too
-              orderData.clientViewed = false;
-              orderData.clientCreatedAt = new Date().toISOString();
+          const clientExists = clientOrders.find(order => order.id === orderData.id);
+          if (!clientExists) {
               clientOrders.unshift(orderData);
+              localStorage.setItem(clientStorageKey, JSON.stringify(clientOrders));
           }
           
-          localStorage.setItem(clientStorageKey, JSON.stringify(clientOrders));
-          localStorage.setItem(clientBackupKey, JSON.stringify(clientOrders));
-          
-          console.log('✅ Order saved to client storage:', orderData.id);
+          console.log('✅ Order saved to storage');
           return true;
       } catch (error) {
-          console.error('❌ Error saving to client storage:', error);
+          console.error('❌ Storage error:', error);
           return false;
       }
   }
+  // --- HELPER FUNCTIONS (Keep your existing ones) ---
+  function normalizeTownName(name = "") {
+      return name.toLowerCase().replace(/\s+/g, " ").trim().replace(/\s*\(.*?\)\s*/g, "");
+  }
 
-  // --- PRODUCT IMAGE EXTRACTION ---
-  function getProductImageSimple(link) {
+  function getDeliveryFee(town = "") {
+      const cleanedTown = normalizeTownName(town);
+      if (!cleanedTown) return 0;
+
+      const matchedNairobi = NAIROBI_DISTANCES.find(z => cleanedTown.includes(z.name.toLowerCase()));
+      if (matchedNairobi) {
+          const fee = Math.round(matchedNairobi.distance * DELIVERY_RATE_PER_KM);
+          return Math.max(fee, MINIMUM_NAIROBI_FEE);
+      }
+
+      const exactMatch = DELIVERY_ZONES.find(z => normalizeTownName(z.name) === cleanedTown);
+      if (exactMatch) return exactMatch.fee;
+
+      const includeMatch = DELIVERY_ZONES.find(z => cleanedTown.includes(normalizeTownName(z.name)));
+      if (includeMatch) return includeMatch.fee;
+
+      return 0;
+  }
+
+  function updateCityFeedback(town) {
+      const feedbackDiv = document.getElementById('bfm-city-feedback');
+      if (!feedbackDiv) return;
+
+      const townFee = getDeliveryFee(town);
+      feedbackDiv.style.padding = '8px';
+      feedbackDiv.style.borderRadius = '4px';
+
+      if (townFee > 0) {
+          feedbackDiv.style.backgroundColor = '#d4edda';
+          feedbackDiv.innerHTML = `<strong>Delivery Fee for ${town}:</strong> ${townFee.toLocaleString()} KES`;
+      } else {
+          feedbackDiv.style.backgroundColor = '#f0f8ff';
+          feedbackDiv.innerHTML = `<strong>Delivery Fee:</strong> TBD. Type your town for suggestion.`;
+      }
+  }
+
+  function calculateTotal(price, link) {
+      let shipping, service, appleFee;
+
+      if (price <= 750) {
+          shipping = 20 + 0.035 * price;
+          service = 30;
+      } else {
+          shipping = 20 + 0.035 * price;
+          service = 0.045 * price;
+      }
+
+      const isAppleLink = typeof link === 'string' && link.toLowerCase().includes('apple.com');
+      appleFee = isAppleLink ? APPLE_PICKUP_FEE_USD : 0.00;
+
+      const totalUSD = price + shipping + service + appleFee;
+      return { shipping, service, appleFee, totalUSD };
+  }
+
+  function extractProductTitleFromURL(url) {
       try {
-          if (link.includes('amazon.')) {
-              const asinMatch = link.match(/\/dp\/([A-Z0-9]{10})/);
-              if (asinMatch) {
-                  return `https://images-na.ssl-images-amazon.com/images/P/${asinMatch[1]}.01._SCLZZZZZZZ_.jpg`;
+          const urlObj = new URL(url);
+          const hostname = urlObj.hostname;
+
+          if (hostname.includes('amazon.')) {
+              const titleMatch = url.match(/\/dp\/([A-Z0-9]{10})/);
+              if (titleMatch) {
+                  return `Amazon Product (ASIN: ${titleMatch[1]})`;
               }
           }
-          
-          // Return generic product icon based on site
-          if (link.includes('apple.com')) return 'https://via.placeholder.com/100/007AFF/FFFFFF?text=🍎';
-          if (link.includes('amazon.')) return 'https://via.placeholder.com/100/FF9900/FFFFFF?text=📦';
-          if (link.includes('ebay.')) return 'https://via.placeholder.com/100/0064D2/FFFFFF?text=⭐';
-          
-          return 'https://via.placeholder.com/100/666666/FFFFFF?text=🛒';
+
+          const pathParts = urlObj.pathname.split('/').filter(p => p.length > 0);
+          if (pathParts.length > 0) {
+              const lastPart = pathParts[pathParts.length - 1];
+              const pretty = lastPart.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+              return `${pretty} from ${hostname.replace('www.', '')}`;
+          }
+
+          return `Product from ${hostname.replace('www.', '')}`;
       } catch (e) {
-          return 'https://via.placeholder.com/100/666666/FFFFFF?text=🛒';
+          return 'Buy For Me Product';
       }
   }
 
-  // Helper: sanitize town names for comparison
-  function normalizeTownName(name = "") {
-    return name.toLowerCase().replace(/\s+/g, " ").trim().replace(/\s*\(.*?\)\s*/g, "");
-  }
-
-  // --- Delivery fee lookup ---
-  function getDeliveryFee(town = "") {
-    const cleanedTown = normalizeTownName(town);
-
-    if (!cleanedTown) return 0;
-
-    // 1) Nairobi distance zones (partial includes)
-    const matchedNairobi = NAIROBI_DISTANCES.find(z => cleanedTown.includes(z.name.toLowerCase()));
-    if (matchedNairobi) {
-      const fee = Math.round(matchedNairobi.distance * DELIVERY_RATE_PER_KM);
-      return Math.max(fee, MINIMUM_NAIROBI_FEE);
-    }
-
-    // 2) Exact match for DELIVERY_ZONES (try exact then includes fallback)
-    const exactMatch = DELIVERY_ZONES.find(z => normalizeTownName(z.name) === cleanedTown);
-    if (exactMatch) return exactMatch.fee;
-
-    // 3) includes match (allow users to type variants)
-    const includeMatch = DELIVERY_ZONES.find(z => cleanedTown.includes(normalizeTownName(z.name)));
-    if (includeMatch) return includeMatch.fee;
-
-    // 4) fallback unknown town => 0 (TBD)
-    return 0;
-  }
-
-  // --- UI feedback for town / fee ---
-  function updateCityFeedback(town) {
-    const feedbackDiv = document.getElementById('bfm-city-feedback');
-    if (!feedbackDiv) return;
-
-    const townFee = getDeliveryFee(town);
-    const matchedNairobiZone = NAIROBI_DISTANCES.find(z => normalizeTownName(town).includes(z.name.toLowerCase()));
-    const isNairobiDistanceZone = !!matchedNairobiZone;
-
-    feedbackDiv.style.padding = '8px';
-    feedbackDiv.style.borderRadius = '4px';
-
-    if (townFee > 0) {
-      let feeType = "Exact Branch Fee";
-      let feedbackColor = '#d4edda';
-
-      if (isNairobiDistanceZone) {
-        feeType = `Nairobi Doorstep (Approx. ${matchedNairobiZone.distance}km @ KES ${DELIVERY_RATE_PER_KM}/km)`;
-        feedbackColor = '#fff3cd';
-      } else if (townFee === MINIMUM_NAIROBI_FEE) {
-        feeType = `Nairobi Environs Flat Fee (Min)`;
-      }
-
-      feedbackDiv.style.backgroundColor = feedbackColor;
-      feedbackDiv.innerHTML = `<strong>Delivery Fee for ${town}:</strong> ${townFee.toLocaleString()} KES (${feeType})`;
-    } else {
-      feedbackDiv.style.backgroundColor = '#f0f8ff';
-      feedbackDiv.innerHTML = `<strong>Delivery Fee:</strong> TBD. Type your town for suggestion or select a Wells Fargo branch. Minimum Nairobi doorstep fee: <strong>${MINIMUM_NAIROBI_FEE.toLocaleString()} KES</strong>`;
-    }
-  }
-
-  // --- Calculate totals (shipping, service, apple fee) ---
-  function calculateTotal(price, link) {
-    let shipping, service, appleFee;
-
-    if (price <= 750) {
-      shipping = 20 + 0.035 * price;
-      service = 30;
-    } else {
-      shipping = 20 + 0.035 * price;
-      service = 0.045 * price;
-    }
-
-    const isAppleLink = typeof link === 'string' && link.toLowerCase().includes('apple.com');
-    appleFee = isAppleLink ? APPLE_PICKUP_FEE_USD : 0.00;
-
-    const totalUSD = price + shipping + service + appleFee;
-    return { shipping, service, appleFee, totalUSD };
-  }
-
-  // --- Extract a readable product title from a URL ---
-  function extractProductTitleFromURL(url) {
-    try {
-      const urlObj = new URL(url);
-      const hostname = urlObj.hostname;
-
-      // Amazon ASIN case
-      if (hostname.includes('amazon.')) {
-        const titleMatch = url.match(/\/dp\/([A-Z0-9]{10})/);
-        if (titleMatch) {
-          return `Amazon Product (ASIN: ${titleMatch[1]})`;
-        }
-      }
-
-      // Generic: use last path segment
-      const pathParts = urlObj.pathname.split('/').filter(p => p.length > 0);
-      if (pathParts.length > 0) {
-        const lastPart = pathParts[pathParts.length - 1];
-        const pretty = lastPart.split(/[-_]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        return `${pretty} from ${hostname.replace('www.', '')}`;
-      }
-
-      return `Product from ${hostname.replace('www.', '')}`;
-    } catch (e) {
-      return 'Buy For Me Product';
-    }
-  }
-
-  // --- Local order history helper (uses localStorage) ---
-  function addOrderToHistory(order) {
-    try {
-      const key = 'bfm_order_history_v1';
-      const existing = JSON.parse(localStorage.getItem(key) || '[]');
-      existing.unshift(order);
-      // keep last 200 orders max
-      localStorage.setItem(key, JSON.stringify(existing.slice(0, 200)));
-      console.log('✅ Order saved locally (history).');
-    } catch (e) {
-      console.warn('Could not save order history:', e);
-    }
-  }
-
-  // --- Render results to UI ---
   function renderResults(resultBox, price, link, town) {
-    if (!resultBox) return;
-    const deliveryKES = getDeliveryFee(town);
-    if (isNaN(price) || price <= 0) {
-      resultBox.innerHTML = `<p style="color:#888;">Enter a valid price to see the total.</p>`;
-      return;
-    }
+      if (!resultBox) return;
+      const deliveryKES = getDeliveryFee(town);
+      if (isNaN(price) || price <= 0) {
+          resultBox.innerHTML = `<p style="color:#888;">Enter a valid price to see the total.</p>`;
+          return;
+      }
 
-    const { shipping, service, appleFee, totalUSD } = calculateTotal(price, link);
-    const totalKES = Math.round(totalUSD * USD_TO_KES);
-    const grandTotalKES = totalKES + deliveryKES;
+      const { shipping, service, appleFee, totalUSD } = calculateTotal(price, link);
+      const totalKES = Math.round(totalUSD * USD_TO_KES);
+      const grandTotalKES = totalKES + deliveryKES;
 
-    const appleFeeDisplay = appleFee > 0 ? `<p class="special-fee-notice"><strong>Apple Pick Up Fee:</strong> $${appleFee.toFixed(2)}</p>` : '';
+      const appleFeeDisplay = appleFee > 0 ? `<p class="special-fee-notice"><strong>Apple Pick Up Fee:</strong> $${appleFee.toFixed(2)}</p>` : '';
 
-    resultBox.innerHTML = `
-      <div class="quote-box" style="border:1px solid #ccc; padding:15px; border-radius:8px;">
-        <p><strong>Item Price:</strong> $${price.toFixed(2)}</p>
-        <p><strong>Shipping & Service:</strong> $${(shipping + service).toFixed(2)}</p>
-        ${appleFeeDisplay}
-        <hr style="margin:10px 0;">
-        <p><strong>Total Import Cost (USD):</strong> $${totalUSD.toFixed(2)}</p>
-        <p><strong>Import/Buy Total (KES):</strong> ${totalKES.toLocaleString("en-KE", { maximumFractionDigits: 0 })} KES</p>
-        <p><strong>Delivery Fee (${town || 'TBD'}):</strong> ${deliveryKES.toLocaleString("en-KE", { maximumFractionDigits: 0 })} KES</p>
-        <hr style="margin:10px 0;">
-        <p style="font-size:1.2em; color:#007bff;">
-          <strong>GRAND TOTAL (KES):</strong>
-          <span style="float:right;">${grandTotalKES.toLocaleString("en-KE", { maximumFractionDigits: 0 })} KES</span>
-        </p>
-      </div>
-    `;
+      resultBox.innerHTML = `
+        <div class="quote-box" style="border:1px solid #ccc; padding:15px; border-radius:8px;">
+          <p><strong>Item Price:</strong> $${price.toFixed(2)}</p>
+          <p><strong>Shipping & Service:</strong> $${(shipping + service).toFixed(2)}</p>
+          ${appleFeeDisplay}
+          <hr style="margin:10px 0;">
+          <p><strong>Total Import Cost (USD):</strong> $${totalUSD.toFixed(2)}</p>
+          <p><strong>Import/Buy Total (KES):</strong> ${totalKES.toLocaleString("en-KE", { maximumFractionDigits: 0 })} KES</p>
+          <p><strong>Delivery Fee (${town || 'TBD'}):</strong> ${deliveryKES.toLocaleString("en-KE", { maximumFractionDigits: 0 })} KES</p>
+          <hr style="margin:10px 0;">
+          <p style="font-size:1.2em; color:#007bff;">
+            <strong>GRAND TOTAL (KES):</strong>
+            <span style="float:right;">${grandTotalKES.toLocaleString("en-KE", { maximumFractionDigits: 0 })} KES</span>
+          </p>
+        </div>
+      `;
   }
 
-  // --- Main DOMContentLoaded init ---
+// --- MAIN INIT ---
   document.addEventListener("DOMContentLoaded", () => {
-    const priceInput = document.getElementById("bfm-price");
-    const linkInput = document.getElementById("bfm-link");
-    const townInput = document.getElementById("bfm-town");
-    const resultBox = document.getElementById("bfm-results");
-    const sendBtn = document.getElementById("bfm-send");
-    const dataList = document.getElementById('bfm-city-suggestions-list');
+      const priceInput = document.getElementById("bfm-price");
+      const linkInput = document.getElementById("bfm-link");
+      const townInput = document.getElementById("bfm-town");
+      const resultBox = document.getElementById("bfm-results");
+      const sendBtn = document.getElementById("bfm-send");
 
-    if (!priceInput || !linkInput || !townInput || !resultBox) {
-      console.error('Required BFM elements missing. Ensure #bfm-price, #bfm-link, #bfm-town, and #bfm-results exist.');
-      return;
-    }
+      if (!priceInput || !linkInput || !townInput || !resultBox) {
+          console.error('Required BFM elements missing');
+          return;
+      }
 
-    // Populate datalist
-    const allTowns = [
-      ...NAIROBI_DISTANCES.map(z => z.name),
-      ...DELIVERY_ZONES.map(z => z.name)
-    ].filter((v, i, a) => a.indexOf(v) === i); // unique
-
-    if (dataList) {
-      dataList.innerHTML = '';
-      allTowns.forEach(name => {
-        const option = document.createElement('option');
-        option.value = name.replace(/\s*\(.*?\)\s*/g, '');
-        dataList.appendChild(option);
-      });
-    }
-
-    // Live updates
-    function onInputsChanged() {
-      const price = parseFloat(priceInput.value);
-      const link = linkInput.value.trim();
-      const town = townInput.value.trim();
-
-      updateCityFeedback(town);
-      renderResults(resultBox, price, link, town);
-    }
-
-    priceInput.addEventListener("input", onInputsChanged);
-    linkInput.addEventListener("input", onInputsChanged);
-    townInput.addEventListener("input", onInputsChanged);
-
-    // Send to WhatsApp - UPDATED SECTION
-    if (sendBtn) {
-          sendBtn.addEventListener("click", () => {
-              console.log('🟢 WhatsApp button clicked');
+      // Send to WhatsApp
+      if (sendBtn) {
+          sendBtn.addEventListener("click", (e) => {
+              e.preventDefault();
 
               const price = parseFloat(priceInput.value);
               const link = linkInput.value.trim();
               const town = townInput.value.trim();
-              const deliveryKES = getDeliveryFee(town);
-
-              console.log('📦 Order details:', { price, link, town, deliveryKES });
 
               // Validation
               if (!link) {
-                  alert("⚠️ The Product Link is required to place a Buy For Me order. Please paste it in the first field.");
+                  alert("⚠️ Product Link is required");
                   return;
               }
-
               if (isNaN(price) || price <= 0) {
-                  alert("⚠️ Please enter a valid price.");
+                  alert("⚠️ Please enter a valid price");
+                  return;
+              }
+              if (!town) {
+                  alert("🚨 Please enter a delivery town");
                   return;
               }
 
-              if (!town || deliveryKES === 0) {
-                  alert("🚨 Please enter a delivery town and ensure the delivery fee is calculated before sending the order.");
-                  return;
-              }
-
+              const deliveryKES = getDeliveryFee(town);
               const { appleFee, totalUSD } = calculateTotal(price, link);
               const totalKES = Math.round(totalUSD * USD_TO_KES);
               const grandTotalKES = totalKES + deliveryKES;
 
-              // Create order data with proper identification
+              // Create order data - NO IMAGE FIELD
               const orderData = {
                   id: 'BFM' + Date.now().toString(36).toUpperCase(),
                   orderDate: new Date().toISOString(),
                   status: 'pending',
-                  statusUpdated: new Date().toISOString(),
                   type: 'buy-for-me',
                   source: 'buy-for-me',
-                  progressHistory: [{
-                      status: 'pending',
-                      timestamp: new Date().toISOString(),
-                      step: 'ordered'
-                  }],
                   customer: {
                       name: 'Buy For Me Customer',
                       city: town,
@@ -545,51 +389,55 @@
                       price: price,
                       qty: 1,
                       link: link,
-                      type: 'buy-for-me',
-                      image: getProductImageSimple(link)
+                      type: 'buy-for-me'
+                      // NO image field - admin will add it
                   }],
                   totalAmount: grandTotalKES,
                   delivery: {
                       method: 'delivery',
                       city: town,
                       fee: deliveryKES
-                  },
-                  // Add these fields for better admin display
-                  name: 'Buy For Me Customer',
-                  city: town,
-                  phone: 'Provided via WhatsApp',
-                  total: grandTotalKES,
-                  currency: 'KES',
-                  image: getProductImageSimple(link),
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString()
+                  }
+                  // NO image field at root - admin will add it
               };
 
-              // Save to BOTH admin and client storage
-              const savedToAdmin = saveOrderToAdminStorage(orderData);
-              const savedToClient = saveOrderToClientStorage(orderData);
+              // Save order quietly
+              saveOrderToStorage(orderData);
+
+              // Create WhatsApp message
+              const message = [
+                  "🛍 Buy For Me Request",
+                  "",
+                  `🔗 Product: ${extractProductTitleFromURL(link)}`,
+                  `🔗 Link: ${link}`,
+                  `💵 Price: $${price.toFixed(2)}`,
+                  `🏠 Delivery: ${town}`,
+                  "",
+                  "💰 Cost Breakdown:",
+                  ` • Item: $${price.toFixed(2)}`,
+                  ` • Shipping & Service: $${(totalUSD - price - appleFee).toFixed(2)}`,
+                  ...(appleFee > 0 ? [` • Apple Fee: $${appleFee.toFixed(2)}`] : []),
+                  ` • Total USD: $${totalUSD.toFixed(2)}`,
+                  ` • Total KES: ${totalKES.toLocaleString()} KES`,
+                  ` • Delivery: ${deliveryKES.toLocaleString()} KES`,
+                  ` • GRAND TOTAL: ${grandTotalKES.toLocaleString()} KES`,
+                  "",
+                  "Please provide:",
+                  " • Full Name",
+                  " • Phone Number", 
+                  " • Exact Address",
+                  "",
+                  "We'll contact you to complete the order!"
+              ].join("\n");
+
+              const encodedMessage = encodeURIComponent(message);
+              const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+
+              // Open WhatsApp
+              window.open(whatsappURL, '_blank');
               
-              if (savedToAdmin && savedToClient) {
-                  console.log('✅ Order saved to both admin and client storage');
-                  
-                  // Trigger storage event to refresh admin page if open
-                  window.dispatchEvent(new Event('storage'));
-                  
-                  // Show success message
-                  setTimeout(() => {
-                      alert('✅ Order created successfully! You can now view it in the admin panel.');
-                  }, 500);
-              }
-
-              // [KEEP THE REST OF YOUR WHATSAPP MESSAGE CODE EXACTLY AS IS]
+              alert('✅ Opening WhatsApp... Please send the message to complete your order.');
           });
-          
-          console.log('✅ WhatsApp button event listener attached');
-      } else {
-          console.error('❌ WhatsApp button not found (#bfm-send).');
       }
-
-      // Initial render
-      onInputsChanged();
   });
 })();
