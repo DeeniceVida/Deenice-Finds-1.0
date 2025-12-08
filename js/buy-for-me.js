@@ -1,4 +1,4 @@
-// Buy-For-Me — Fixed Script with Town Suggestions & Price Calculations
+// Buy-For-Me — Fixed Script with Image Upload
 (() => {
   // --- 1. ACCURATE WELLS FARGO DELIVERY DATA (OUTSIDE NAIROBI) ---
   const DELIVERY_ZONES = [
@@ -208,11 +208,20 @@
               localStorage.setItem(clientStorageKey, JSON.stringify(clientOrders));
           }
           
+          // Also save to sync markers for immediate admin detection
+          localStorage.setItem('de_order_sync_markers', JSON.stringify({
+              [orderData.id]: {
+                  status: 'pending',
+                  source: 'buy-for-me',
+                  updated: new Date().toISOString()
+              }
+          }));
+          
           console.log('✅ Order saved to storage');
           return true;
       } catch (error) {
-          console.error('❌ Storage error:', error);
-          return false;
+        console.error('❌ Storage error:', error);
+        return false;
       }
   }
 
@@ -395,6 +404,68 @@
       console.log('✅ Live calculations setup complete');
   }
 
+  // --- IMAGE UPLOAD FUNCTIONALITY ---
+  function setupImageUpload() {
+      const imageInput = document.getElementById('bfm-image-upload');
+      const previewDiv = document.getElementById('bfm-image-preview');
+      const previewImg = document.getElementById('bfm-preview-img');
+      const removeBtn = document.getElementById('bfm-remove-image');
+
+      if (!imageInput || !previewDiv || !previewImg) {
+          console.log('Image upload elements not found');
+          return;
+      }
+
+      let uploadedImage = null;
+      let uploadedImageName = null;
+
+      // Handle image selection
+      imageInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+              // Validate file type
+              if (!file.type.startsWith('image/')) {
+                  alert('Please select an image file (JPEG, PNG, etc.)');
+                  this.value = '';
+                  return;
+              }
+
+              // Validate file size (max 5MB)
+              if (file.size > 5 * 1024 * 1024) {
+                  alert('Image size should be less than 5MB');
+                  this.value = '';
+                  return;
+              }
+
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                  uploadedImage = e.target.result;
+                  uploadedImageName = file.name;
+                  previewImg.src = uploadedImage;
+                  previewDiv.style.display = 'block';
+              };
+              reader.readAsDataURL(file);
+          }
+      });
+
+      // Handle remove image
+      if (removeBtn) {
+          removeBtn.addEventListener('click', function() {
+              imageInput.value = '';
+              uploadedImage = null;
+              uploadedImageName = null;
+              previewDiv.style.display = 'none';
+          });
+      }
+
+      // Return functions to access uploaded data
+      return {
+          getImageData: () => uploadedImage,
+          getImageName: () => uploadedImageName,
+          hasImage: () => !!uploadedImage
+      };
+  }
+
   // --- MAIN INIT ---
   document.addEventListener("DOMContentLoaded", () => {
       console.log('🏁 Buy For Me page loading...');
@@ -416,9 +487,12 @@
       // 2. Setup live calculations
       setupLiveCalculations();
 
-      // 3. Setup WhatsApp button
+      // 3. Setup image upload
+      const imageUpload = setupImageUpload();
+
+      // 4. Setup WhatsApp button
       if (sendBtn) {
-          sendBtn.addEventListener("click", (e) => {
+          sendBtn.addEventListener("click", async (e) => {
               e.preventDefault();
               console.log('🟢 WhatsApp button clicked');
 
@@ -447,13 +521,23 @@
               const totalKES = Math.round(totalUSD * USD_TO_KES);
               const grandTotalKES = totalKES + deliveryKES;
 
-              // Create order data - NO IMAGE FIELD
+              // Get image data if uploaded
+              let imageData = null;
+              let imageName = null;
+              if (imageUpload.hasImage()) {
+                  imageData = imageUpload.getImageData();
+                  imageName = imageUpload.getImageName();
+              }
+
+              // Create order data - WITH IMAGE FIELD
               const orderData = {
                   id: 'BFM' + Date.now().toString(36).toUpperCase(),
                   orderDate: new Date().toISOString(),
                   status: 'pending',
                   type: 'buy-for-me',
                   source: 'buy-for-me',
+                  image: imageData, // Add image data
+                  imageName: imageName, // Add image name
                   customer: {
                       name: 'Buy For Me Customer',
                       city: town,
@@ -464,8 +548,8 @@
                       price: price,
                       qty: 1,
                       link: link,
-                      type: 'buy-for-me'
-                      // NO image field - admin will add it
+                      type: 'buy-for-me',
+                      image: imageData // Add to items too
                   }],
                   totalAmount: grandTotalKES,
                   delivery: {
@@ -473,14 +557,23 @@
                       city: town,
                       fee: deliveryKES
                   }
-                  // NO image field at root - admin will add it
               };
 
               // Save order quietly
-              saveOrderToStorage(orderData);
+              const saved = saveOrderToStorage(orderData);
+              
+              if (saved) {
+                  // Trigger admin notification
+                  window.dispatchEvent(new Event('storage'));
+                  window.dispatchEvent(new CustomEvent('orderCreated', { 
+                      detail: { orderId: orderData.id, type: 'buy-for-me' }
+                  }));
+                  
+                  console.log('✅ Buy For Me order created:', orderData.id);
+              }
 
               // Create WhatsApp message
-              const message = [
+              const messageLines = [
                   "🛍 Buy For Me Request",
                   "",
                   `🔗 Product: ${extractProductTitleFromURL(link)}`,
@@ -503,21 +596,42 @@
                   " • Exact Address",
                   "",
                   "We'll contact you to complete the order!"
-              ].join("\n");
+              ];
 
+              // Add image note if uploaded
+              if (imageData) {
+                  messageLines.splice(4, 0, `🖼️ Product Image: Attached (${imageName})`);
+              }
+
+              const message = messageLines.join("\n");
               const encodedMessage = encodeURIComponent(message);
               const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
 
               // Open WhatsApp
               window.open(whatsappURL, '_blank');
               
-              alert('✅ Opening WhatsApp... Please send the message to complete your order.');
+              // Clear form after successful submission
+              setTimeout(() => {
+                  priceInput.value = '';
+                  linkInput.value = '';
+                  townInput.value = '';
+                  const imageInput = document.getElementById('bfm-image-upload');
+                  if (imageInput) imageInput.value = '';
+                  const previewDiv = document.getElementById('bfm-image-preview');
+                  if (previewDiv) previewDiv.style.display = 'none';
+                  
+                  // Reset calculations
+                  renderResults(resultBox, 0, '', '');
+                  updateCityFeedback('');
+                  
+                  alert('✅ Order request sent! We\'ll contact you shortly via WhatsApp.');
+              }, 500);
           });
           
           console.log('✅ WhatsApp button setup complete');
       }
 
-      // 4. Initial render with default values
+      // 5. Initial render with default values
       const initialPrice = parseFloat(priceInput.value) || 0;
       const initialLink = linkInput.value.trim() || '';
       const initialTown = townInput.value.trim() || '';
